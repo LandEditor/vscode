@@ -74,7 +74,9 @@ where
 #[cfg(windows)]
 pub fn new_tokio_command(exe: impl AsRef<OsStr>) -> Command {
 	let mut p = tokio::process::Command::new(exe);
+
 	p.creation_flags(winapi::um::winbase::CREATE_NO_WINDOW);
+
 	p
 }
 
@@ -89,9 +91,13 @@ pub fn new_tokio_command(exe: impl AsRef<OsStr>) -> Command {
 #[cfg(windows)]
 pub fn new_script_command(script: impl AsRef<OsStr>) -> Command {
 	let mut cmd = new_tokio_command("cmd");
+
 	cmd.arg("/Q");
+
 	cmd.arg("/C");
+
 	cmd.arg(script);
+
 	cmd
 }
 
@@ -106,10 +112,12 @@ pub fn new_script_command(script: impl AsRef<OsStr>) -> Command {
 #[cfg(windows)]
 pub fn new_std_command(exe: impl AsRef<OsStr>) -> std::process::Command {
 	let mut p = std::process::Command::new(exe);
+
 	std::os::windows::process::CommandExt::creation_flags(
 		&mut p,
 		winapi::um::winbase::CREATE_NO_WINDOW,
 	);
+
 	p
 }
 
@@ -123,6 +131,7 @@ pub fn new_std_command(exe: impl AsRef<OsStr>) -> std::process::Command {
 #[cfg(windows)]
 pub async fn kill_tree(process_id: u32) -> Result<(), CodeError> {
 	capture_command("taskkill", &["/t", "/pid", &process_id.to_string()]).await?;
+
 	Ok(())
 }
 
@@ -130,6 +139,7 @@ pub async fn kill_tree(process_id: u32) -> Result<(), CodeError> {
 #[cfg(not(windows))]
 pub async fn kill_tree(process_id: u32) -> Result<(), CodeError> {
 	use futures::future::join_all;
+
 	use tokio::io::{AsyncBufReadExt, BufReader};
 
 	async fn kill_single_pid(process_id_str: String) {
@@ -139,6 +149,7 @@ pub async fn kill_tree(process_id: u32) -> Result<(), CodeError> {
 	// Rusty version of https://github.com/microsoft/vscode-js-debug/blob/main/src/targets/node/terminateProcess.sh
 
 	let parent_id = process_id.to_string();
+
 	let mut prgrep_cmd = Command::new("pgrep")
 		.arg("-P")
 		.arg(&parent_id)
@@ -157,12 +168,15 @@ pub async fn kill_tree(process_id: u32) -> Result<(), CodeError> {
 
 	if let Some(stdout) = prgrep_cmd.stdout.take() {
 		let mut reader = BufReader::new(stdout).lines();
+
 		while let Some(line) = reader.next_line().await.unwrap_or(None) {
 			kill_futures.push(tokio::spawn(async move { kill_single_pid(line).await }))
 		}
 	}
 
 	join_all(kill_futures).await;
+
 	prgrep_cmd.kill().await.ok();
+
 	Ok(())
 }

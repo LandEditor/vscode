@@ -40,8 +40,11 @@ mod tunnel_flags {
 	use crate::{log, tunnels::wsl_detect::is_wsl_installed};
 
 	pub const IS_WSL_INSTALLED: u32 = 1 << 0;
+
 	pub const IS_WINDOWS: u32 = 1 << 1;
+
 	pub const IS_LINUX: u32 = 1 << 2;
+
 	pub const IS_MACOS: u32 = 1 << 3;
 
 	/// Creates a flag string for the tunnel
@@ -83,6 +86,7 @@ impl PersistedTunnel {
 			id: self.id,
 		}
 	}
+
 	pub fn locator(&self) -> TunnelLocator {
 		TunnelLocator::ID {
 			cluster: self.cluster.clone(),
@@ -178,6 +182,7 @@ impl AccessTokenProvider for LookupAccessTokenProvider {
 
 	fn keep_alive(&self) -> BoxFuture<'static, Result<(), AnyError>> {
 		let auth = self.auth.clone();
+
 		auth.keep_token_alive().boxed()
 	}
 }
@@ -204,6 +209,7 @@ impl ActiveTunnel {
 	/// Closes and unregisters the tunnel.
 	pub async fn close(&mut self) -> Result<(), AnyError> {
 		self.manager.kill().await?;
+
 		Ok(())
 	}
 
@@ -213,6 +219,7 @@ impl ActiveTunnel {
 		port_number: u16,
 	) -> Result<mpsc::UnboundedReceiver<ForwardedPortConnection>, AnyError> {
 		let port = self.manager.add_port_direct(port_number).await?;
+
 		Ok(port)
 	}
 
@@ -226,12 +233,14 @@ impl ActiveTunnel {
 		self.manager
 			.add_port_tcp(port_number, privacy, protocol)
 			.await?;
+
 		Ok(())
 	}
 
 	/// Removes a forwarded port TCP.
 	pub async fn remove_port(&self, port_number: u16) -> Result<(), AnyError> {
 		self.manager.remove_port(port_number).await?;
+
 		Ok(())
 	}
 
@@ -329,6 +338,7 @@ impl DevTunnels {
 		paths: &LauncherPaths,
 	) -> DevTunnels {
 		let mut client = new_tunnel_management(&TUNNEL_SERVICE_USER_AGENT);
+
 		client.authorization_provider(auth.clone());
 
 		DevTunnels {
@@ -347,6 +357,7 @@ impl DevTunnels {
 		paths: &LauncherPaths,
 	) -> DevTunnels {
 		let mut client = new_tunnel_management(&TUNNEL_SERVICE_USER_AGENT);
+
 		client.authorization_provider(auth.clone());
 
 		DevTunnels {
@@ -375,6 +386,7 @@ impl DevTunnels {
 		.map_err(|e| wrap(e, "failed to execute `tunnel delete`"))?;
 
 		self.launcher_tunnel.save(None)?;
+
 		Ok(())
 	}
 
@@ -400,11 +412,14 @@ impl DevTunnels {
 					self.log,
 					"Found a persisted tunnel, seeing if the name matches..."
 				);
+
 				self.get_or_create_tunnel(persisted, Some(&name), NO_REQUEST_OPTIONS)
 					.await
 			}
+
 			None => {
 				debug!(self.log, "Creating a new tunnel with the requested name");
+
 				self.create_tunnel(&name, NO_REQUEST_OPTIONS)
 					.await
 					.map(|(pt, t)| (t, pt, true))
@@ -412,6 +427,7 @@ impl DevTunnels {
 		}?;
 
 		let desired_tags = self.get_labels(&name);
+
 		if is_new || vec_eq_as_set(&full_tunnel.labels, &desired_tags) {
 			return Ok((full_tunnel, persisted));
 		}
@@ -428,6 +444,7 @@ impl DevTunnels {
 		.map_err(|e| wrap(e, "failed to rename tunnel"))?;
 
 		persisted.name = name;
+
 		self.launcher_tunnel.save(Some(persisted.clone()))?;
 
 		Ok((updated_tunnel, persisted))
@@ -457,8 +474,10 @@ impl DevTunnels {
 				let (persisted, tunnel) = self
 					.create_tunnel(create_with_new_name.unwrap_or(&persisted.name), options)
 					.await?;
+
 				Ok((tunnel, persisted, true))
 			}
+
 			Err(e) => Err(wrap(e, "failed to lookup tunnel").into()),
 		}
 	}
@@ -486,11 +505,14 @@ impl DevTunnels {
 					.await?;
 				(tunnel, persisted)
 			}
+
 			None => {
 				debug!(self.log, "No code server tunnel found, creating new one");
+
 				let name = self
 					.get_name_for_tunnel(preferred_name, use_random_name)
 					.await?;
+
 				let (persisted, full_tunnel) = self
 					.create_tunnel(&name, &HOST_TUNNEL_REQUEST_OPTIONS)
 					.await?;
@@ -508,6 +530,7 @@ impl DevTunnels {
 			.await?;
 
 		let locator = TunnelLocator::try_from(&tunnel).unwrap();
+
 		let host_token = get_host_token_from_tunnel(&tunnel);
 
 		for port_to_delete in tunnel
@@ -520,6 +543,7 @@ impl DevTunnels {
 				port_to_delete.port_number,
 				NO_REQUEST_OPTIONS,
 			);
+
 			spanf!(
 				self.log,
 				self.log.span("dev-tunnel.port.delete"),
@@ -569,7 +593,9 @@ impl DevTunnels {
 				}
 
 				let loc = TunnelLocator::try_from(&e).unwrap();
+
 				info!(self.log, "Adopting existing tunnel (ID={:?})", loc);
+
 				spanf!(
 					self.log,
 					self.log.span("dev-tunnel.tag.get"),
@@ -577,6 +603,7 @@ impl DevTunnels {
 				)
 				.map_err(|e| wrap(e, "failed to lookup tunnel"))?
 			}
+
 			None => loop {
 				let result = spanf!(
 					self.log,
@@ -596,6 +623,7 @@ impl DevTunnels {
 					{
 						if let Some(d) = e.get_details() {
 							let detail = d.detail.unwrap_or_else(|| "unknown".to_string());
+
 							if detail.contains(TUNNEL_COUNT_LIMIT_NAME)
 								&& self.try_recycle_tunnel().await?
 							{
@@ -613,12 +641,14 @@ impl DevTunnels {
 								"You have exceeded a limit for the port fowarding service. Please remove other machines before trying to add this machine.".to_string(),
 							)));
 					}
+
 					Err(e) => {
 						return Err(AnyError::from(TunnelCreationFailed(
 							name.to_string(),
 							format!("{e:?}"),
 						)))
 					}
+
 					Ok(t) => break t,
 				}
 			},
@@ -631,6 +661,7 @@ impl DevTunnels {
 		};
 
 		self.launcher_tunnel.save(Some(pt.clone()))?;
+
 		Ok((pt, tunnel))
 	}
 
@@ -654,6 +685,7 @@ impl DevTunnels {
 		options: &TunnelRequestOptions,
 	) -> Result<Tunnel, AnyError> {
 		let new_labels = self.get_labels(name);
+
 		if vec_eq_as_set(&tunnel.labels, &new_labels) {
 			return Ok(tunnel);
 		}
@@ -699,6 +731,7 @@ impl DevTunnels {
 		match recyclable {
 			Some(tunnel) => {
 				trace!(self.log, "Recycling tunnel ID {:?}", tunnel.tunnel_id);
+
 				spanf!(
 					self.log,
 					self.log.span("dev-tunnel.delete"),
@@ -706,10 +739,13 @@ impl DevTunnels {
 						.delete_tunnel(&tunnel.try_into().unwrap(), NO_REQUEST_OPTIONS)
 				)
 				.map_err(|e| wrap(e, "failed to execute `tunnel delete`"))?;
+
 				Ok(true)
 			}
+
 			None => {
 				trace!(self.log, "No tunnels available to recycle");
+
 				Ok(false)
 			}
 		}
@@ -752,8 +788,11 @@ impl DevTunnels {
 
 	fn get_placeholder_name() -> String {
 		let mut n = clean_hostname_for_tunnel(&gethostname::gethostname().to_string_lossy());
+
 		n.make_ascii_lowercase();
+
 		n.truncate(MAX_TUNNEL_NAME_LENGTH);
+
 		n
 	}
 
@@ -763,6 +802,7 @@ impl DevTunnels {
 		mut use_random_name: bool,
 	) -> Result<String, AnyError> {
 		let existing_tunnels = self.list_tunnels_with_tag(&[self.tag]).await?;
+
 		let is_name_free = |n: &str| {
 			!existing_tunnels
 				.iter()
@@ -771,26 +811,34 @@ impl DevTunnels {
 
 		if let Some(machine_name) = preferred_name {
 			let name = machine_name.to_ascii_lowercase();
+
 			if let Err(e) = is_valid_name(&name) {
 				info!(self.log, "{} is an invalid name", e);
+
 				return Err(AnyError::from(wrap(e, "invalid name")));
 			}
+
 			if is_name_free(&name) {
 				return Ok(name);
 			}
+
 			info!(
 				self.log,
 				"{} is already taken, using a random name instead", &name
 			);
+
 			use_random_name = true;
 		}
 
 		let mut placeholder_name = Self::get_placeholder_name();
+
 		if !is_name_free(&placeholder_name) {
 			for i in 2.. {
 				let fixed_name = format!("{placeholder_name}{i}");
+
 				if is_name_free(&fixed_name) {
 					placeholder_name = fixed_name;
+
 					break;
 				}
 			}
@@ -810,6 +858,7 @@ impl DevTunnels {
 
 			if let Err(e) = is_valid_name(&name) {
 				info!(self.log, "{}", e);
+
 				continue;
 			}
 
@@ -836,11 +885,13 @@ impl DevTunnels {
 		};
 
 		let mut mgmt = self.client.build();
+
 		mgmt.authorization(tunnels::management::Authorization::Tunnel(
 			tunnel.host_token.clone(),
 		));
 
 		let client = mgmt.into();
+
 		self.sync_tunnel_tags(
 			&client,
 			&tunnel_details.name,
@@ -881,7 +932,9 @@ impl DevTunnels {
 			Ok(endpoint) => endpoint,
 			Err(e) => {
 				error!(self.log, "Error connecting to tunnel endpoint: {}", e);
+
 				manager.kill().await.ok();
+
 				return Err(e);
 			}
 		};
@@ -902,21 +955,27 @@ pub struct StatusLock(Arc<std::sync::Mutex<protocol::singleton::Status>>);
 impl StatusLock {
 	fn succeed(&self) {
 		let mut status = self.0.lock().unwrap();
+
 		status.tunnel = protocol::singleton::TunnelState::Connected;
+
 		status.last_connected_at = Some(chrono::Utc::now());
 	}
 
 	fn fail(&self, reason: String) {
 		let mut status = self.0.lock().unwrap();
+
 		if let protocol::singleton::TunnelState::Connected = status.tunnel {
 			status.last_disconnected_at = Some(chrono::Utc::now());
+
 			status.tunnel = protocol::singleton::TunnelState::Disconnected;
 		}
+
 		status.last_fail_reason = Some(reason);
 	}
 
 	pub fn read(&self) -> protocol::singleton::Status {
 		let status = self.0.lock().unwrap();
+
 		status.clone()
 	}
 }
@@ -936,14 +995,17 @@ impl ActiveTunnelManager {
 		access_token: impl AccessTokenProvider + 'static,
 	) -> ActiveTunnelManager {
 		let (endpoint_tx, endpoint_rx) = watch::channel(None);
+
 		let (close_tx, close_rx) = mpsc::channel(1);
 
 		let relay = Arc::new(tokio::sync::Mutex::new(RelayTunnelHost::new(locator, mgmt)));
+
 		let relay_spawned = relay.clone();
 
 		let status = StatusLock::default();
 
 		let status_spawned = status.clone();
+
 		tokio::spawn(async move {
 			ActiveTunnelManager::spawn_tunnel(
 				log,
@@ -987,6 +1049,7 @@ impl ActiveTunnelManager {
 			})
 			.await
 			.map_err(|e| wrap(e, "error adding port to relay"))?;
+
 		Ok(())
 	}
 
@@ -1060,14 +1123,19 @@ impl ActiveTunnelManager {
 		status: StatusLock,
 	) {
 		let mut token_ka = access_token_provider.keep_alive();
+
 		let mut backoff = Backoff::new(Duration::from_secs(5), Duration::from_secs(120));
 
 		macro_rules! fail {
 			($e: expr, $msg: expr) => {
 				let fmt = format!("{}: {}", $msg, $e);
+
 				warning!(log, &fmt);
+
 				status.fail(fmt);
+
 				endpoint_tx.send(Some(Err($e))).ok();
+
 				backoff.delay().await;
 			};
 		}
@@ -1079,6 +1147,7 @@ impl ActiveTunnelManager {
 				Ok(t) => t,
 				Err(e) => {
 					fail!(e, "Error refreshing access token, will retry");
+
 					continue;
 				}
 			};
@@ -1087,6 +1156,7 @@ impl ActiveTunnelManager {
 			// the tunnel won't be able to host as soon as the access token expires.
 			let handle_res = {
 				let mut relay = relay.lock().await;
+
 				relay
 					.connect(&access_token)
 					.await
@@ -1097,12 +1167,15 @@ impl ActiveTunnelManager {
 				Ok(handle) => handle,
 				Err(e) => {
 					fail!(e, "Error connecting to relay, will retry");
+
 					continue;
 				}
 			};
 
 			backoff.reset();
+
 			status.succeed();
+
 			endpoint_tx.send(Some(Ok(handle.endpoint().clone()))).ok();
 
 			tokio::select! {
@@ -1113,16 +1186,20 @@ impl ActiveTunnelManager {
 						fail!(e, "Tunnel exited unexpectedly, reconnecting");
 					} else {
 						warning!(log, "Tunnel exited unexpectedly but gracefully, reconnecting");
+
 						backoff.delay().await;
 					}
 				},
 				Err(e) = &mut token_ka => {
 					error!(log, "access token is no longer valid, exiting: {}", e);
+
 					return;
 				},
 				_ = close_rx.recv() => {
 					trace!(log, "Tunnel closing gracefully");
+
 					trace!(log, "Tunnel closed with result: {:?}", handle.close().await);
+
 					break;
 				}
 			}
@@ -1151,10 +1228,12 @@ impl Backoff {
 
 	pub fn next(&mut self) -> Duration {
 		self.failures += 1;
+
 		let duration = self
 			.base_duration
 			.checked_mul(self.failures)
 			.unwrap_or(self.max_duration);
+
 		std::cmp::min(duration, self.max_duration)
 	}
 
@@ -1167,6 +1246,7 @@ impl Backoff {
 /// See TUNNEL_NAME_PATTERN in the tunnels SDK for the rules we try to use.
 fn clean_hostname_for_tunnel(hostname: &str) -> String {
 	let mut out = String::new();
+
 	for char in hostname.chars().take(60) {
 		match char {
 			'-' | '_' | ' ' => {
@@ -1175,11 +1255,13 @@ fn clean_hostname_for_tunnel(hostname: &str) -> String {
 			'0'..='9' | 'a'..='z' | 'A'..='Z' => {
 				out.push(char);
 			}
+
 			_ => {}
 		}
 	}
 
 	let trimmed = out.trim_matches('-');
+
 	if trimmed.len() < 2 {
 		"remote-machine".to_string() // placeholder if the result was empty
 	} else {
@@ -1250,14 +1332,17 @@ mod test {
 			clean_hostname_for_tunnel("hello123"),
 			"hello123".to_string()
 		);
+
 		assert_eq!(
 			clean_hostname_for_tunnel("-cool-name-"),
 			"cool-name".to_string()
 		);
+
 		assert_eq!(
 			clean_hostname_for_tunnel("cool!name with_chars"),
 			"coolname-with-chars".to_string()
 		);
+
 		assert_eq!(clean_hostname_for_tunnel("z"), "remote-machine".to_string());
 	}
 }

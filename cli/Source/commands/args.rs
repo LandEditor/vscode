@@ -116,9 +116,13 @@ impl AnyCli {
 impl CliCore {
 	pub fn get_base_code_args(&self) -> Vec<String> {
 		let mut args = self.open_paths.clone();
+
 		self.editor_options.add_code_args(&mut args);
+
 		self.troubleshooting.add_code_args(&mut args);
+
 		self.global_options.add_code_args(&mut args);
+
 		args
 	}
 }
@@ -132,6 +136,7 @@ impl<'a> From<&'a CliCore> for CodeServerArgs {
 		};
 
 		args.log = cli.global_options.log;
+
 		args.accept_server_license_terms = true;
 
 		if cli.global_options.verbose {
@@ -258,6 +263,7 @@ pub struct ExtensionArgs {
 impl ExtensionArgs {
 	pub fn add_code_args(&self, target: &mut Vec<String>) {
 		self.desktop_code_options.add_code_args(target);
+
 		self.subcommand.add_code_args(target);
 	}
 }
@@ -279,29 +285,36 @@ impl ExtensionSubcommand {
 		match self {
 			ExtensionSubcommand::List(args) => {
 				target.push("--list-extensions".to_string());
+
 				if args.show_versions {
 					target.push("--show-versions".to_string());
 				}
+
 				if let Some(category) = &args.category {
 					target.push(format!("--category={category}"));
 				}
 			}
+
 			ExtensionSubcommand::Install(args) => {
 				for id in args.id_or_path.iter() {
 					target.push(format!("--install-extension={id}"));
 				}
+
 				if args.pre_release {
 					target.push("--pre-release".to_string());
 				}
+
 				if args.force {
 					target.push("--force".to_string());
 				}
 			}
+
 			ExtensionSubcommand::Uninstall(args) => {
 				for id in args.id.iter() {
 					target.push(format!("--uninstall-extension={id}"));
 				}
 			}
+
 			ExtensionSubcommand::Update => {
 				target.push("--update-extensions".to_string());
 			}
@@ -417,35 +430,46 @@ impl EditorOptions {
 	pub fn add_code_args(&self, target: &mut Vec<String>) {
 		if !self.diff.is_empty() {
 			target.push("--diff".to_string());
+
 			for file in self.diff.iter() {
 				target.push(file.clone());
 			}
 		}
+
 		if let Some(add) = &self.add {
 			target.push("--add".to_string());
+
 			target.push(add.clone());
 		}
+
 		if let Some(goto) = &self.goto {
 			target.push("--goto".to_string());
+
 			target.push(goto.clone());
 		}
+
 		if self.new_window {
 			target.push("--new-window".to_string());
 		}
+
 		if self.reuse_window {
 			target.push("--reuse-window".to_string());
 		}
+
 		if self.wait {
 			target.push("--wait".to_string());
 		}
+
 		if let Some(locale) = &self.locale {
 			target.push(format!("--locale={locale}"));
 		}
+
 		if !self.enable_proposed_api.is_empty() {
 			for id in self.enable_proposed_api.iter() {
 				target.push(format!("--enable-proposed-api={id}"));
 			}
 		}
+
 		self.code_options.add_code_args(target);
 	}
 }
@@ -482,6 +506,7 @@ impl DesktopCodeOptions {
 		if let Some(extensions_dir) = &self.extensions_dir {
 			target.push(format!("--extensions-dir={extensions_dir}"));
 		}
+
 		if let Some(user_data_dir) = &self.user_data_dir {
 			target.push(format!("--user-data-dir={user_data_dir}"));
 		}
@@ -521,12 +546,15 @@ impl GlobalOptions {
 		if self.verbose {
 			target.push("--verbose".to_string());
 		}
+
 		if let Some(log) = self.log {
 			target.push(format!("--log={log}"));
 		}
+
 		if self.disable_telemetry {
 			target.push("--disable-telemetry".to_string());
 		}
+
 		if let Some(telemetry_level) = &self.telemetry_level {
 			target.push(format!("--telemetry-level={telemetry_level}"));
 		}
@@ -574,24 +602,31 @@ impl EditorTroubleshooting {
 		if self.prof_startup {
 			target.push("--prof-startup".to_string());
 		}
+
 		if self.disable_extensions {
 			target.push("--disable-extensions".to_string());
 		}
+
 		for id in self.disable_extension.iter() {
 			target.push(format!("--disable-extension={id}"));
 		}
+
 		if let Some(sync) = &self.sync {
 			target.push(format!("--sync={sync}"));
 		}
+
 		if let Some(port) = &self.inspect_extensions {
 			target.push(format!("--inspect-extensions={port}"));
 		}
+
 		if let Some(port) = &self.inspect_brk_extensions {
 			target.push(format!("--inspect-brk-extensions={port}"));
 		}
+
 		if self.disable_gpu {
 			target.push("--disable-gpu".to_string());
 		}
+
 		if self.telemetry {
 			target.push("--telemetry".to_string());
 		}

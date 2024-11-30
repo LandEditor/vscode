@@ -18,7 +18,9 @@ use super::{args::UseVersionArgs, CommandContext};
 
 pub async fn switch_to(ctx: CommandContext, args: UseVersionArgs) -> Result<i32, AnyError> {
 	let platform = PreReqChecker::new().verify().await?;
+
 	let vm = CodeVersionManager::new(ctx.log.clone(), &ctx.paths, platform);
+
 	let version = RequestedVersion::try_from(args.name.as_str())?;
 
 	let maybe_path = match args.install_dir {
@@ -33,11 +35,15 @@ pub async fn switch_to(ctx: CommandContext, args: UseVersionArgs) -> Result<i32,
 	match maybe_path {
 		Some(p) => {
 			vm.set_preferred_version(version.clone(), p.clone()).await?;
+
 			print_now_using(&ctx.log, &version, &p);
+
 			Ok(0)
 		}
+
 		None => {
 			prompt_to_install(&version);
+
 			Ok(1)
 		}
 	}
@@ -45,10 +51,13 @@ pub async fn switch_to(ctx: CommandContext, args: UseVersionArgs) -> Result<i32,
 
 pub async fn show(ctx: CommandContext) -> Result<i32, AnyError> {
 	let platform = PreReqChecker::new().verify().await?;
+
 	let vm = CodeVersionManager::new(ctx.log.clone(), &ctx.paths, platform);
 
 	let version = vm.get_preferred_version();
+
 	println!("Current quality: {version}");
+
 	match vm.try_get_entrypoint(&version).await {
 		Some(p) => println!("Installation path: {}", p.display()),
 		None => println!("No existing installation found"),

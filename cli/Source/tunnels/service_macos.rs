@@ -45,6 +45,7 @@ impl ServiceManager for LaunchdService {
 		args: &[&str],
 	) -> Result<(), crate::util::errors::AnyError> {
 		let service_file = get_service_file_path()?;
+
 		write_service_file(&service_file, &self.log_file, exe, args)
 			.map_err(|e| wrap(e, "error creating service file"))?;
 
@@ -77,6 +78,7 @@ impl ServiceManager for LaunchdService {
 
 	async fn is_installed(&self) -> Result<bool, AnyError> {
 		let cmd = capture_command_and_check_status("launchctl", &["list"]).await?;
+
 		Ok(String::from_utf8_lossy(&cmd.stdout).contains(&get_service_label()))
 	}
 
@@ -87,6 +89,7 @@ impl ServiceManager for LaunchdService {
 			Ok(_) => {}
 			// status 3 == "no such process"
 			Err(CodeError::CommandFailed { code: 3, .. }) => {}
+
 			Err(e) => return Err(wrap(e, "error stopping service").into()),
 		};
 
@@ -119,8 +122,10 @@ fn get_service_file_path() -> Result<PathBuf, MissingHomeDirectory> {
 	match dirs::home_dir() {
 		Some(mut d) => {
 			d.push(format!("{}.plist", get_service_label()));
+
 			Ok(d)
 		}
+
 		None => Err(MissingHomeDirectory()),
 	}
 }
@@ -132,6 +137,7 @@ fn write_service_file(
 	args: &[&str],
 ) -> io::Result<()> {
 	let mut f = File::create(path)?;
+
 	let log_file = log_file.as_os_str().to_string_lossy();
 	// todo: we may be able to skip file logging and use the ASL instead
 	// if/when we no longer need to support older macOS versions.
@@ -164,5 +170,6 @@ fn write_service_file(
 		log_file,
 		log_file
 	)?;
+
 	Ok(())
 }

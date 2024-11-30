@@ -52,12 +52,14 @@ where
 		zip::ZipArchive::new(file).map_err(|e| wrap(e, "failed to open zip archive"))?;
 
 	let skip_segments_no = usize::from(should_skip_first_segment(&mut archive));
+
 	let report_progress_every = archive.len() / 20;
 
 	for i in 0..archive.len() {
 		if i % report_progress_every == 0 {
 			reporter.report_progress(i as u64, archive.len() as u64);
 		}
+
 		let mut file = archive
 			.by_index(i)
 			.map_err(|e| wrap(e, format!("could not open zip entry {i}")))?;
@@ -65,16 +67,21 @@ where
 		let outpath: PathBuf = match file.enclosed_name() {
 			Some(path) => {
 				let mut full_path = PathBuf::from(parent_path);
+
 				full_path.push(PathBuf::from_iter(path.iter().skip(skip_segments_no)));
+
 				full_path
 			}
+
 			None => continue,
 		};
 
 		if file.is_dir() || file.name().ends_with('/') {
 			fs::create_dir_all(&outpath)
 				.map_err(|e| wrap(e, format!("could not create dir for {}", outpath.display())))?;
+
 			apply_permissions(&file, &outpath)?;
+
 			continue;
 		}
 
@@ -86,7 +93,9 @@ where
 		#[cfg(unix)]
 		{
 			use libc::S_IFLNK;
+
 			use std::io::Read;
+
 			use std::os::unix::ffi::OsStringExt;
 
 			#[cfg(target_os = "macos")]
@@ -97,6 +106,7 @@ where
 
 			if matches!(file.unix_mode(), Some(mode) if mode & S_IFLINK_32 == S_IFLINK_32) {
 				let mut link_to = Vec::new();
+
 				file.read_to_end(&mut link_to).map_err(|e| {
 					wrap(
 						e,
@@ -105,9 +115,11 @@ where
 				})?;
 
 				let link_path = PathBuf::from(std::ffi::OsString::from_vec(link_to));
+
 				std::os::unix::fs::symlink(link_path, &outpath).map_err(|e| {
 					wrap(e, format!("could not create symlink {}", outpath.display()))
 				})?;
+
 				continue;
 			}
 		}

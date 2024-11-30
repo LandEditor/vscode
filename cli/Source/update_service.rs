@@ -73,9 +73,11 @@ impl UpdateService {
 		version: &str,
 	) -> Result<Release, AnyError> {
 		let update_endpoint = get_update_endpoint()?;
+
 		let download_segment = target
 			.download_segment(platform)
 			.ok_or_else(|| CodeError::UnsupportedPlatform(platform.to_string()))?;
+
 		let download_url = format!(
 			"{}/api/versions/{}/{}/{}",
 			update_endpoint,
@@ -95,6 +97,7 @@ impl UpdateService {
 		}
 
 		let res = response.json::<UpdateServerVersion>().await?;
+
 		debug!(self.log, "Resolved version {} to {}", version, res.version);
 
 		Ok(Release {
@@ -114,9 +117,11 @@ impl UpdateService {
 		quality: options::Quality,
 	) -> Result<Release, AnyError> {
 		let update_endpoint = get_update_endpoint()?;
+
 		let download_segment = target
 			.download_segment(platform)
 			.ok_or_else(|| CodeError::UnsupportedPlatform(platform.to_string()))?;
+
 		let download_url = format!(
 			"{}/api/latest/{}/{}",
 			update_endpoint,
@@ -135,6 +140,7 @@ impl UpdateService {
 		}
 
 		let res = response.json::<UpdateServerVersion>().await?;
+
 		debug!(self.log, "Resolved quality {} to {}", quality, res.version);
 
 		Ok(Release {
@@ -149,6 +155,7 @@ impl UpdateService {
 	/// Gets the download stream for the release.
 	pub async fn get_download_stream(&self, release: &Release) -> Result<SimpleResponse, AnyError> {
 		let update_endpoint = get_update_endpoint()?;
+
 		let download_segment = release
 			.target
 			.download_segment(release.platform)
@@ -163,6 +170,7 @@ impl UpdateService {
 		);
 
 		let response = self.client.make_request("GET", download_url).await?;
+
 		if !response.status_code.is_success() {
 			return Err(response.into_err().await.into());
 		}
@@ -236,6 +244,7 @@ impl Platform {
 			_ => None,
 		}
 	}
+
 	pub fn headless(&self) -> String {
 		match self {
 			Platform::LinuxAlpineARM64 => "server-alpine-arm64",

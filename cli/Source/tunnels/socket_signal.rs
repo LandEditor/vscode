@@ -97,18 +97,23 @@ impl ServerMessageSink {
 		body_or_end: Option<&[u8]>,
 	) -> Result<(), mpsc::error::SendError<SocketSignal>> {
 		let i = self.id;
+
 		let mut tx = self.tx.take().unwrap();
 
 		if let Some(b) = body_or_end {
 			let body = self.get_server_msg_content(b, false);
+
 			let r =
 				send_data_or_close_if_none(i, &mut tx, Some(RefServerMessageParams { i, body }))
 					.await;
+
 			self.tx = Some(tx);
+
 			return r;
 		}
 
 		let tail = self.get_server_msg_content(&[], true);
+
 		if !tail.is_empty() {
 			let _ = send_data_or_close_if_none(
 				i,
@@ -119,7 +124,9 @@ impl ServerMessageSink {
 		}
 
 		let r = send_data_or_close_if_none(i, &mut tx, None).await;
+
 		self.tx = Some(tx);
+
 		r
 	}
 
@@ -154,11 +161,13 @@ async fn send_data_or_close_if_none(
 			}))
 			.await
 		}
+
 		ServerMessageDestination::Rpc(caller) => {
 			match msg {
 				Some(msg) => caller.notify("servermsg", msg),
 				None => caller.notify("serverclose", ServerClosedParams { i }),
 			};
+
 			Ok(())
 		}
 	}
@@ -198,7 +207,9 @@ impl ClientMessageDecoder {
 
 trait FlateAlgorithm {
 	fn total_in(&self) -> u64;
+
 	fn total_out(&self) -> u64;
+
 	fn process(
 		&mut self,
 		contents: &[u8],
@@ -284,9 +295,12 @@ where
 
 	pub fn process(&mut self, contents: &[u8], finish: bool) -> std::io::Result<&[u8]> {
 		let mut out_offset = 0;
+
 		let mut in_offset = 0;
+
 		loop {
 			let in_before = self.flate.total_in();
+
 			let out_before = self.flate.total_out();
 
 			match self.flate.process(
@@ -296,27 +310,34 @@ where
 			) {
 				Ok(flate2::Status::Ok | flate2::Status::BufError) => {
 					let processed_len = in_offset + (self.flate.total_in() - in_before) as usize;
+
 					let output_len = out_offset + (self.flate.total_out() - out_before) as usize;
+
 					if processed_len < contents.len() || output_len == self.output.len() {
 						// If we filled the output buffer but there's more data to compress,
 						// or the output got filled after processing all input, extend
 						// the output buffer and keep compressing.
 						out_offset = output_len;
+
 						in_offset = processed_len;
+
 						if output_len == self.output.len() {
 							self.output.resize(self.output.len() * 2, 0);
 						}
+
 						continue;
 					}
 
 					return Ok(&self.output[..output_len]);
 				}
+
 				Ok(flate2::Status::StreamEnd) => {
 					return Err(std::io::Error::new(
 						std::io::ErrorKind::UnexpectedEof,
 						"unexpected stream end",
 					))
 				}
+
 				Err(e) => return Err(e),
 			}
 		}
@@ -326,25 +347,33 @@ where
 #[cfg(test)]
 mod tests {
 	use super::*;
+
 	use base64::{engine::general_purpose, Engine as _};
 
 	#[test]
 	fn test_round_trips_compression() {
 		let (tx, _) = mpsc::channel(1);
+
 		let mut sink = ServerMessageSink::new_compressed(
 			ServerMultiplexer::new(),
 			0,
 			ServerMessageDestination::Channel(tx),
 		);
+
 		let mut decompress = ClientMessageDecoder::new_compressed();
 
 		// 3000 and 30000 test resizing the buffer
 		for msg_len in [3, 30, 300, 3000, 30000] {
 			let vals = (0..msg_len).map(|v| v as u8).collect::<Vec<u8>>();
+
 			let compressed = sink.get_server_msg_content(&vals, false);
+
 			assert_ne!(compressed, vals);
+
 			let decompressed = decompress.decode(compressed).unwrap();
+
 			assert_eq!(decompressed.len(), vals.len());
+
 			assert_eq!(decompressed, vals);
 		}
 	}
@@ -359,12 +388,16 @@ mod tests {
 	#[test]
 	fn test_flatestream_decodes_191501() {
 		let mut dec = ClientMessageDecoder::new_compressed();
+
 		let mut len = 0;
+
 		for b in TEST_191501_BUFS {
 			let b = general_purpose::STANDARD
 				.decode(b)
 				.expect("expected no decode error");
+
 			let s = dec.decode(&b).expect("expected no decompress error");
+
 			len += s.len();
 		}
 

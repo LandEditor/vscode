@@ -15,7 +15,9 @@ pub fn os_release() -> Result<String, std::io::Error> {
 		.open_subkey(r"SOFTWARE\Microsoft\Windows NT\CurrentVersion")?;
 
 	let major: u32 = key.get_value("CurrentMajorVersionNumber")?;
+
 	let minor: u32 = key.get_value("CurrentMinorVersionNumber")?;
+
 	let build: String = key.get_value("CurrentBuild")?;
 
 	Ok(format!("{}.{}.{}", major, minor, build))
@@ -33,7 +35,9 @@ pub fn os_release() -> Result<String, std::io::Error> {
 		}
 
 		let ret = ret.assume_init();
+
 		let c_str: &CStr = CStr::from_ptr(ret.release.as_ptr());
+
 		Ok(c_str.to_string_lossy().into_owned())
 	}
 }

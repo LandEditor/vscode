@@ -43,9 +43,11 @@ impl RequestedVersion {
 			RequestedVersion::Default => {
 				format!("code version use {QUALITY}")
 			}
+
 			RequestedVersion::Commit(commit) => {
 				format!("code version use {QUALITY}/{commit}")
 			}
+
 			RequestedVersion::Path(path) => {
 				format!("code version use {path}")
 			}
@@ -59,9 +61,11 @@ impl std::fmt::Display for RequestedVersion {
 			RequestedVersion::Default => {
 				write!(f, "{QUALITY}")
 			}
+
 			RequestedVersion::Commit(commit) => {
 				write!(f, "{QUALITY}/{commit}")
 			}
+
 			RequestedVersion::Path(path) => write!(f, "{path}"),
 		}
 	}
@@ -128,7 +132,9 @@ impl CodeVersionManager {
 		// Look for all the possible paths in parallel
 		for entry in DESKTOP_CLI_RELATIVE_PATH.split(',') {
 			let my_path = path.join(entry);
+
 			let my_tx = tx.clone();
+
 			tokio::spawn(async move {
 				if tokio::fs::metadata(&my_path).await.is_ok() {
 					my_tx.send(my_path).await.ok();
@@ -148,8 +154,11 @@ impl CodeVersionManager {
 		path: PathBuf,
 	) -> Result<(), AnyError> {
 		let mut stored = self.state.load();
+
 		stored.current = self.store_version_path(&mut stored, version, path);
+
 		self.state.save(stored)?;
+
 		Ok(())
 	}
 
@@ -163,11 +172,13 @@ impl CodeVersionManager {
 	) -> usize {
 		if let Some(i) = state.versions.iter().position(|(v, _)| v == &version) {
 			state.versions[i].1 = path.into_os_string();
+
 			i
 		} else {
 			state
 				.versions
 				.push((version.clone(), path.into_os_string()));
+
 			state.versions.len() - 1
 		}
 	}
@@ -175,6 +186,7 @@ impl CodeVersionManager {
 	/// Gets the currently preferred version based on set_preferred_version.
 	pub fn get_preferred_version(&self) -> RequestedVersion {
 		let stored = self.state.load();
+
 		stored
 			.versions
 			.get(stored.current)
@@ -185,8 +197,10 @@ impl CodeVersionManager {
 	/// Tries to get the entrypoint for the version, if one can be found.
 	pub async fn try_get_entrypoint(&self, version: &RequestedVersion) -> Option<PathBuf> {
 		let mut state = self.state.load();
+
 		if let Some((_, install_path)) = state.versions.iter().find(|(v, _)| v == version) {
 			let p = PathBuf::from(install_path);
+
 			if p.exists() {
 				return Some(p);
 			}
@@ -198,6 +212,7 @@ impl CodeVersionManager {
 				Ok(p) => p,
 				Err(e) => {
 					warning!(self.log, "error looking up installed applications: {}", e);
+
 					return None;
 				}
 			},
@@ -211,6 +226,7 @@ impl CodeVersionManager {
 
 		// stash the found path for faster lookup
 		self.store_version_path(&mut state, version.clone(), found.clone());
+
 		if let Err(e) = self.state.save(state) {
 			debug!(self.log, "error caching version path: {}", e);
 		}
@@ -238,6 +254,7 @@ pub fn prompt_to_install(version: &RequestedVersion) {
 	}
 
 	println!();
+
 	println!("If you already installed {} and we didn't detect it, run `{} --install-dir /path/to/installation`", QUALITYLESS_PRODUCT_NAME, version.get_command());
 }
 
@@ -247,9 +264,12 @@ fn detect_installed_program(log: &log::Logger) -> io::Result<Vec<PathBuf>> {
 
 	// easy, fast detection for where apps are usually installed
 	let mut probable = PathBuf::from("/Applications");
+
 	probable.push(format!("{}.app", PRODUCT_NAME_LONG));
+
 	if probable.exists() {
 		probable.extend(["Contents/Resources", "app", "bin", "code"]);
+
 		return Ok(vec![probable]);
 	}
 
@@ -281,16 +301,21 @@ fn detect_installed_program(log: &log::Logger) -> io::Result<Vec<PathBuf>> {
 	}
 
 	let mut state = State::LookingForName;
+
 	let mut output: Vec<PathBuf> = vec![];
+
 	const LOCATION_PREFIX: &str = "Location:";
+
 	for mut line in String::from_utf8_lossy(&stdout).lines() {
 		line = line.trim();
+
 		match state {
 			State::LookingForName => {
 				if line.starts_with(PRODUCT_NAME_LONG) && line.ends_with(':') {
 					state = State::LookingForLocation;
 				}
 			}
+
 			State::LookingForLocation => {
 				if let Some(suffix) = line.strip_prefix(LOCATION_PREFIX) {
 					output.push(
@@ -298,6 +323,7 @@ fn detect_installed_program(log: &log::Logger) -> io::Result<Vec<PathBuf>> {
 							.iter()
 							.collect(),
 					);
+
 					state = State::LookingForName;
 				}
 			}
@@ -314,10 +340,13 @@ fn detect_installed_program(log: &log::Logger) -> io::Result<Vec<PathBuf>> {
 #[cfg(windows)]
 fn detect_installed_program(_log: &log::Logger) -> io::Result<Vec<PathBuf>> {
 	use crate::constants::{APPLICATION_NAME, WIN32_APP_IDS};
+
 	use winreg::enums::{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE};
+
 	use winreg::RegKey;
 
 	let mut output: Vec<PathBuf> = vec![];
+
 	let app_ids = match WIN32_APP_IDS.as_ref() {
 		Some(ids) => ids,
 		None => return Ok(output),
@@ -347,6 +376,7 @@ fn detect_installed_program(_log: &log::Logger) -> io::Result<Vec<PathBuf>> {
 		for key in cur_ver.enum_keys().flatten() {
 			if app_ids.iter().any(|id| key.contains(id)) {
 				let sk = cur_ver.open_subkey(&key)?;
+
 				if let Ok(location) = sk.get_value::<String, _>("InstallLocation") {
 					output.push(
 						[
@@ -375,17 +405,22 @@ fn detect_installed_program(log: &log::Logger) -> io::Result<Vec<PathBuf>> {
 		Ok(p) => p,
 		Err(e) => {
 			info!(log, "PATH is empty ({}), skipping detection", e);
+
 			return Ok(vec![]);
 		}
 	};
 
 	let current_exe = std::env::current_exe().expect("expected to read current exe");
+
 	let mut output = vec![];
+
 	for dir in path.split(':') {
 		let target: PathBuf = [dir, APPLICATION_NAME].iter().collect();
+
 		match std::fs::canonicalize(&target) {
 			Ok(m) if m == current_exe => continue,
 			Ok(_) => {}
+
 			Err(_) => continue,
 		};
 
@@ -422,11 +457,13 @@ mod tests {
 			.expect("expected exe path");
 
 		let binary_file_path = path.join(bin);
+
 		let parent_dir_path = binary_file_path.parent().expect("expected parent path");
 
 		create_dir_all(parent_dir_path).expect("expected to create parent dir");
 
 		let mut binary_file = File::create(binary_file_path).expect("expected to make file");
+
 		binary_file
 			.write_all(b"")
 			.expect("expected to write binary");
@@ -434,8 +471,11 @@ mod tests {
 
 	fn make_multiple_vscode_install() -> tempfile::TempDir {
 		let dir = tempfile::tempdir().expect("expected to make temp dir");
+
 		make_fake_vscode_install(&dir.path().join("desktop/stable"));
+
 		make_fake_vscode_install(&dir.path().join("desktop/1.68.2"));
+
 		dir
 	}
 
@@ -444,23 +484,29 @@ mod tests {
 		// developers can run this test and debug output manually; VS Code will not
 		// be installed in CI, so the test only makes sure it doesn't error out
 		let result = detect_installed_program(&log::Logger::test());
+
 		println!("result: {result:?}");
+
 		assert!(result.is_ok());
 	}
 
 	#[tokio::test]
 	async fn test_set_preferred_version() {
 		let dir = make_multiple_vscode_install();
+
 		let lp = LauncherPaths::new_without_replacements(dir.path().to_owned());
+
 		let vm1 = CodeVersionManager::new(log::Logger::test(), &lp, Platform::LinuxARM64);
 
 		assert_eq!(vm1.get_preferred_version(), RequestedVersion::Default);
+
 		vm1.set_preferred_version(
 			RequestedVersion::Commit("foobar".to_string()),
 			dir.path().join("desktop/stable"),
 		)
 		.await
 		.expect("expected to store");
+
 		vm1.set_preferred_version(
 			RequestedVersion::Commit("foobar2".to_string()),
 			dir.path().join("desktop/stable"),
@@ -474,6 +520,7 @@ mod tests {
 		);
 
 		let vm2 = CodeVersionManager::new(log::Logger::test(), &lp, Platform::LinuxARM64);
+
 		assert_eq!(
 			vm2.get_preferred_version(),
 			RequestedVersion::Commit("foobar2".to_string()),
@@ -504,23 +551,29 @@ mod tests {
 		#[cfg(windows)]
 		let binary_file_path = {
 			let path = dir.path().join("code.cmd");
+
 			File::create(&path).expect("expected to create file");
+
 			path
 		};
 
 		#[cfg(unix)]
 		let binary_file_path = {
 			use std::fs;
+
 			use std::os::unix::fs::PermissionsExt;
 
 			let path = dir.path().join("code");
 			{
 				let mut f = File::create(&path).expect("expected to create file");
+
 				f.write_all(b"#!/bin/sh")
 					.expect("expected to write to file");
 			}
+
 			fs::set_permissions(&path, fs::Permissions::from_mode(0o777))
 				.expect("expected to set permissions");
+
 			path
 		};
 

@@ -25,6 +25,7 @@ use opentelemetry::trace::TracerProvider;
 #[tokio::main]
 async fn main() -> Result<(), std::convert::Infallible> {
 	let raw_args = std::env::args_os().collect::<Vec<_>>();
+
 	let parsed = try_parse_legacy(&raw_args)
 		.map(|core| args::AnyCli::Integrated(args::IntegratedCli { core }))
 		.unwrap_or_else(|| {
@@ -36,7 +37,9 @@ async fn main() -> Result<(), std::convert::Infallible> {
 		});
 
 	let core = parsed.core();
+
 	let context_paths = LauncherPaths::migrate(core.global_options.cli_data_dir.clone()).unwrap();
+
 	let context_args = core.clone();
 
 	// gets a command context without installing the global logger
@@ -54,7 +57,9 @@ async fn main() -> Result<(), std::convert::Infallible> {
 	macro_rules! context {
 		() => {{
 			let context = context_no_logger();
+
 			log::install_global_logger(context.log.clone());
+
 			context
 		}};
 	}
@@ -70,21 +75,29 @@ async fn main() -> Result<(), std::convert::Infallible> {
 		| args::AnyCli::Integrated(args::IntegratedCli { core: c, .. }) => match c.subcommand {
 			None => {
 				let context = context!();
+
 				let ca = context.args.get_base_code_args();
+
 				start_code(context, ca).await
 			}
 
 			Some(args::Commands::Extension(extension_args)) => {
 				let context = context!();
+
 				let mut ca = context.args.get_base_code_args();
+
 				extension_args.add_code_args(&mut ca);
+
 				start_code(context, ca).await
 			}
 
 			Some(args::Commands::Status) => {
 				let context = context!();
+
 				let mut ca = context.args.get_base_code_args();
+
 				ca.push("--status".to_string());
+
 				start_code(context, ca).await
 			}
 
@@ -92,6 +105,7 @@ async fn main() -> Result<(), std::convert::Infallible> {
 				args::VersionSubcommand::Use(use_version_args) => {
 					version::switch_to(context!(), use_version_args).await
 				}
+
 				args::VersionSubcommand::Show => version::show(context!()).await,
 			},
 
@@ -112,15 +126,19 @@ async fn main() -> Result<(), std::convert::Infallible> {
 				Some(args::TunnelSubcommand::Rename(rename_args)) => {
 					tunnels::rename(context!(), rename_args).await
 				}
+
 				Some(args::TunnelSubcommand::User(user_command)) => {
 					tunnels::user(context!(), user_command).await
 				}
+
 				Some(args::TunnelSubcommand::Service(service_args)) => {
 					tunnels::service(context_no_logger(), service_args).await
 				}
+
 				Some(args::TunnelSubcommand::ForwardInternal(forward_args)) => {
 					tunnels::forward(context_no_logger(), forward_args).await
 				}
+
 				None => tunnels::serve(context_no_logger(), tunnel_args.serve_args).await,
 			},
 		},
@@ -140,7 +158,9 @@ fn make_logger(core: &args::CliCore) -> log::Logger {
 	};
 
 	let tracer = SdkTracerProvider::builder().build().tracer("codecli");
+
 	let mut log = log::Logger::new(tracer, log_level);
+
 	if let Some(f) = &core.global_options.log_to_file {
 		log = log
 			.with_sink(log::FileLogSink::new(log_level, f).expect("expected to make file logger"))
@@ -154,6 +174,7 @@ where
 	E: std::fmt::Display,
 {
 	log::emit(log::Level::Error, "", &format!("{err}"));
+
 	std::process::exit(1);
 }
 
@@ -162,8 +183,10 @@ async fn start_code(context: CommandContext, args: Vec<String>) -> Result<i32, A
 	// redirect to the current installation without using the CodeVersionManager.
 
 	let platform = PreReqChecker::new().verify().await?;
+
 	let version_manager =
 		desktop::CodeVersionManager::new(context.log.clone(), &context.paths, platform);
+
 	let version = match &context.args.editor_options.code_options.use_version {
 		Some(v) => desktop::RequestedVersion::try_from(v.as_str())?,
 		None => version_manager.get_preferred_version(),
@@ -173,6 +196,7 @@ async fn start_code(context: CommandContext, args: Vec<String>) -> Result<i32, A
 		Some(ep) => ep,
 		None => {
 			desktop::prompt_to_install(&version);
+
 			return Ok(1);
 		}
 	};

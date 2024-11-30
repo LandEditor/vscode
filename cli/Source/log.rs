@@ -124,6 +124,7 @@ where
 
 pub trait LogSink: LogSinkClone + Sync + Send {
 	fn write_log(&self, level: Level, prefix: &str, message: &str);
+
 	fn write_result(&self, message: &str);
 }
 
@@ -223,6 +224,7 @@ impl Logger {
 
 	pub fn emit(&self, level: Level, message: &str) {
 		let prefix = self.prefix.as_deref().unwrap_or("");
+
 		for sink in &self.sink {
 			sink.write_log(level, prefix, message);
 		}
@@ -250,6 +252,7 @@ impl Logger {
 		T: LogSink + 'static,
 	{
 		let mut new_sinks = self.sink.clone();
+
 		new_sinks.push(Box::new(sink));
 
 		Logger {
@@ -306,6 +309,7 @@ impl<'a> crate::util::io::ReportCopyProgress for DownloadLogger<'a> {
 
 fn format(level: Level, prefix: &str, message: &str, use_colors: bool) -> String {
 	let current = Local::now();
+
 	let timestamp = current.format("%Y-%m-%d %H:%M:%S").to_string();
 
 	let name = level.name().unwrap();
@@ -321,6 +325,7 @@ fn format(level: Level, prefix: &str, message: &str, use_colors: bool) -> String
 
 pub fn emit(level: Level, prefix: &str, message: &str) {
 	let line = format(level, prefix, message, *COLORS_ENABLED);
+
 	if level == Level::Trace && *COLORS_ENABLED {
 		print!("\x1b[2m{line}\x1b[0m");
 	} else {
@@ -428,8 +433,11 @@ macro_rules! span {
 		use opentelemetry::trace::TraceContextExt;
 
 		let span = $span.start($logger.tracer());
+
 		let cx = opentelemetry::Context::current_with_span(span);
+
 		let guard = cx.clone().attach();
+
 		let t = $func;
 
 		if let Err(e) = &t {
@@ -448,7 +456,9 @@ macro_rules! spanf {
 		use opentelemetry::trace::{FutureExt, TraceContextExt};
 
 		let span = $span.start($logger.tracer());
+
 		let cx = opentelemetry::Context::current_with_span(span);
+
 		let t = $func.with_context(cx.clone()).await;
 
 		if let Err(e) = &t {

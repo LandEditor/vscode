@@ -52,12 +52,16 @@ impl CliServiceManager for WindowsService {
 		let key = WindowsService::open_key()?;
 
 		let mut reg_str = String::new();
+
 		let mut cmd = new_std_command(&exe);
+
 		reg_str.push_str(shell_escape(exe.to_string_lossy()).as_ref());
 
 		let mut add_arg = |arg: &str| {
 			reg_str.push(' ');
+
 			reg_str.push_str(shell_escape((*arg).into()).as_ref());
+
 			cmd.arg(arg);
 		};
 
@@ -66,6 +70,7 @@ impl CliServiceManager for WindowsService {
 		}
 
 		add_arg("--log-to-file");
+
 		add_arg(self.log_file.to_string_lossy().as_ref());
 
 		key.set_value(TUNNEL_ACTIVITY_NAME, &reg_str)
@@ -74,13 +79,18 @@ impl CliServiceManager for WindowsService {
 		info!(self.log, "Successfully registered service...");
 
 		cmd.stderr(Stdio::null());
+
 		cmd.stdout(Stdio::null());
+
 		cmd.stdin(Stdio::null());
+
 		cmd.creation_flags(CREATE_NEW_PROCESS_GROUP | DETACHED_PROCESS);
+
 		cmd.spawn()
 			.map_err(|e| wrapdbg(e, "error starting service"))?;
 
 		info!(self.log, "Tunnel service successfully started");
+
 		Ok(())
 	}
 
@@ -115,14 +125,18 @@ impl CliServiceManager for WindowsService {
 
 	async fn is_installed(&self) -> Result<bool, AnyError> {
 		let key = WindowsService::open_key()?;
+
 		Ok(key.get_raw_value(TUNNEL_ACTIVITY_NAME).is_ok())
 	}
 
 	async fn unregister(&self) -> Result<(), AnyError> {
 		let key = WindowsService::open_key()?;
+
 		match key.delete_value(TUNNEL_ACTIVITY_NAME) {
 			Ok(_) => {}
+
 			Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+
 			Err(e) => return Err(wrap(e, "error deleting registry key").into()),
 		}
 

@@ -100,11 +100,14 @@ struct PortForwardingSender {
 impl PortForwardingSender {
 	pub fn set_ports(&self, ports: PortList) {
 		let mut current = self.current.lock().unwrap();
+
 		self.sender.lock().unwrap().send_modify(|v| {
 			for p in current.iter() {
 				if !ports.contains(p) {
 					let n = v.get_mut(&p.number).expect("expected port in map");
+
 					n.count[p.privacy] -= 1;
+
 					if n.count.is_empty() {
 						v.remove(&p.number);
 					}
@@ -116,11 +119,15 @@ impl PortForwardingSender {
 					match v.get_mut(&p.number) {
 						Some(n) => {
 							n.count[p.privacy] += 1;
+
 							n.protocol = p.protocol;
 						}
+
 						None => {
 							let mut count = PortCount::default();
+
 							count[p.privacy] += 1;
+
 							v.insert(
 								p.number,
 								PortMapRec {
@@ -160,6 +167,7 @@ struct PortForwardingReceiver {
 impl PortForwardingReceiver {
 	pub fn new() -> (PortForwardingSender, Self) {
 		let (sender, receiver) = watch::channel(HashMap::new());
+
 		let handle = PortForwardingSender {
 			current: Mutex::new(vec![]),
 			sender: Arc::new(Mutex::new(sender)),
@@ -173,11 +181,13 @@ impl PortForwardingReceiver {
 	/// Applies all changes from PortForwardingHandles to the tunnel.
 	pub async fn apply_to(&mut self, log: log::Logger, tunnel: Arc<ActiveTunnel>) {
 		let mut current: PortMap = HashMap::new();
+
 		while self.receiver.changed().await.is_ok() {
 			let next = self.receiver.borrow().clone();
 
 			for (port, rec) in current.iter() {
 				let privacy = rec.count.primary_privacy();
+
 				if !matches!(next.get(port), Some(n) if n.count.primary_privacy() == privacy) {
 					match tunnel.remove_port(*port).await {
 						Ok(_) => info!(
@@ -194,6 +204,7 @@ impl PortForwardingReceiver {
 
 			for (port, rec) in next.iter() {
 				let privacy = rec.count.primary_privacy();
+
 				if !matches!(current.get(port), Some(n) if n.count.primary_privacy() == privacy) {
 					match tunnel.add_port_tcp(*port, privacy, rec.protocol).await {
 						Ok(_) => info!(
@@ -230,7 +241,9 @@ struct SingletonServerContext {
 /// Serves a client singleton for port forwarding.
 pub async fn client(args: SingletonClientArgs) -> Result<(), std::io::Error> {
 	let mut rpc = new_json_rpc();
+
 	let (msg_tx, msg_rx) = mpsc::unbounded_channel();
+
 	let SingletonClientArgs {
 		log,
 		shutdown,
@@ -244,13 +257,17 @@ pub async fn client(args: SingletonClientArgs) -> Result<(), std::io::Error> {
 	);
 
 	let caller = rpc.get_caller(msg_tx);
+
 	let rpc = rpc.methods(()).build(log.clone());
+
 	let (read, write) = socket_stream_split(stream);
 
 	let serve = start_json_rpc(rpc, read, write, msg_rx, shutdown);
+
 	let forward = async move {
 		while port_requests.changed().await.is_ok() {
 			let ports = port_requests.borrow().clone();
+
 			let r = caller
 				.call::<_, _, protocol::forward_singleton::SetPortsResponse>(
 					protocol::forward_singleton::METHOD_SET_PORTS,
@@ -281,13 +298,17 @@ pub async fn server(
 	shutdown_rx: Barrier<ShutdownSignal>,
 ) -> Result<(), CodeError> {
 	let tunnel = Arc::new(tunnel);
+
 	let (forward_tx, mut forward_rx) = PortForwardingReceiver::new();
 
 	let forward_own_tunnel = tunnel.clone();
+
 	let forward_own_tx = forward_tx.clone();
+
 	let forward_own = async move {
 		while port_requests.changed().await.is_ok() {
 			forward_own_tx.set_ports(port_requests.borrow().clone());
+
 			print_forwarding_addr(&SetPortsResponse {
 				port_format: forward_own_tunnel.get_port_format().ok(),
 			});
@@ -309,7 +330,9 @@ async fn serve_singleton_rpc(
 	shutdown_rx: Barrier<ShutdownSignal>,
 ) -> Result<(), CodeError> {
 	let mut own_shutdown = shutdown_rx.clone();
+
 	let shutdown_fut = own_shutdown.wait();
+
 	pin!(shutdown_fut);
 
 	loop {
@@ -319,15 +342,20 @@ async fn serve_singleton_rpc(
 		};
 
 		let (read, write) = socket_stream_split(cnx);
+
 		let shutdown_rx = shutdown_rx.clone();
 
 		let handle = forward_tx.clone();
+
 		let log = log.clone();
+
 		let tunnel = tunnel.clone();
+
 		tokio::spawn(async move {
 			// we make an rpc for the connection instead of re-using a dispatcher
 			// so that we can have the "handle" drop when the connection drops.
 			let rpc = new_json_rpc();
+
 			let mut rpc = rpc.methods(SingletonServerContext {
 				log: log.clone(),
 				handle,
@@ -338,7 +366,9 @@ async fn serve_singleton_rpc(
 				protocol::forward_singleton::METHOD_SET_PORTS,
 				|p: protocol::forward_singleton::SetPortsParams, ctx| {
 					info!(ctx.log, "client setting ports to {:?}", p.ports);
+
 					ctx.handle.set_ports(p.ports);
+
 					Ok(SetPortsResponse {
 						port_format: ctx.tunnel.get_port_format().ok(),
 					})

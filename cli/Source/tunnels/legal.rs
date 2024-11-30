@@ -39,6 +39,7 @@ pub fn require_consent(
 		PersistedState::new(paths.root().join("license_consent.json"));
 
 	let mut load = license.load();
+
 	if let Some(true) = load.consented {
 		return Ok(());
 	}
@@ -52,11 +53,13 @@ pub fn require_consent(
 			Ok(true) => {
 				load.consented = Some(true);
 			}
+
 			Ok(false) => return Err(CodeError::DeniedLegalConset.into()),
 			Err(_) => return Err(CodeError::NeedsInteractiveLegalConsent.into()),
 		}
 	}
 
 	license.save(load)?;
+
 	Ok(())
 }

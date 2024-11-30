@@ -74,6 +74,7 @@ impl SimpleResponse {
 impl SimpleResponse {
 	pub fn generic_error(url: &str) -> Self {
 		let (_, rx) = mpsc::unbounded_channel();
+
 		SimpleResponse {
 			url: url::Url::parse(url).ok(),
 			status_code: StatusCode::INTERNAL_SERVER_ERROR,
@@ -85,6 +86,7 @@ impl SimpleResponse {
 	/// Converts the response into a StatusError
 	pub async fn into_err(mut self) -> StatusError {
 		let mut body = String::new();
+
 		self.read.read_to_string(&mut body).await.ok();
 
 		StatusError {
@@ -251,7 +253,9 @@ impl SimpleHttp for DelegatedSimpleHttp {
 		url: String,
 	) -> Result<SimpleResponse, AnyError> {
 		trace!(self.log, "making delegated request to {}", url);
+
 		let (tx, mut rx) = mpsc::unbounded_channel();
+
 		let sent = self
 			.start_request
 			.send(DelegatedHttpRequest {
@@ -276,7 +280,9 @@ impl SimpleHttp for DelegatedSimpleHttp {
 					url,
 					status_code
 				);
+
 				let mut headers_map = HeaderMap::with_capacity(headers.len());
+
 				for (k, v) in &headers {
 					if let (Ok(key), Ok(value)) = (
 						HeaderName::from_str(&k.to_lowercase()),
@@ -294,6 +300,7 @@ impl SimpleHttp for DelegatedSimpleHttp {
 					read: Box::pin(DelegatedReader::new(rx)),
 				})
 			}
+
 			Some(DelegatedHttpEvent::End) => Ok(SimpleResponse::generic_error(&url)),
 			Some(_) => panic!("expected initresponse as first message from delegated http"),
 			None => Ok(SimpleResponse::generic_error(&url)), // sender shut down
@@ -331,6 +338,7 @@ impl AsyncRead for DelegatedReader {
 			Poll::Ready(None) => {
 				Poll::Ready(Err(io::Error::new(io::ErrorKind::UnexpectedEof, "EOF")))
 			}
+
 			Poll::Pending => Poll::Pending,
 		}
 	}
@@ -365,6 +373,7 @@ impl SimpleHttp for FallbackSimpleHttp {
 		url: String,
 	) -> Result<SimpleResponse, AnyError> {
 		let r1 = self.native.make_request(method, url.clone()).await;
+
 		if let Ok(res) = r1 {
 			if !res.status_code.is_server_error() {
 				return Ok(res);

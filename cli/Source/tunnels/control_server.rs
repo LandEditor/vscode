@@ -118,6 +118,7 @@ pub fn next_message_id() -> u32 {
 impl HandlerContext {
 	async fn dispose(&self) {
 		self.server_bridges.dispose().await;
+
 		info!(self.log, "Disposed of connection to running server.");
 	}
 }
@@ -163,10 +164,13 @@ async fn preload_extensions(
 
 	// cannot use delegated HTTP here since there's no remote connection yet
 	let http = Arc::new(ReqwestSimpleHttp::new());
+
 	let resolved = params_raw.resolve(log, http.clone()).await?;
+
 	let sb = ServerBuilder::new(log, &resolved, &launcher_paths, http.clone());
 
 	sb.setup().await?;
+
 	sb.install_extensions().await
 }
 
@@ -182,8 +186,11 @@ pub async fn serve(
 	mut shutdown_rx: Barrier<ShutdownSignal>,
 ) -> Result<ServerTermination, AnyError> {
 	let mut port = tunnel.add_port_direct(CONTROL_PORT).await?;
+
 	let mut forwarding = PortForwardingProcessor::new();
+
 	let (tx, mut rx) = mpsc::channel::<ServerSignal>(4);
+
 	let (exit_barrier, signal_exit) = new_barrier();
 
 	if !code_server_args.install_extensions.is_empty() {
@@ -191,8 +198,11 @@ pub async fn serve(
 			log,
 			"Preloading extensions using stable server: {:?}", code_server_args.install_extensions
 		);
+
 		let log = log.clone();
+
 		let code_server_args = code_server_args.clone();
+
 		let launcher_paths = launcher_paths.clone();
 		// This is run async to the primary tunnel setup to be speedy.
 		tokio::spawn(async move {
@@ -210,7 +220,9 @@ pub async fn serve(
 		tokio::select! {
 			Ok(reason) = shutdown_rx.wait() => {
 				info!(log, "Shutting down: {}", reason);
+
 				drop(signal_exit);
+
 				return Ok(ServerTermination {
 					next: match reason {
 						ShutdownSignal::RpcRestartRequested => Next::Restart,
@@ -222,6 +234,7 @@ pub async fn serve(
 			c = rx.recv() => {
 				if let Some(ServerSignal::Respawn) = c {
 					drop(signal_exit);
+
 					return Ok(ServerTermination {
 						next: Next::Respawn,
 						tunnel,
@@ -236,6 +249,7 @@ pub async fn serve(
 					Some(p) => p,
 					None => {
 						warning!(log, "ssh tunnel disposed, tearing down");
+
 						return Ok(ServerTermination {
 							next: Next::Restart,
 							tunnel,
@@ -244,22 +258,30 @@ pub async fn serve(
 				};
 
 				let own_log = log.prefixed(&log::new_rpc_prefix());
+
 				let own_tx = tx.clone();
+
 				let own_paths = launcher_paths.clone();
+
 				let own_exit = exit_barrier.clone();
+
 				let own_code_server_args = code_server_args.clone();
+
 				let own_forwarding = forwarding.handle();
 
 				tokio::spawn(async move {
 					use opentelemetry::trace::{FutureExt, TraceContextExt};
 
 					let span = own_log.span("server.socket").with_kind(SpanKind::Consumer).start(own_log.tracer());
+
 					let cx = opentelemetry::Context::current_with_span(span);
+
 					let serve_at = Instant::now();
 
 					debug!(own_log, "Serving new connection");
 
 					let (writehalf, readhalf) = socket.into_split();
+
 					let stats = process_socket(readhalf, writehalf, own_tx, Some(own_forwarding), ServeStreamParams {
 						log: own_log,
 						launcher_paths: own_paths,
@@ -277,6 +299,7 @@ pub async fn serve(
 							KeyValue::new("duration_ms", serve_at.elapsed().as_millis() as f64),
 						],
 					);
+
 					cx.span().end();
 				});
 			}
@@ -309,6 +332,7 @@ pub async fn serve_stream(
 	// Currently the only server signal is respawn, that doesn't have much meaning
 	// when serving a stream, so make an ignored channel.
 	let (server_rx, server_tx) = mpsc::channel(1);
+
 	drop(server_tx);
 
 	process_socket(readhalf, writehalf, server_rx, None, params).await
@@ -332,6 +356,7 @@ fn make_socket_rpc(
 	http_requests: HttpRequestsMap,
 ) -> RpcDispatcher<MsgPackSerializer, HandlerContext> {
 	let server_bridges = ServerMultiplexer::new();
+
 	let mut rpc = RpcBuilder::new(MsgPackSerializer {}).methods(HandlerContext {
 		did_update: Arc::new(AtomicBool::new(false)),
 		auth_state: Arc::new(std::sync::Mutex::new(match requires_auth {
@@ -355,105 +380,146 @@ fn make_socket_rpc(
 	});
 
 	rpc.register_sync("ping", |_: EmptyObject, _| Ok(EmptyObject {}));
+
 	rpc.register_sync("gethostname", |_: EmptyObject, _| handle_get_hostname());
+
 	rpc.register_sync("sys_kill", |p: SysKillRequest, c| {
 		ensure_auth(&c.auth_state)?;
+
 		handle_sys_kill(p.pid)
 	});
+
 	rpc.register_sync("fs_stat", |p: FsSinglePathRequest, c| {
 		ensure_auth(&c.auth_state)?;
+
 		handle_stat(p.path)
 	});
+
 	rpc.register_duplex(
 		"fs_read",
 		1,
 		move |mut streams, p: FsSinglePathRequest, c| async move {
 			ensure_auth(&c.auth_state)?;
+
 			handle_fs_read(streams.remove(0), p.path).await
 		},
 	);
+
 	rpc.register_duplex(
 		"fs_write",
 		1,
 		move |mut streams, p: FsSinglePathRequest, c| async move {
 			ensure_auth(&c.auth_state)?;
+
 			handle_fs_write(streams.remove(0), p.path).await
 		},
 	);
+
 	rpc.register_duplex(
 		"fs_connect",
 		1,
 		move |mut streams, p: FsSinglePathRequest, c| async move {
 			ensure_auth(&c.auth_state)?;
+
 			handle_fs_connect(streams.remove(0), p.path).await
 		},
 	);
+
 	rpc.register_duplex(
 		"net_connect",
 		1,
 		move |mut streams, n: NetConnectRequest, c| async move {
 			ensure_auth(&c.auth_state)?;
+
 			handle_net_connect(streams.remove(0), n).await
 		},
 	);
+
 	rpc.register_async("fs_rm", move |p: FsSinglePathRequest, c| async move {
 		ensure_auth(&c.auth_state)?;
+
 		handle_fs_remove(p.path).await
 	});
+
 	rpc.register_sync("fs_mkdirp", |p: FsSinglePathRequest, c| {
 		ensure_auth(&c.auth_state)?;
+
 		handle_fs_mkdirp(p.path)
 	});
+
 	rpc.register_sync("fs_rename", |p: FsRenameRequest, c| {
 		ensure_auth(&c.auth_state)?;
+
 		handle_fs_rename(p.from_path, p.to_path)
 	});
+
 	rpc.register_sync("fs_readdir", |p: FsSinglePathRequest, c| {
 		ensure_auth(&c.auth_state)?;
+
 		handle_fs_readdir(p.path)
 	});
+
 	rpc.register_sync("get_env", |_: EmptyObject, c| {
 		ensure_auth(&c.auth_state)?;
+
 		handle_get_env()
 	});
+
 	rpc.register_sync(METHOD_CHALLENGE_ISSUE, |p: ChallengeIssueParams, c| {
 		handle_challenge_issue(p, &c.auth_state)
 	});
+
 	rpc.register_sync(METHOD_CHALLENGE_VERIFY, |p: ChallengeVerifyParams, c| {
 		handle_challenge_verify(p.response, &c.auth_state)
 	});
+
 	rpc.register_async("serve", move |params: ServeParams, c| async move {
 		ensure_auth(&c.auth_state)?;
+
 		handle_serve(c, params).await
 	});
+
 	rpc.register_async("update", |p: UpdateParams, c| async move {
 		handle_update(&c.http, &c.log, &c.did_update, &p).await
 	});
+
 	rpc.register_sync("servermsg", |m: ServerMessageParams, c| {
 		if let Err(e) = handle_server_message(&c.log, &c.server_bridges, m) {
 			warning!(c.log, "error handling call: {:?}", e);
 		}
+
 		Ok(EmptyObject {})
 	});
+
 	rpc.register_sync("prune", |_: EmptyObject, c| handle_prune(&c.launcher_paths));
+
 	rpc.register_async("callserverhttp", |p: CallServerHttpParams, c| async move {
 		let code_server = c.code_server.lock().await.clone();
+
 		handle_call_server_http(code_server, p).await
 	});
+
 	rpc.register_async("forward", |p: ForwardParams, c| async move {
 		ensure_auth(&c.auth_state)?;
+
 		handle_forward(&c.log, &c.port_forwarding, p).await
 	});
+
 	rpc.register_async("unforward", |p: UnforwardParams, c| async move {
 		ensure_auth(&c.auth_state)?;
+
 		handle_unforward(&c.log, &c.port_forwarding, p).await
 	});
+
 	rpc.register_async("acquire_cli", |p: AcquireCliParams, c| async move {
 		ensure_auth(&c.auth_state)?;
+
 		handle_acquire_cli(&c.launcher_paths, &c.http, &c.log, p).await
 	});
+
 	rpc.register_duplex("spawn", 3, |mut streams, p: SpawnParams, c| async move {
 		ensure_auth(&c.auth_state)?;
+
 		handle_spawn(
 			&c.log,
 			p,
@@ -463,11 +529,13 @@ fn make_socket_rpc(
 		)
 		.await
 	});
+
 	rpc.register_duplex(
 		"spawn_cli",
 		3,
 		|mut streams, p: SpawnParams, c| async move {
 			ensure_auth(&c.auth_state)?;
+
 			handle_spawn_cli(
 				&c.log,
 				p,
@@ -478,28 +546,37 @@ fn make_socket_rpc(
 			.await
 		},
 	);
+
 	rpc.register_sync("httpheaders", |p: HttpHeadersParams, c| {
 		if let Some(req) = c.http_requests.lock().unwrap().get(&p.req_id) {
 			trace!(c.log, "got {} response for req {}", p.status_code, p.req_id);
+
 			req.initial_response(p.status_code, p.headers);
 		} else {
 			warning!(c.log, "got response for unknown req {}", p.req_id);
 		}
+
 		Ok(EmptyObject {})
 	});
+
 	rpc.register_sync("httpbody", move |p: HttpBodyParams, c| {
 		let mut reqs = c.http_requests.lock().unwrap();
+
 		if let Some(req) = reqs.get(&p.req_id) {
 			if !p.segment.is_empty() {
 				req.body(p.segment);
 			}
+
 			if p.complete {
 				trace!(c.log, "delegated request {} completed", p.req_id);
+
 				reqs.remove(&p.req_id);
 			}
 		}
+
 		Ok(EmptyObject {})
 	});
+
 	rpc.register_sync(
 		"version",
 		|_: EmptyObject, _| Ok(VersionResponse::default()),
@@ -534,11 +611,15 @@ async fn process_socket(
 	} = params;
 
 	let (http_delegated, mut http_rx) = DelegatedSimpleHttp::new(log.clone());
+
 	let (socket_tx, mut socket_rx) = mpsc::channel(4);
+
 	let rx_counter = Arc::new(AtomicUsize::new(0));
+
 	let http_requests = Arc::new(std::sync::Mutex::new(HashMap::new()));
 
 	let already_authed = matches!(requires_auth, AuthRequired::None);
+
 	let rpc = make_socket_rpc(
 		log.clone(),
 		socket_tx.clone(),
@@ -553,9 +634,13 @@ async fn process_socket(
 
 	{
 		let log = log.clone();
+
 		let rx_counter = rx_counter.clone();
+
 		let socket_tx = socket_tx.clone();
+
 		let exit_barrier = exit_barrier.clone();
+
 		tokio::spawn(async move {
 			if already_authed {
 				send_version(&socket_tx).await;
@@ -565,6 +650,7 @@ async fn process_socket(
 				handle_socket_read(&log, readhalf, exit_barrier, &socket_tx, rx_counter, &rpc).await
 			{
 				debug!(log, "closing socket reader: {}", e);
+
 				socket_tx
 					.send(SocketSignal::CloseWith(CloseReason(format!("{e}"))))
 					.await
@@ -592,10 +678,12 @@ async fn process_socket(
 		tokio::select! {
 			_ = exit_barrier.wait() => {
 				writehalf.shutdown().await.ok();
+
 				break;
 			},
 			Some(r) = http_rx.recv() => {
 				let id = next_message_id();
+
 				let serialized = rmp_serde::to_vec_named(&ToClientRequest {
 					id: None,
 					params: ClientRequestMethod::makehttpreq(HttpRequestParams {
@@ -609,23 +697,30 @@ async fn process_socket(
 				http_requests.lock().unwrap().insert(id, r);
 
 				tx_counter += serialized.len();
+
 				if let Err(e) = writehalf.write_all(&serialized).await {
 					debug!(log, "Closing connection: {}", e);
+
 					break;
 				}
 			}
+
 			recv = socket_rx.recv() => match recv {
 				None => break,
 				Some(message) => match message {
 					SocketSignal::Send(bytes) => {
 						tx_counter += bytes.len();
+
 						if let Err(e) = writehalf.write_all(&bytes).await {
 							debug!(log, "Closing connection: {}", e);
+
 							break;
 						}
 					}
+
 					SocketSignal::CloseWith(reason) => {
 						debug!(log, "Closing connection: {}", reason.0);
+
 						break;
 					}
 				}
@@ -656,7 +751,9 @@ async fn handle_socket_read(
 	rpc: &RpcDispatcher<MsgPackSerializer, HandlerContext>,
 ) -> Result<(), std::io::Error> {
 	let mut readhalf = BufReader::new(readhalf);
+
 	let mut decoder = MsgPackCodec::new();
+
 	let mut decoder_buf = bytes::BytesMut::new();
 
 	loop {
@@ -678,20 +775,25 @@ async fn handle_socket_read(
 						return Ok(());
 					}
 				}
+
 				MaybeSync::Sync(None) => continue,
 				MaybeSync::Future(fut) => {
 					let socket_tx = socket_tx.clone();
+
 					tokio::spawn(async move {
 						if let Some(v) = fut.await {
 							socket_tx.send(SocketSignal::Send(v)).await.ok();
 						}
 					});
 				}
+
 				MaybeSync::Stream((stream, fut)) => {
 					if let Some(stream) = stream {
 						rpc.register_stream(socket_tx.clone(), stream).await;
 					}
+
 					let socket_tx = socket_tx.clone();
+
 					tokio::spawn(async move {
 						if let Some(v) = fut.await {
 							socket_tx.send(SocketSignal::Send(v)).await.ok();
@@ -730,7 +832,9 @@ async fn handle_serve(
 ) -> Result<EmptyObject, AnyError> {
 	// fill params.extensions into code_server_args.install_extensions
 	let mut csa = c.code_server_args.clone();
+
 	csa.connection_token = params.connection_token.or(csa.connection_token);
+
 	csa.install_extensions.extend(params.extensions.into_iter());
 
 	let params_raw = ServerParamsRaw {
@@ -750,6 +854,7 @@ async fn handle_serve(
 	}?;
 
 	let mut server_ref = c.code_server.lock().await;
+
 	let server = match &*server_ref {
 		Some(o) => o.clone(),
 		None => {
@@ -764,6 +869,7 @@ async fn handle_serve(
 						Some(_) => return Err(AnyError::from(MismatchedLaunchModeError())),
 						None => {
 							$sb.setup().await?;
+
 							let r = $sb.listen_on_default_socket().await;
 							($sb, r)
 						}
@@ -778,10 +884,12 @@ async fn handle_serve(
 					&c.launcher_paths,
 					Arc::new(c.http.delegated()),
 				);
+
 				do_setup!(sb)
 			} else {
 				let sb =
 					ServerBuilder::new(&install_log, &resolved, &c.launcher_paths, c.http.clone());
+
 				do_setup!(sb)
 			};
 
@@ -795,15 +903,18 @@ async fn handle_serve(
 							"({}), removing server due to possible corruptions",
 							e
 						);
+
 						if let Err(e) = sb.evict().await {
 							warning!(c.log, "Failed to evict server: {}", e);
 						}
 					}
+
 					return Err(e);
 				}
 			};
 
 			server_ref.replace(server.clone());
+
 			server
 		}
 	};
@@ -817,6 +928,7 @@ async fn handle_serve(
 		params.compress,
 	)
 	.await?;
+
 	Ok(EmptyObject {})
 }
 
@@ -849,12 +961,16 @@ async fn attach_server_bridge(
 	};
 
 	let attached_fut = ServerBridge::new(&code_server.socket, server_messages, decoder).await;
+
 	match attached_fut {
 		Ok(a) => {
 			multiplexer.register(socket_id, a);
+
 			trace!(log, "Attached to server");
+
 			Ok(socket_id)
 		}
+
 		Err(e) => Err(e),
 	}
 }
@@ -895,8 +1011,11 @@ async fn handle_update(
 	}
 
 	let update_service = UpdateService::new(log.clone(), http.clone());
+
 	let updater = SelfUpdate::new(&update_service)?;
+
 	let latest_release = updater.get_current_release().await?;
+
 	let up_to_date = updater.is_up_to_date_with(&latest_release);
 
 	let _ = updater.cleanup_old_update();
@@ -926,6 +1045,7 @@ async fn handle_update(
 
 	if let Err(e) = r {
 		did_update.store(false, Ordering::SeqCst);
+
 		return Err(e);
 	}
 
@@ -1008,16 +1128,19 @@ async fn handle_fs_remove(path: String) -> Result<EmptyObject, AnyError> {
 	tokio::fs::remove_dir_all(path)
 		.await
 		.map_err(|e| wrap(e, "error removing directory"))?;
+
 	Ok(EmptyObject {})
 }
 
 fn handle_fs_rename(from_path: String, to_path: String) -> Result<EmptyObject, AnyError> {
 	std::fs::rename(from_path, to_path).map_err(|e| wrap(e, "error renaming"))?;
+
 	Ok(EmptyObject {})
 }
 
 fn handle_fs_mkdirp(path: String) -> Result<EmptyObject, AnyError> {
 	std::fs::create_dir_all(path).map_err(|e| wrap(e, "error creating directory"))?;
+
 	Ok(EmptyObject {})
 }
 
@@ -1025,6 +1148,7 @@ fn handle_fs_readdir(path: String) -> Result<FsReadDirResponse, AnyError> {
 	let mut entries = std::fs::read_dir(path).map_err(|e| wrap(e, "error listing directory"))?;
 
 	let mut contents = Vec::new();
+
 	while let Some(Ok(child)) = entries.next() {
 		contents.push(FsReadDirEntry {
 			name: child.file_name().to_string_lossy().into_owned(),
@@ -1061,6 +1185,7 @@ fn handle_challenge_issue(
 	let challenge = create_challenge();
 
 	let mut auth_state = auth_state.lock().unwrap();
+
 	if let AuthState::WaitingForChallenge(Some(s)) = &*auth_state {
 		match &params.token {
 			Some(t) if s != t => return Err(CodeError::AuthChallengeBadToken.into()),
@@ -1070,6 +1195,7 @@ fn handle_challenge_issue(
 	}
 
 	*auth_state = AuthState::ChallengeIssued(challenge.clone());
+
 	Ok(ChallengeIssueResponse { challenge })
 }
 
@@ -1086,6 +1212,7 @@ fn handle_challenge_verify(
 			false => Err(CodeError::AuthChallengeNotIssued.into()),
 			true => {
 				*auth_state = AuthState::Authenticated;
+
 				Ok(EmptyObject {})
 			}
 		},
@@ -1100,16 +1227,19 @@ async fn handle_forward(
 	let port_forwarding = port_forwarding
 		.as_ref()
 		.ok_or(CodeError::PortForwardingNotAvailable)?;
+
 	info!(
 		log,
 		"Forwarding port {} (public={})", params.port, params.public
 	);
+
 	let privacy = match params.public {
 		true => PortPrivacy::Public,
 		false => PortPrivacy::Private,
 	};
 
 	let uri = port_forwarding.forward(params.port, privacy).await?;
+
 	Ok(ForwardResult { uri })
 }
 
@@ -1121,8 +1251,11 @@ async fn handle_unforward(
 	let port_forwarding = port_forwarding
 		.as_ref()
 		.ok_or(CodeError::PortForwardingNotAvailable)?;
+
 	info!(log, "Unforwarding port {}", params.port);
+
 	port_forwarding.unforward(params.port).await?;
+
 	Ok(EmptyObject {})
 }
 
@@ -1158,6 +1291,7 @@ async fn handle_call_server_http(
 	for (k, v) in params.headers {
 		request_builder = request_builder.header(k, v);
 	}
+
 	let request = request_builder
 		.body(Body::from(params.body.unwrap_or_default()))
 		.map_err(|e| wrap(e, "invalid request"))?;
@@ -1205,6 +1339,7 @@ async fn handle_acquire_cli(
 	};
 
 	let cli = download_cli_into_cache(&paths.cli_cache, &release, &update_service).await?;
+
 	let file = tokio::fs::File::open(cli)
 		.await
 		.map_err(|e| wrap(e, "error opening cli file"))?;
@@ -1239,11 +1374,17 @@ where
 	}
 
 	let mut p = new_tokio_command(&params.command);
+
 	p.args(&params.args);
+
 	p.envs(&params.env);
+
 	p.stdin(pipe_if!(stdin.is_some()));
+
 	p.stdout(pipe_if!(stdin.is_some()));
+
 	p.stderr(pipe_if!(stderr.is_some()));
+
 	if let Some(cwd) = &params.cwd {
 		p.current_dir(cwd);
 	}
@@ -1254,13 +1395,17 @@ where
 	let mut p = p.spawn().map_err(CodeError::ProcessSpawnFailed)?;
 
 	let block_futs = FuturesUnordered::new();
+
 	let poll_futs = FuturesUnordered::new();
+
 	if let (Some(mut a), Some(mut b)) = (p.stdout.take(), stdout) {
 		block_futs.push(async move { tokio::io::copy(&mut a, &mut b).await }.boxed());
 	}
+
 	if let (Some(mut a), Some(mut b)) = (p.stderr.take(), stderr) {
 		block_futs.push(async move { tokio::io::copy(&mut a, &mut b).await }.boxed());
 	}
+
 	if let (Some(mut b), Some(mut a)) = (p.stdin.take(), stdin) {
 		poll_futs.push(async move { tokio::io::copy(&mut a, &mut b).await }.boxed());
 	}
@@ -1281,16 +1426,22 @@ async fn handle_spawn_cli(
 	);
 
 	let mut p = new_tokio_command(&params.command);
+
 	p.args(&params.args);
 
 	// CLI args to spawn a server; contracted with clients that they should _not_ provide these.
 	p.arg("--verbose");
+
 	p.arg("command-shell");
 
 	p.envs(&params.env);
+
 	p.stdin(Stdio::piped());
+
 	p.stdout(Stdio::piped());
+
 	p.stderr(Stdio::piped());
+
 	if let Some(cwd) = &params.cwd {
 		p.current_dir(cwd);
 	}
@@ -1298,7 +1449,9 @@ async fn handle_spawn_cli(
 	let mut p = p.spawn().map_err(CodeError::ProcessSpawnFailed)?;
 
 	let mut stdin = p.stdin.take().unwrap();
+
 	let mut stdout = p.stdout.take().unwrap();
+
 	let mut stderr = p.stderr.take().unwrap();
 
 	// Start handling logs while doing the handshake in case there's some kind of error
@@ -1308,15 +1461,22 @@ async fn handle_spawn_cli(
 	// want to read anything other than our handshake messages.
 	if let Err(e) = spawn_do_child_authentication(log, &mut stdin, &mut stderr).await {
 		warning!(log, "failed to authenticate with child process {}", e);
+
 		let _ = p.kill().await;
+
 		return Err(e.into());
 	}
 
 	debug!(log, "cli authenticated, attaching stdio");
+
 	let block_futs = FuturesUnordered::new();
+
 	let poll_futs = FuturesUnordered::new();
+
 	poll_futs.push(async move { tokio::io::copy(&mut protocol_in, &mut stdin).await }.boxed());
+
 	block_futs.push(async move { tokio::io::copy(&mut stderr, &mut protocol_out).await }.boxed());
+
 	block_futs.push(async move { log_pump.await.unwrap() }.boxed());
 
 	wait_for_process_exit(log, &params.command, p, block_futs, poll_futs).await
@@ -1329,6 +1489,7 @@ async fn get_joined_result(
 	block_futs: FuturesUnordered<std::pin::Pin<Box<TokioCopyFuture>>>,
 ) -> Result<std::process::ExitStatus, std::io::Error> {
 	let (_, r) = tokio::join!(futures::future::join_all(block_futs), process.wait());
+
 	r
 }
 
@@ -1343,6 +1504,7 @@ async fn wait_for_process_exit(
 	poll_futs: FuturesUnordered<std::pin::Pin<Box<TokioCopyFuture>>>,
 ) -> Result<SpawnResult, AnyError> {
 	let joined = get_joined_result(process, block_futs);
+
 	pin!(joined);
 
 	let r = tokio::select! {
@@ -1375,11 +1537,15 @@ async fn spawn_do_child_authentication(
 	stdout: &mut ChildStderr,
 ) -> Result<(), CodeError> {
 	let (msg_tx, msg_rx) = mpsc::unbounded_channel();
+
 	let (shutdown_rx, shutdown) = new_barrier();
+
 	let mut rpc = new_msgpack_rpc();
+
 	let caller = rpc.get_caller(msg_tx);
 
 	let challenge_response = do_challenge_response_flow(caller, shutdown);
+
 	let rpc = start_msgpack_rpc(
 		rpc.methods(()).build(log.prefixed("client-auth")),
 		stdout,
@@ -1387,6 +1553,7 @@ async fn spawn_do_child_authentication(
 		msg_rx,
 		shutdown_rx,
 	);
+
 	pin!(rpc);
 
 	tokio::select! {
@@ -1399,6 +1566,7 @@ async fn spawn_do_child_authentication(
 		},
 		r = challenge_response => {
 			r?;
+
 			rpc.await.map(|_| ()).map_err(CodeError::ProcessSpawnFailed)
 		}
 	}

@@ -34,6 +34,7 @@ pub struct PortForwardingProcessor {
 impl PortForwardingProcessor {
 	pub fn new() -> Self {
 		let (tx, rx) = mpsc::channel(8);
+
 		Self {
 			tx,
 			rx,
@@ -61,6 +62,7 @@ impl PortForwardingProcessor {
 				tx.send(self.process_forward(port, privacy, tunnel).await)
 					.ok();
 			}
+
 			PortForwardingRec::Unforward(port, tx) => {
 				tx.send(self.process_unforward(port, tunnel).await).ok();
 			}
@@ -77,7 +79,9 @@ impl PortForwardingProcessor {
 		}
 
 		tunnel.remove_port(port).await?;
+
 		self.forwarded.remove(&port);
+
 		Ok(())
 	}
 
@@ -95,6 +99,7 @@ impl PortForwardingProcessor {
 			tunnel
 				.add_port_tcp(port, privacy, PortProtocol::Auto)
 				.await?;
+
 			self.forwarded.insert(port);
 		}
 
@@ -110,6 +115,7 @@ pub struct PortForwarding {
 impl PortForwarding {
 	pub async fn forward(&self, port: u16, privacy: PortPrivacy) -> Result<String, AnyError> {
 		let (tx, rx) = oneshot::channel();
+
 		let req = PortForwardingRec::Forward(port, privacy, tx);
 
 		if self.tx.send(req).await.is_err() {
@@ -124,6 +130,7 @@ impl PortForwarding {
 
 	pub async fn unforward(&self, port: u16) -> Result<(), AnyError> {
 		let (tx, rx) = oneshot::channel();
+
 		let req = PortForwardingRec::Unforward(port, tx);
 
 		if self.tx.send(req).await.is_err() {

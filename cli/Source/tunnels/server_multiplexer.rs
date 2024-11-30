@@ -43,6 +43,7 @@ impl ServerMultiplexer {
 		};
 
 		let mut lock = self.inner.lock().unwrap();
+
 		match &mut *lock {
 			Some(server_bridges) => (*server_bridges).push(bridge_rec),
 			None => *lock = Some(vec![bridge_rec]),
@@ -52,6 +53,7 @@ impl ServerMultiplexer {
 	/// Removes a server bridge by ID.
 	pub fn remove(&self, id: u16) {
 		let mut lock = self.inner.lock().unwrap();
+
 		if let Some(bridges) = &mut *lock {
 			bridges.retain(|sb| sb.id != id);
 		}
@@ -74,9 +76,12 @@ impl ServerMultiplexer {
 		};
 
 		record.write_queue.push(message);
+
 		if let Some(bridge) = record.bridge.take() {
 			let bridges_lock = self.inner.clone();
+
 			let log = log.clone();
+
 			tokio::spawn(write_loop(log, record.id, bridge, bridges_lock));
 		}
 
@@ -87,6 +92,7 @@ impl ServerMultiplexer {
 	pub async fn dispose(&self) {
 		let bridges = {
 			let mut lock = self.inner.lock().unwrap();
+
 			lock.take()
 		};
 
@@ -112,9 +118,11 @@ impl ServerMultiplexer {
 /// the loop again. Otherwise, it'll close the bridge.
 async fn write_loop(log: log::Logger, id: u16, mut bridge: ServerBridge, bridges_lock: Inner) {
 	let mut items_vec = vec![];
+
 	loop {
 		{
 			let mut lock = bridges_lock.lock().unwrap();
+
 			let server_bridges = match &mut *lock {
 				Some(sb) => sb,
 				None => break,
@@ -127,6 +135,7 @@ async fn write_loop(log: log::Logger, id: u16, mut bridge: ServerBridge, bridges
 
 			if bridge_rec.write_queue.is_empty() {
 				bridge_rec.bridge = Some(bridge);
+
 				return;
 			}
 
@@ -136,6 +145,7 @@ async fn write_loop(log: log::Logger, id: u16, mut bridge: ServerBridge, bridges
 		for item in items_vec.drain(..) {
 			if let Err(e) = bridge.write(item).await {
 				warning!(log, "Error writing to server: {:?}", e);
+
 				break;
 			}
 		}

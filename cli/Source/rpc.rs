@@ -41,6 +41,7 @@ pub enum Method {
 /// when callinth methods.
 pub trait Serialization: Send + Sync + 'static {
 	fn serialize(&self, value: impl Serialize) -> Vec<u8>;
+
 	fn deserialize<P: DeserializeOwned>(&self, b: &[u8]) -> Result<P, AnyError>;
 }
 
@@ -109,7 +110,9 @@ impl<S: Serialization, C: Send + Sync + 'static> RpcMethodBuilder<S, C> {
 		}
 
 		let serial = self.serializer.clone();
+
 		let context = self.context.clone();
+
 		self.methods.insert(
 			method_name,
 			Method::Sync(Arc::new(move |id, body| {
@@ -153,7 +156,9 @@ impl<S: Serialization, C: Send + Sync + 'static> RpcMethodBuilder<S, C> {
 		F: (Fn(P, Arc<C>) -> Fut) + Clone + Send + Sync + 'static,
 	{
 		let serial = self.serializer.clone();
+
 		let context = self.context.clone();
+
 		self.methods.insert(
 			method_name,
 			Method::Async(Arc::new(move |id, body| {
@@ -174,13 +179,17 @@ impl<S: Serialization, C: Send + Sync + 'static> RpcMethodBuilder<S, C> {
 				};
 
 				let callback = callback.clone();
+
 				let serial = serial.clone();
+
 				let context = context.clone();
+
 				let fut = async move {
 					match callback(param.params, context).await {
 						Ok(result) => {
 							id.map(|id| serial.serialize(&SuccessResponse { id, result }))
 						}
+
 						Err(err) => id.map(|id| {
 							serial.serialize(ErrorResponse {
 								id,
@@ -212,7 +221,9 @@ impl<S: Serialization, C: Send + Sync + 'static> RpcMethodBuilder<S, C> {
 		F: (Fn(Vec<DuplexStream>, P, Arc<C>) -> Fut) + Clone + Send + Sync + 'static,
 	{
 		let serial = self.serializer.clone();
+
 		let context = self.context.clone();
+
 		self.methods.insert(
 			method_name,
 			Method::Duplex(Arc::new(move |id, body| {
@@ -236,18 +247,23 @@ impl<S: Serialization, C: Send + Sync + 'static> RpcMethodBuilder<S, C> {
 				};
 
 				let callback = callback.clone();
+
 				let serial = serial.clone();
+
 				let context = context.clone();
 
 				let mut dto = StreamDto {
 					req_id: id.unwrap_or(0),
 					streams: Vec::with_capacity(streams),
 				};
+
 				let mut servers = Vec::with_capacity(streams);
 
 				for _ in 0..streams {
 					let (client, server) = tokio::io::duplex(8192);
+
 					servers.push(server);
+
 					dto.streams.push((next_message_id(), client));
 				}
 
@@ -276,17 +292,22 @@ impl<S: Serialization, C: Send + Sync + 'static> RpcMethodBuilder<S, C> {
 		let streams = Streams::default();
 
 		let s1 = streams.clone();
+
 		self.register_async(METHOD_STREAM_ENDED, move |m: StreamEndedParams, _| {
 			let s1 = s1.clone();
+
 			async move {
 				s1.remove(m.stream).await;
+
 				Ok(())
 			}
 		});
 
 		let s2 = streams.clone();
+
 		self.register_sync(METHOD_STREAM_DATA, move |m: StreamDataIncomingParams, _| {
 			s2.write(m.stream, m.segment);
+
 			Ok(())
 		});
 
@@ -346,7 +367,9 @@ impl<S: Serialization> RpcCaller<S> {
 		R: DeserializeOwned + Send + 'static,
 	{
 		let (tx, rx) = oneshot::channel();
+
 		let id = next_message_id();
+
 		let body = self.serializer.serialize(&FullRequest {
 			id: Some(id),
 			method,
@@ -355,10 +378,12 @@ impl<S: Serialization> RpcCaller<S> {
 
 		if self.sender.send(body).is_err() {
 			drop(tx);
+
 			return rx;
 		}
 
 		let serializer = self.serializer.clone();
+
 		self.calls.lock().unwrap().insert(
 			id,
 			Box::new(move |body| {
@@ -411,6 +436,7 @@ impl<S: Serialization, C: Send + Sync> RpcDispatcher<S, C> {
 			Ok(partial) => self.dispatch_with_partial(body, partial),
 			Err(_err) => {
 				warning!(self.log, "Failed to deserialize request, hex: {:X?}", body);
+
 				MaybeSync::Sync(None)
 			}
 		}
@@ -422,6 +448,7 @@ impl<S: Serialization, C: Send + Sync> RpcDispatcher<S, C> {
 
 		if let Some(method_name) = partial.method {
 			let method = self.methods.get(method_name.as_str());
+
 			match method {
 				Some(Method::Sync(callback)) => MaybeSync::Sync(callback(id, body)),
 				Some(Method::Async(callback)) => MaybeSync::Future(callback(id, body)),
@@ -440,11 +467,13 @@ impl<S: Serialization, C: Send + Sync> RpcDispatcher<S, C> {
 			if let Some(cb) = self.calls.lock().unwrap().remove(&id.unwrap()) {
 				cb(Outcome::Error(err));
 			}
+
 			MaybeSync::Sync(None)
 		} else {
 			if let Some(cb) = self.calls.lock().unwrap().remove(&id.unwrap()) {
 				cb(Outcome::Success(body.to_vec()));
 			}
+
 			MaybeSync::Sync(None)
 		}
 	}
@@ -476,12 +505,16 @@ impl<S: Serialization, C: Send + Sync> RpcDispatcher<S, C> {
 
 		for (stream_id, duplex) in dto.streams {
 			let (mut read, write) = tokio::io::split(duplex);
+
 			self.streams.insert(stream_id, write);
 
 			let write_tx = write_tx.clone();
+
 			let serial = self.serializer.clone();
+
 			tokio::spawn(async move {
 				let mut buf = vec![0; 4096];
+
 				loop {
 					match read.read(&mut buf).await {
 						Ok(0) | Err(_) => break,
@@ -545,9 +578,11 @@ impl Streams {
 
 		{
 			let mut map = self.map.lock().unwrap();
+
 			if let Some(s) = map.get_mut(&id) {
 				if let Some(w) = s.write.take() {
 					map.remove(&id);
+
 					remove = Some(w);
 				} else {
 					s.ended = true; // will shut down in write loop
@@ -563,6 +598,7 @@ impl Streams {
 
 	pub fn write(&self, id: u32, buf: Vec<u8>) {
 		let mut map = self.map.lock().unwrap();
+
 		if let Some(s) = map.get_mut(&id) {
 			s.q.push(buf);
 
@@ -599,9 +635,11 @@ async fn write_loop(
 	streams: Arc<std::sync::Mutex<HashMap<u32, StreamRec>>>,
 ) {
 	let mut items_vec = vec![];
+
 	loop {
 		{
 			let mut lock = streams.lock().unwrap();
+
 			let stream_rec = match lock.get_mut(&id) {
 				Some(b) => b,
 				None => break,
@@ -610,9 +648,11 @@ async fn write_loop(
 			if stream_rec.q.is_empty() {
 				if stream_rec.ended {
 					lock.remove(&id);
+
 					break;
 				} else {
 					stream_rec.write = Some(w);
+
 					return;
 				}
 			}
@@ -718,38 +758,53 @@ mod tests {
 	#[tokio::test]
 	async fn test_remove() {
 		let streams = Streams::default();
+
 		let (writer, mut reader) = tokio::io::duplex(1024);
+
 		streams.insert(1, tokio::io::split(writer).1);
+
 		streams.remove(1).await;
 
 		assert!(streams.map.lock().unwrap().get(&1).is_none());
+
 		let mut buffer = Vec::new();
+
 		assert_eq!(reader.read_to_end(&mut buffer).await.unwrap(), 0);
 	}
 
 	#[tokio::test]
 	async fn test_write() {
 		let streams = Streams::default();
+
 		let (writer, mut reader) = tokio::io::duplex(1024);
+
 		streams.insert(1, tokio::io::split(writer).1);
+
 		streams.write(1, vec![1, 2, 3]);
 
 		let mut buffer = [0; 3];
+
 		assert_eq!(reader.read_exact(&mut buffer).await.unwrap(), 3);
+
 		assert_eq!(buffer, [1, 2, 3]);
 	}
 
 	#[tokio::test]
 	async fn test_write_with_immediate_end() {
 		let streams = Streams::default();
+
 		let (writer, mut reader) = tokio::io::duplex(1);
+
 		streams.insert(1, tokio::io::split(writer).1);
+
 		streams.write(1, vec![1, 2, 3]); // spawn write loop
 		streams.write(1, vec![4, 5, 6]); // enqueued while writing
 		streams.remove(1).await; // end stream
 
 		let mut buffer = Vec::new();
+
 		assert_eq!(reader.read_to_end(&mut buffer).await.unwrap(), 6);
+
 		assert_eq!(buffer, vec![1, 2, 3, 4, 5, 6]);
 	}
 }

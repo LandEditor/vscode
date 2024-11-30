@@ -34,6 +34,7 @@ impl FileLock {
 	#[cfg(windows)]
 	pub fn acquire(file: File) -> Result<Lock, CodeError> {
 		use std::os::windows::prelude::AsRawHandle;
+
 		use winapi::{
 			shared::winerror::{ERROR_IO_PENDING, ERROR_LOCK_VIOLATION},
 			um::{
@@ -43,8 +44,10 @@ impl FileLock {
 		};
 
 		let handle = file.as_raw_handle();
+
 		let (overlapped, ok) = unsafe {
 			let mut overlapped = std::mem::zeroed();
+
 			let ok = LockFileEx(
 				handle,
 				LOCKFILE_EXCLUSIVE_LOCK | LOCKFILE_FAIL_IMMEDIATELY,
@@ -62,6 +65,7 @@ impl FileLock {
 		}
 
 		let err = io::Error::last_os_error();
+
 		let raw = err.raw_os_error();
 		// docs report it should return ERROR_IO_PENDING, but in my testing it actually
 		// returns ERROR_LOCK_VIOLATION. Or maybe winapi is wrong?
@@ -77,12 +81,15 @@ impl FileLock {
 		use std::os::unix::io::AsRawFd;
 
 		let fd = file.as_raw_fd();
+
 		let res = unsafe { libc::flock(fd, libc::LOCK_EX | libc::LOCK_NB) };
+
 		if res == 0 {
 			return Ok(Lock::Acquired(Self { file }));
 		}
 
 		let err = io::Error::last_os_error();
+
 		if err.kind() == io::ErrorKind::WouldBlock {
 			return Ok(Lock::AlreadyLocked(file));
 		}
@@ -103,6 +110,7 @@ impl Drop for FileLock {
 	#[cfg(windows)]
 	fn drop(&mut self) {
 		use std::os::windows::prelude::AsRawHandle;
+
 		use winapi::um::fileapi::UnlockFileEx;
 
 		unsafe {

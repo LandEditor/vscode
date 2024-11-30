@@ -30,9 +30,11 @@ impl fmt::Display for ShutdownSignal {
 			ShutdownSignal::ParentProcessKilled(p) => {
 				write!(f, "Parent process {p} no longer exists")
 			}
+
 			ShutdownSignal::ExeUninstalled => {
 				write!(f, "Executable no longer exists")
 			}
+
 			ShutdownSignal::ServiceStopped => write!(f, "Service stopped"),
 			ShutdownSignal::RpcShutdownRequested => write!(f, "RPC client requested shutdown"),
 			ShutdownSignal::RpcRestartRequested => {
@@ -54,17 +56,24 @@ impl ShutdownRequest {
 		match self {
 			ShutdownRequest::CtrlC => {
 				let ctrl_c = tokio::signal::ctrl_c();
+
 				ctrl_c.await.ok();
+
 				Some(ShutdownSignal::CtrlC)
 			}
+
 			ShutdownRequest::ParentProcessKilled(pid) => {
 				wait_until_process_exits(pid, 2000).await;
+
 				Some(ShutdownSignal::ParentProcessKilled(pid))
 			}
+
 			ShutdownRequest::ExeUninstalled(exe_path) => {
 				wait_until_exe_deleted(&exe_path, 2000).await;
+
 				Some(ShutdownSignal::ExeUninstalled)
 			}
+
 			ShutdownRequest::Derived(mut rx) => rx.recv_msg().await,
 		}
 	}
@@ -74,6 +83,7 @@ impl ShutdownRequest {
 		signals: impl IntoIterator<Item = ShutdownRequest>,
 	) -> Barrier<ShutdownSignal> {
 		let (barrier, opener) = new_barrier();
+
 		let futures = signals
 			.into_iter()
 			.map(|s| s.wait())

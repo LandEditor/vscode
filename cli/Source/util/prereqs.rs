@@ -15,23 +15,30 @@ use super::errors::CodeError;
 
 lazy_static! {
 	static ref LDCONFIG_STDC_RE: Regex = Regex::new(r"libstdc\+\+.* => (.+)").unwrap();
+
 	static ref LDD_VERSION_RE: BinRegex = BinRegex::new(r"^ldd.*(.+)\.(.+)\s").unwrap();
+
 	static ref GENERIC_VERSION_RE: Regex = Regex::new(r"^([0-9]+)\.([0-9]+)$").unwrap();
+
 	static ref LIBSTD_CXX_VERSION_RE: BinRegex =
 		BinRegex::new(r"GLIBCXX_([0-9]+)\.([0-9]+)(?:\.([0-9]+))?").unwrap();
+
 	static ref MIN_LDD_VERSION: SimpleSemver = SimpleSemver::new(2, 28, 0);
+
 	static ref MIN_LEGACY_LDD_VERSION: SimpleSemver = SimpleSemver::new(2, 17, 0);
 }
 
 #[cfg(target_arch = "arm")]
 lazy_static! {
 	static ref MIN_CXX_VERSION: SimpleSemver = SimpleSemver::new(3, 4, 26);
+
 	static ref MIN_LEGACY_CXX_VERSION: SimpleSemver = SimpleSemver::new(3, 4, 22);
 }
 
 #[cfg(not(target_arch = "arm"))]
 lazy_static! {
 	static ref MIN_CXX_VERSION: SimpleSemver = SimpleSemver::new(3, 4, 25);
+
 	static ref MIN_LEGACY_CXX_VERSION: SimpleSemver = SimpleSemver::new(3, 4, 19);
 }
 
@@ -73,6 +80,7 @@ impl PreReqChecker {
 			tokio::join!(check_glibc_version(), check_glibcxx_version())
 		} else {
 			println!("!!! WARNING: Skipping server pre-requisite check !!!");
+
 			println!("!!! Server stability is not guaranteed. Proceed at your own risk. !!!");
 			// Use the legacy server for #210029
 			(Ok(true), Ok(true))
@@ -97,6 +105,7 @@ impl PreReqChecker {
 					Platform::LinuxARM64Legacy
 				});
 			}
+
 			_ => {}
 		};
 
@@ -109,6 +118,7 @@ impl PreReqChecker {
 		}
 
 		let mut errors: Vec<String> = vec![];
+
 		if let Err(e) = gnu_a {
 			errors.push(e);
 		} else if let Err(e) = gnu_b {
@@ -155,8 +165,11 @@ async fn check_glibc_version() -> Result<bool, String> {
 	#[cfg(target_env = "gnu")]
 	let version = {
 		let v = unsafe { libc::gnu_get_libc_version() };
+
 		let v = unsafe { std::ffi::CStr::from_ptr(v) };
+
 		let v = v.to_str().unwrap();
+
 		extract_generic_version(v)
 	};
 	#[cfg(not(target_env = "gnu"))]
@@ -215,6 +228,7 @@ async fn check_glibcxx_version() -> Result<bool, String> {
 	const DEFAULT_LIB_PATH: &str = "/usr/lib64/libstdc++.so.6";
 	#[cfg(any(target_arch = "x86", target_arch = "arm"))]
 	const DEFAULT_LIB_PATH: &str = "/usr/lib/libstdc++.so.6";
+
 	const LDCONFIG_PATH: &str = "/sbin/ldconfig";
 
 	if fs::metadata(DEFAULT_LIB_PATH).await.is_ok() {
@@ -315,11 +329,13 @@ impl PartialOrd for SimpleSemver {
 impl Ord for SimpleSemver {
 	fn cmp(&self, other: &Self) -> Ordering {
 		let major = self.major.cmp(&other.major);
+
 		if major != Ordering::Equal {
 			return major;
 		}
 
 		let minor = self.minor.cmp(&other.minor);
+
 		if minor != Ordering::Equal {
 			return minor;
 		}
@@ -379,11 +395,15 @@ mod tests {
 	#[test]
 	fn test_gte() {
 		assert!(SimpleSemver::new(1, 2, 3) >= SimpleSemver::new(1, 2, 3));
+
 		assert!(SimpleSemver::new(1, 2, 3) >= SimpleSemver::new(0, 10, 10));
+
 		assert!(SimpleSemver::new(1, 2, 3) >= SimpleSemver::new(1, 1, 10));
 
 		assert!(SimpleSemver::new(1, 2, 3) < SimpleSemver::new(1, 2, 10));
+
 		assert!(SimpleSemver::new(1, 2, 3) < SimpleSemver::new(1, 3, 1));
+
 		assert!(SimpleSemver::new(1, 2, 3) < SimpleSemver::new(2, 2, 1));
 	}
 

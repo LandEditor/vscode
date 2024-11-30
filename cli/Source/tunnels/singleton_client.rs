@@ -60,7 +60,9 @@ const CONTROL_INSTRUCTIONS_INTERACTIVE: &str = concatcp!(
 /// this returns, instead of trying to start a tunnel.
 pub async fn start_singleton_client(args: SingletonClientArgs) -> bool {
 	let mut rpc = new_json_rpc();
+
 	let (msg_tx, msg_rx) = mpsc::unbounded_channel();
+
 	let exit_entirely = Arc::new(AtomicBool::new(false));
 
 	debug!(
@@ -70,10 +72,13 @@ pub async fn start_singleton_client(args: SingletonClientArgs) -> bool {
 
 	if *IS_INTERACTIVE_CLI {
 		let stdin_handle = rpc.get_caller(msg_tx.clone());
+
 		thread::spawn(move || {
 			let mut input = String::new();
+
 			loop {
 				input.truncate(0);
+
 				match std::io::stdin().read_line(&mut input) {
 					Err(_) | Ok(0) => return, // EOF or not a tty
 					_ => {}
@@ -82,11 +87,14 @@ pub async fn start_singleton_client(args: SingletonClientArgs) -> bool {
 				match input.chars().next().map(|c| c.to_ascii_lowercase()) {
 					Some('x') => {
 						stdin_handle.notify(protocol::singleton::METHOD_SHUTDOWN, EmptyObject {});
+
 						return;
 					}
+
 					Some('r') => {
 						stdin_handle.notify(protocol::singleton::METHOD_RESTART, EmptyObject {});
 					}
+
 					Some(_) | None => {}
 				}
 			}
@@ -94,6 +102,7 @@ pub async fn start_singleton_client(args: SingletonClientArgs) -> bool {
 	}
 
 	let caller = rpc.get_caller(msg_tx);
+
 	let mut rpc = rpc.methods(SingletonServerContext {
 		log: args.log.clone(),
 		exit_entirely: exit_entirely.clone(),
@@ -102,6 +111,7 @@ pub async fn start_singleton_client(args: SingletonClientArgs) -> bool {
 
 	rpc.register_sync(protocol::singleton::METHOD_SHUTDOWN, |_: EmptyObject, c| {
 		c.exit_entirely.store(true, Ordering::SeqCst);
+
 		Ok(())
 	});
 
@@ -141,11 +151,13 @@ pub async fn start_singleton_client(args: SingletonClientArgs) -> bool {
 				Some(level) => c.log.emit(level, &format!("{}{}", log.prefix, log.message)),
 				None => c.log.result(format!("{}{}", log.prefix, log.message)),
 			}
+
 			Ok(())
 		},
 	);
 
 	let (read, write) = socket_stream_split(args.stream);
+
 	let _ = start_json_rpc(rpc.build(args.log), read, write, msg_rx, args.shutdown).await;
 
 	exit_entirely.load(Ordering::SeqCst)
@@ -166,12 +178,16 @@ pub async fn do_single_rpc_call<
 		| Err(CodeError::SingletonLockedProcessExited(_)) => {
 			return Err(CodeError::NoRunningTunnel);
 		}
+
 		Err(e) => return Err(e),
 	};
 
 	let (msg_tx, msg_rx) = mpsc::unbounded_channel();
+
 	let mut rpc = new_json_rpc();
+
 	let caller = rpc.get_caller(msg_tx);
+
 	let (read, write) = socket_stream_split(client);
 
 	let rpc = tokio::spawn(async move {
@@ -187,6 +203,8 @@ pub async fn do_single_rpc_call<
 	});
 
 	let r = caller.call(method, params).await.unwrap();
+
 	rpc.abort();
+
 	r.map_err(CodeError::TunnelRpcCallFailed)
 }

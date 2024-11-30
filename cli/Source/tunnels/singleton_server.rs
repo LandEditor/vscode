@@ -79,9 +79,11 @@ pub fn make_singleton_server(
 	shutdown_rx: Barrier<ShutdownSignal>,
 ) -> RpcServer {
 	let (shutdown_broadcast, _) = broadcast::channel(4);
+
 	let rpc = new_json_rpc();
 
 	let current_status = Arc::new(Mutex::default());
+
 	let mut rpc = rpc.methods(SingletonServerContext {
 		log: log.clone(),
 		shutdown_tx: shutdown_broadcast.clone(),
@@ -93,7 +95,9 @@ pub fn make_singleton_server(
 		protocol::singleton::METHOD_RESTART,
 		|_: protocol::EmptyObject, ctx| {
 			info!(ctx.log, "restarting tunnel after client request");
+
 			let _ = ctx.shutdown_tx.send(ShutdownSignal::RpcRestartRequested);
+
 			Ok(())
 		},
 	);
@@ -120,12 +124,15 @@ pub fn make_singleton_server(
 				ctx.log,
 				"closing tunnel and all clients after a shutdown request"
 			);
+
 			let _ = ctx.broadcast_tx.send(RpcCaller::serialize_notify(
 				&JsonRpcSerializer {},
 				protocol::singleton::METHOD_SHUTDOWN,
 				protocol::EmptyObject {},
 			));
+
 			let _ = ctx.shutdown_tx.send(ShutdownSignal::RpcShutdownRequested);
+
 			Ok(())
 		},
 	);
@@ -135,6 +142,7 @@ pub fn make_singleton_server(
 	let fut = tokio::spawn(async move {
 		serve_singleton_rpc(log_broadcast, server, rpc.build(log), shutdown_rx).await
 	});
+
 	RpcServer {
 		shutdown_broadcast,
 		current_status,
@@ -152,6 +160,7 @@ pub async fn start_singleton_server<'a>(
 
 	{
 		print_listening(&args.log, &args.tunnel.name);
+
 		let mut status = args.server.current_status.lock().unwrap();
 		*status = Some(StatusInfo {
 			name: args.tunnel.name.clone(),
@@ -176,8 +185,10 @@ pub async fn start_singleton_server<'a>(
 			// with an error. Return the result of the eventual shutdown of the
 			// control server.
 			rpc_result.unwrap()?;
+
 			fut.await
 		}
+
 		Either::Right((ctrl_result, _)) => ctrl_result,
 	}
 }
@@ -189,7 +200,9 @@ async fn serve_singleton_rpc<C: Clone + Send + Sync + 'static>(
 	shutdown_rx: Barrier<ShutdownSignal>,
 ) -> Result<(), CodeError> {
 	let mut own_shutdown = shutdown_rx.clone();
+
 	let shutdown_fut = own_shutdown.wait();
+
 	pin!(shutdown_fut);
 
 	loop {
@@ -199,9 +212,13 @@ async fn serve_singleton_rpc<C: Clone + Send + Sync + 'static>(
 		};
 
 		let (read, write) = socket_stream_split(cnx);
+
 		let dispatcher = dispatcher.clone();
+
 		let msg_rx = log_broadcast.replay_and_subscribe();
+
 		let shutdown_rx = shutdown_rx.clone();
+
 		tokio::spawn(async move {
 			let _ = start_json_rpc(dispatcher.clone(), read, write, msg_rx, shutdown_rx).await;
 		});
@@ -227,6 +244,7 @@ impl Default for BroadcastLogSink {
 impl BroadcastLogSink {
 	pub fn new() -> Self {
 		let (tx, _) = broadcast::channel(64);
+
 		Self {
 			tx,
 			recent: Arc::new(Mutex::new(RingBuffer::new(50))),
@@ -260,6 +278,7 @@ impl BroadcastLogSink {
 impl log::LogSink for BroadcastLogSink {
 	fn write_log(&self, level: log::Level, prefix: &str, message: &str) {
 		let s = JsonRpcSerializer {};
+
 		let serialized = RpcCaller::serialize_notify(
 			&s,
 			protocol::singleton::METHOD_LOG,
@@ -271,6 +290,7 @@ impl log::LogSink for BroadcastLogSink {
 		);
 
 		let _ = self.tx.send(serialized.clone());
+
 		self.recent.lock().unwrap().push(serialized);
 	}
 

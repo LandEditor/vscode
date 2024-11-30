@@ -18,27 +18,35 @@ use serde_json::Value;
 
 fn main() {
 	let files = enumerate_source_files().expect("expected to enumerate files");
+
 	ensure_file_headers(&files).expect("expected to ensure file headers");
+
 	apply_build_environment_variables();
 }
 
 fn camel_case_to_constant_case(key: &str) -> String {
 	let mut output = String::new();
+
 	let mut prev_upper = false;
+
 	for c in key.chars() {
 		if c.is_uppercase() {
 			if prev_upper {
 				output.push(c.to_ascii_lowercase());
 			} else {
 				output.push('_');
+
 				output.push(c.to_ascii_uppercase());
 			}
+
 			prev_upper = true;
 		} else if c.is_lowercase() {
 			output.push(c.to_ascii_uppercase());
+
 			prev_upper = false;
 		} else {
 			output.push(c);
+
 			prev_upper = false;
 		}
 	}
@@ -58,6 +66,7 @@ fn set_env_vars_from_map_keys(prefix: &str, map: impl IntoIterator<Item = (Strin
 			"nameLong" => {
 				if let Value::String(s) = &value {
 					let idx = s.find(" - ");
+
 					println!(
 						"cargo:rustc-env=VSCODE_CLI_QUALITYLESS_PRODUCT_NAME={}",
 						idx.map(|i| &s[..i]).unwrap_or(s)
@@ -70,13 +79,17 @@ fn set_env_vars_from_map_keys(prefix: &str, map: impl IntoIterator<Item = (Strin
 				if let Value::Object(v) = value {
 					set_env_vars_from_map_keys(&format!("{}_{}", prefix, "TUNNEL"), v);
 				}
+
 				continue;
 			}
+
 			_ => value,
 		};
+
 		if key.contains("win32") && key.contains("AppId") {
 			if let Value::String(s) = value {
 				win32_app_ids.push(s);
+
 				continue;
 			}
 		}
@@ -105,11 +118,13 @@ where
 	T: DeserializeOwned,
 {
 	let mut file = fs::File::open(path).expect("failed to open file");
+
 	serde_json::from_reader(&mut file).expect("failed to deserialize JSON")
 }
 
 fn apply_build_from_product_json(path: &Path) {
 	let json: HashMap<String, Value> = read_json_from_path(path);
+
 	set_env_vars_from_map_keys("VSCODE_CLI", json);
 }
 
@@ -120,7 +135,9 @@ struct PackageJson {
 
 fn apply_build_environment_variables() {
 	let repo_dir = env::current_dir().unwrap().join("..");
+
 	let package_json = read_json_from_path::<PackageJson>(&repo_dir.join("package.json"));
+
 	println!(
 		"cargo:rustc-env=VSCODE_CLI_VERSION={}",
 		package_json.version
@@ -133,7 +150,9 @@ fn apply_build_environment_variables() {
 			} else {
 				PathBuf::from_str(&v).unwrap()
 			};
+
 			println!("cargo:warning=loading product.json from <{path:?}>");
+
 			apply_build_from_product_json(&path);
 		}
 
@@ -141,6 +160,7 @@ fn apply_build_environment_variables() {
 			apply_build_from_product_json(&repo_dir.join("product.json"));
 
 			let overrides = repo_dir.join("product.overrides.json");
+
 			if overrides.exists() {
 				apply_build_from_product_json(&overrides);
 			}
@@ -152,13 +172,17 @@ fn ensure_file_headers(files: &[PathBuf]) -> Result<(), io::Error> {
 	let mut ok = true;
 
 	let crlf_header_str = str::replace(FILE_HEADER, "\n", "\r\n");
+
 	let crlf_header = crlf_header_str.as_bytes();
+
 	let lf_header = FILE_HEADER.as_bytes();
+
 	for file in files {
 		let contents = fs::read(file)?;
 
 		if !(contents.starts_with(lf_header) || contents.starts_with(crlf_header)) {
 			eprintln!("File missing copyright header: {}", file.display());
+
 			ok = false;
 		}
 	}
@@ -173,15 +197,19 @@ fn ensure_file_headers(files: &[PathBuf]) -> Result<(), io::Error> {
 /// Gets all "rs" files in the source directory
 fn enumerate_source_files() -> Result<Vec<PathBuf>, io::Error> {
 	let mut files = vec![];
+
 	let mut queue = vec![];
 
 	let current_dir = env::current_dir()?.join("src");
+
 	queue.push(current_dir);
 
 	while !queue.is_empty() {
 		for entry in fs::read_dir(queue.pop().unwrap())? {
 			let entry = entry?;
+
 			let ftype = entry.file_type()?;
+
 			if ftype.is_dir() {
 				queue.push(entry.path());
 			} else if ftype.is_file() && entry.file_name().to_string_lossy().ends_with(".rs") {

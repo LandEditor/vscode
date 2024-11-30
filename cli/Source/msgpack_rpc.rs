@@ -57,10 +57,13 @@ pub async fn start_msgpack_rpc<
 	mut shutdown_rx: Barrier<X>,
 ) -> io::Result<(Option<X>, Read, Write)> {
 	let (write_tx, mut write_rx) = mpsc::channel::<Vec<u8>>(8);
+
 	let mut decoder = MsgPackCodec::new();
+
 	let mut decoder_buf = bytes::BytesMut::new();
 
 	let shutdown_fut = shutdown_rx.wait();
+
 	pin!(shutdown_fut);
 
 	loop {
@@ -76,17 +79,21 @@ pub async fn start_msgpack_rpc<
 						MaybeSync::Sync(None) => continue,
 						MaybeSync::Future(fut) => {
 							let write_tx = write_tx.clone();
+
 							tokio::spawn(async move {
 								if let Some(v) = fut.await {
 									let _ = write_tx.send(v).await;
 								}
 							});
 						}
+
 						MaybeSync::Stream((stream, fut)) => {
 							if let Some(stream) = stream {
 								dispatcher.register_stream(write_tx.clone(), stream).await;
 							}
+
 							let write_tx = write_tx.clone();
+
 							tokio::spawn(async move {
 								if let Some(v) = fut.await {
 									let _ = write_tx.send(v).await;
@@ -134,10 +141,12 @@ pub struct MsgPackDecoded<T> {
 
 impl<T: DeserializeOwned> tokio_util::codec::Decoder for MsgPackCodec<T> {
 	type Item = MsgPackDecoded<T>;
+
 	type Error = io::Error;
 
 	fn decode(&mut self, src: &mut bytes::BytesMut) -> Result<Option<Self::Item>, Self::Error> {
 		let bytes_ref = src.as_ref();
+
 		let mut cursor = Cursor::new(bytes_ref);
 
 		match rmp_serde::decode::from_read::<_, T>(&mut cursor) {
@@ -146,16 +155,21 @@ impl<T: DeserializeOwned> tokio_util::codec::Decoder for MsgPackCodec<T> {
 				| rmp_serde::decode::Error::InvalidMarkerRead(e),
 			) if e.kind() == ErrorKind::UnexpectedEof => {
 				src.reserve(1024);
+
 				Ok(None)
 			}
+
 			Err(e) => Err(std::io::Error::new(
 				std::io::ErrorKind::InvalidData,
 				e.to_string(),
 			)),
 			Ok(obj) => {
 				let len = cursor.position() as usize;
+
 				let vec = src[..len].to_vec();
+
 				src.advance(len);
+
 				Ok(Some(MsgPackDecoded { obj, vec }))
 			}
 		}
@@ -176,17 +190,20 @@ mod tests {
 	#[test]
 	fn test_protocol() {
 		let mut c = MsgPackCodec::<Msg>::new();
+
 		let mut buf = bytes::BytesMut::new();
 
 		assert!(c.decode(&mut buf).unwrap().is_none());
 
 		buf.extend_from_slice(rmp_serde::to_vec_named(&Msg { x: 1 }).unwrap().as_slice());
+
 		buf.extend_from_slice(rmp_serde::to_vec_named(&Msg { x: 2 }).unwrap().as_slice());
 
 		assert_eq!(
 			c.decode(&mut buf).unwrap().expect("expected msg1").obj,
 			Msg { x: 1 }
 		);
+
 		assert_eq!(
 			c.decode(&mut buf).unwrap().expect("expected msg1").obj,
 			Msg { x: 2 }

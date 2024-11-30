@@ -70,50 +70,65 @@ pub async fn serve_web(ctx: CommandContext, mut args: ServeWebArgs) -> Result<i3
 	legal::require_consent(&ctx.paths, args.accept_server_license_terms)?;
 
 	let platform: crate::update_service::Platform = PreReqChecker::new().verify().await?;
+
 	if !args.without_connection_token {
 		if let Some(p) = args.connection_token_file.as_deref() {
 			let token = fs::read_to_string(PathBuf::from(p))
 				.map_err(CodeError::CouldNotReadConnectionTokenFile)?;
+
 			args.connection_token = Some(token.trim().to_string());
 		} else {
 			// Ensure there's a defined connection token, since if multiple server versions
 			// are executed, they will need to have a single shared token.
 			let token_path = ctx.paths.root().join("serve-web-token");
+
 			let token = mint_connection_token(&token_path, args.connection_token.clone())
 				.map_err(CodeError::CouldNotCreateConnectionTokenFile)?;
+
 			args.connection_token = Some(token);
+
 			args.connection_token_file = Some(token_path.to_string_lossy().to_string());
 		}
 	}
 
 	let cm: Arc<ConnectionManager> = ConnectionManager::new(&ctx, platform, args.clone());
+
 	let update_check_interval = 3600;
+
 	cm.clone()
 		.start_update_checker(Duration::from_secs(update_check_interval));
 
 	let key = get_server_key_half(&ctx.paths);
+
 	let make_svc = move || {
 		let ctx = HandleContext {
 			cm: cm.clone(),
 			log: cm.log.clone(),
 			server_secret_key: key.clone(),
 		};
+
 		let service = service_fn(move |req| handle(ctx.clone(), req));
+
 		async move { Ok::<_, Infallible>(service) }
 	};
 
 	let mut shutdown = ShutdownRequest::create_rx([ShutdownRequest::CtrlC]);
+
 	let r = if let Some(s) = args.socket_path {
 		let s = PathBuf::from(&s);
+
 		let socket = listen_socket_rw_stream(&s).await?;
+
 		ctx.log
 			.result(format!("Web UI available on {}", s.display()));
+
 		let r = Server::builder(socket.into_pollable())
 			.serve(make_service_fn(|_| make_svc()))
 			.with_graceful_shutdown(async {
 				let _ = shutdown.wait().await;
 			})
 			.await;
+
 		let _ = std::fs::remove_file(&s); // cleanup
 		r
 	} else {
@@ -121,20 +136,26 @@ pub async fn serve_web(ctx: CommandContext, mut args: ServeWebArgs) -> Result<i3
 			Some(h) => {
 				SocketAddr::new(h.parse().map_err(CodeError::InvalidHostAddress)?, args.port)
 			}
+
 			None => SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), args.port),
 		};
+
 		let builder = Server::try_bind(&addr).map_err(CodeError::CouldNotListenOnInterface)?;
 
 		let mut listening = format!("Web UI available at http://{addr}");
+
 		if let Some(base) = args.server_base_path {
 			if !base.starts_with('/') {
 				listening.push('/');
 			}
+
 			listening.push_str(&base);
 		}
+
 		if let Some(ct) = args.connection_token {
 			listening.push_str(&format!("?tkn={ct}"));
 		}
+
 		ctx.log.result(listening);
 
 		builder
@@ -160,6 +181,7 @@ struct HandleContext {
 /// Handler function for an inbound request
 async fn handle(ctx: HandleContext, req: Request<Body>) -> Result<Response<Body>, Infallible> {
 	let client_key_half = get_client_key_half(&req);
+
 	let path = req.uri().path();
 
 	let mut res = if path.starts_with(&ctx.cm.base_path)
@@ -183,6 +205,7 @@ async fn handle_proxied(ctx: &HandleContext, req: Request<Body>) -> Response<Bod
 			Ok(r) => r,
 			Err(e) => {
 				error!(ctx.log, "error getting latest version: {}", e);
+
 				return response::code_err(e);
 			}
 		}
@@ -196,6 +219,7 @@ async fn handle_proxied(ctx: &HandleContext, req: Request<Body>) -> Response<Bod
 				forward_http_req_to_server(rw, req).await
 			}
 		}
+
 		Err(CodeError::ServerNotYetDownloaded) => response::wait_for_download(),
 		Err(e) => response::code_err(e),
 	}
@@ -205,10 +229,15 @@ fn handle_secret_mint(ctx: &HandleContext, req: Request<Body>) -> Response<Body>
 	use sha2::{Digest, Sha256};
 
 	let mut hasher = Sha256::new();
+
 	hasher.update(ctx.server_secret_key.0.as_ref());
+
 	hasher.update(get_client_key_half(&req).0.as_ref());
+
 	let hash = hasher.finalize();
+
 	let hash = hash[..SECRET_KEY_BYTES].to_vec();
+
 	response::secret_key(hash)
 }
 
@@ -221,12 +250,14 @@ fn append_secret_headers(
 	client_key_half: &SecretKeyPart,
 ) {
 	let headers = res.headers_mut();
+
 	headers.append(
 		hyper::header::SET_COOKIE,
 		format!("{PATH_COOKIE_NAME}={base_path}{SECRET_KEY_MINT_PATH}; SameSite=Strict; Path=/",)
 			.parse()
 			.unwrap(),
 	);
+
 	headers.append(
 		hyper::header::SET_COOKIE,
 		format!(
@@ -247,11 +278,15 @@ fn get_release_from_path(path: &str, platform: Platform) -> Option<(Release, Str
 	}
 
 	let path = &path[1..];
+
 	let i = path.find('/').unwrap_or(path.len());
+
 	let quality_commit_sep = path.get(..i).and_then(|p| p.find('-'))?;
 
 	let (quality_commit, remaining) = path.split_at(i);
+
 	let (quality, commit) = quality_commit.split_at(quality_commit_sep);
+
 	let commit = &commit[1..];
 
 	if !is_commit_hash(commit) {
@@ -314,6 +349,7 @@ async fn forward_ws_req_to_server(
 	tokio::spawn(connection);
 
 	let mut proxied_req = Request::builder().uri(req.uri());
+
 	for (k, v) in req.headers() {
 		proxied_req = proxied_req.header(k, v);
 	}
@@ -325,6 +361,7 @@ async fn forward_ws_req_to_server(
 
 	let mut proxied_res = Response::new(Body::empty());
 	*proxied_res.status_mut() = res.status();
+
 	for (k, v) in res.headers() {
 		proxied_res.headers_mut().insert(k, v.clone());
 	}
@@ -344,7 +381,9 @@ async fn forward_ws_req_to_server(
 				(_, Err(e2)) => debug!(log, "server ({}) websocket upgrade failed", e2),
 				(Ok(mut s_req), Ok(mut s_res)) => {
 					trace!(log, "websocket upgrade succeeded");
+
 					let r = tokio::io::copy_bidirectional(&mut s_req, &mut s_res).await;
+
 					trace!(log, "websocket closed (error: {:?})", r.err());
 				}
 			}
@@ -387,23 +426,29 @@ struct SecretKeyPart(Box<[u8; SECRET_KEY_BYTES]>);
 impl SecretKeyPart {
 	pub fn new() -> Self {
 		let key: [u8; SECRET_KEY_BYTES] = rand::random();
+
 		Self(Box::new(key))
 	}
 
 	pub fn decode(s: &str) -> Result<Self, base64::DecodeSliceError> {
 		use base64::{engine::general_purpose, Engine as _};
+
 		let mut key: [u8; SECRET_KEY_BYTES] = [0; SECRET_KEY_BYTES];
+
 		let v = general_purpose::URL_SAFE.decode(s)?;
+
 		if v.len() != SECRET_KEY_BYTES {
 			return Err(base64::DecodeSliceError::OutputSliceTooSmall);
 		}
 
 		key.copy_from_slice(&v);
+
 		Ok(Self(Box::new(key)))
 	}
 
 	pub fn encode(&self) -> String {
 		use base64::{engine::general_purpose, Engine as _};
+
 		general_purpose::URL_SAFE.encode(self.0.as_ref())
 	}
 }
@@ -411,13 +456,17 @@ impl SecretKeyPart {
 /// Gets the server's half of the secret key.
 fn get_server_key_half(paths: &LauncherPaths) -> SecretKeyPart {
 	let ps = PersistedState::new(paths.root().join("serve-web-key-half"));
+
 	let value: String = ps.load();
+
 	if let Ok(sk) = SecretKeyPart::decode(&value) {
 		return sk;
 	}
 
 	let key = SecretKeyPart::new();
+
 	let _ = ps.save(key.encode());
+
 	key
 }
 
@@ -482,6 +531,7 @@ impl ConnectionHandle {
 		client_counter.send_modify(|v| {
 			*v += 1;
 		});
+
 		Self { client_counter }
 	}
 }
@@ -541,6 +591,7 @@ impl ConnectionManager {
 		let base_path = normalize_base_path(args.server_base_path.as_deref().unwrap_or_default());
 
 		let cache = DownloadCache::new(ctx.paths.web_server_storage());
+
 		let target_kind = TargetKind::Web;
 
 		let quality = VSCODE_CLI_QUALITY.map_or(Quality::Stable, |q| match Quality::try_from(q) {
@@ -580,6 +631,7 @@ impl ConnectionManager {
 	pub fn start_update_checker(self: Arc<Self>, duration: Duration) {
 		tokio::spawn(async move {
 			let mut interval = time::interval(duration);
+
 			loop {
 				interval.tick().await;
 
@@ -593,11 +645,13 @@ impl ConnectionManager {
 	// Returns the latest release from the cache, if one exists.
 	pub async fn get_release_from_cache(&self) -> Result<Release, CodeError> {
 		let latest = self.latest_version.lock().await;
+
 		if let Some((_, release)) = &*latest {
 			return Ok(release.clone());
 		}
 
 		drop(latest);
+
 		self.get_latest_release().await
 	}
 
@@ -609,8 +663,11 @@ impl ConnectionManager {
 		// todo@connor4312: there is likely some performance benefit to
 		// implementing a 'keepalive' for these connections.
 		let (path, counter) = self.get_version_data(release).await?;
+
 		let handle = ConnectionHandle::new(counter);
+
 		let rw = get_socket_rw_stream(&path).await?;
+
 		Ok((rw, handle))
 	}
 
@@ -618,7 +675,9 @@ impl ConnectionManager {
 	/// time to allow for fast loads.
 	pub async fn get_latest_release(&self) -> Result<Release, CodeError> {
 		let mut latest = self.latest_version.lock().await;
+
 		let now = Instant::now();
+
 		let target_kind = TargetKind::Web;
 
 		let quality = VSCODE_CLI_QUALITY
@@ -637,10 +696,12 @@ impl ConnectionManager {
 		if let (Err(e), Some((_, previous))) = (&release, latest.clone()) {
 			warning!(self.log, "error getting latest release, using stale: {}", e);
 			*latest = Some((now, previous.clone()));
+
 			return Ok(previous.clone());
 		}
 
 		let release = release?;
+
 		debug!(self.log, "refreshed latest release: {}", release);
 		*latest = Some((now, release.clone()));
 
@@ -663,7 +724,9 @@ impl ConnectionManager {
 		release: Release,
 	) -> Result<Barrier<Result<StartData, String>>, CodeError> {
 		let mut state = self.state.lock().unwrap();
+
 		let key = key_for_release(&release);
+
 		if let Some(s) = state.get_mut(&key) {
 			if !s.downloaded {
 				if s.socket_path.is_open() {
@@ -677,7 +740,9 @@ impl ConnectionManager {
 		}
 
 		let (socket_path, opener) = new_barrier();
+
 		let state_map_dup = self.state.clone();
+
 		let args = StartArgs {
 			args: self.args.clone(),
 			log: self.log.clone(),
@@ -696,8 +761,10 @@ impl ConnectionManager {
 
 			tokio::spawn(async move {
 				Self::start_version(args, p).await;
+
 				state_map_dup.lock().unwrap().remove(&key);
 			});
+
 			Ok(socket_path)
 		} else {
 			state.insert(
@@ -707,12 +774,17 @@ impl ConnectionManager {
 					downloaded: false,
 				},
 			);
+
 			let update_service = self.update_service.clone();
+
 			let cache = self.cache.clone();
+
 			tokio::spawn(async move {
 				Self::download_version(args, update_service.clone(), cache.clone()).await;
+
 				state_map_dup.lock().unwrap().remove(&key);
 			});
+
 			Err(CodeError::ServerNotYetDownloaded)
 		}
 	}
@@ -724,21 +796,29 @@ impl ConnectionManager {
 		cache: DownloadCache,
 	) {
 		let release_for_fut = args.release.clone();
+
 		let log_for_fut = args.log.clone();
+
 		let dir_fut = cache.create(&args.release.commit, |target_dir| async move {
 			info!(log_for_fut, "Downloading server {}", release_for_fut.commit);
+
 			let tmpdir = tempfile::tempdir().unwrap();
+
 			let response = update_service.get_download_stream(&release_for_fut).await?;
 
 			let name = response.url_path_basename().unwrap();
+
 			let archive_path = tmpdir.path().join(name);
+
 			http::download_into_file(
 				&archive_path,
 				log_for_fut.get_download_logger("Downloading server:"),
 				response,
 			)
 			.await?;
+
 			unzip_downloaded_release(&archive_path, &target_dir, SilentCopyProgress())?;
+
 			Ok(())
 		});
 
@@ -759,10 +839,15 @@ impl ConnectionManager {
 		let socket_path = get_socket_name();
 
 		let mut cmd = new_script_command(&executable);
+
 		cmd.stdin(std::process::Stdio::null());
+
 		cmd.stderr(std::process::Stdio::piped());
+
 		cmd.stdout(std::process::Stdio::piped());
+
 		cmd.arg("--socket-path");
+
 		cmd.arg(&socket_path);
 
 		// License agreement already checked by the `server_web` function.
@@ -770,20 +855,28 @@ impl ConnectionManager {
 
 		if let Some(a) = &args.args.server_base_path {
 			cmd.arg("--server-base-path");
+
 			cmd.arg(a);
 		}
+
 		if let Some(a) = &args.args.server_data_dir {
 			cmd.arg("--server-data-dir");
+
 			cmd.arg(a);
 		}
+
 		if let Some(a) = &args.args.user_data_dir {
 			cmd.arg("--user-data-dir");
+
 			cmd.arg(a);
 		}
+
 		if let Some(a) = &args.args.extensions_dir {
 			cmd.arg("--extensions-dir");
+
 			cmd.arg(a);
 		}
+
 		if args.args.without_connection_token {
 			cmd.arg("--without-connection-token");
 		}
@@ -791,6 +884,7 @@ impl ConnectionManager {
 		// convert it into the file variant.
 		if let Some(ct) = &args.args.connection_token_file {
 			cmd.arg("--connection-token-file");
+
 			cmd.arg(ct);
 		}
 
@@ -801,6 +895,7 @@ impl ConnectionManager {
 			Ok(c) => c,
 			Err(e) => {
 				args.opener.open(Err(e.to_string()));
+
 				return;
 			}
 		};
@@ -812,9 +907,13 @@ impl ConnectionManager {
 
 		// wrapped option to prove that we only use this once in the loop
 		let (counter_tx, mut counter_rx) = tokio::sync::watch::channel(0);
+
 		let mut opener = Some((args.opener, socket_path, Arc::new(counter_tx)));
+
 		let commit_prefix = &args.release.commit[..7];
+
 		let kill_timer = tokio::time::sleep(Duration::from_secs(SERVER_IDLE_TIMEOUT_SECS));
+
 		pin!(kill_timer);
 
 		loop {
@@ -828,6 +927,7 @@ impl ConnectionManager {
 						}
 					}
 				}
+
 				Ok(Some(l)) = stderr.next_line() => {
 					info!(args.log, "[{} stderr]: {}", commit_prefix, l);
 				},
@@ -844,13 +944,18 @@ impl ConnectionManager {
 						}
 					});
 				}
+
 				_ = &mut kill_timer => {
 					info!(args.log, "[{} process]: idle timeout reached, ending", commit_prefix);
+
 					let _ = child.kill().await;
+
 					break;
 				}
+
 				e = child.wait() => {
 					info!(args.log, "[{} process]: exited: {:?}", commit_prefix, e);
+
 					break;
 				}
 			}
@@ -870,24 +975,34 @@ fn mint_connection_token(path: &Path, prefer_token: Option<String>) -> std::io::
 	use std::os::unix::fs::OpenOptionsExt;
 
 	let mut f = fs::OpenOptions::new();
+
 	f.create(true);
+
 	f.write(true);
+
 	f.read(true);
 	#[cfg(not(windows))]
 	f.mode(0o600);
+
 	let mut f = f.open(path)?;
 
 	if prefer_token.is_none() {
 		let mut t = String::new();
+
 		f.read_to_string(&mut t)?;
+
 		let t = t.trim();
+
 		if !t.is_empty() {
 			return Ok(t.to_string());
 		}
 	}
 
 	f.set_len(0)?;
+
 	let prefer_token = prefer_token.unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
+
 	f.write_all(prefer_token.as_bytes())?;
+
 	Ok(prefer_token)
 }

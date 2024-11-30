@@ -26,6 +26,7 @@ impl Column {
 
 	pub fn add_row(&mut self, row: String) {
 		self.max_width = std::cmp::max(self.max_width, row.len());
+
 		self.data.push(row);
 	}
 }
@@ -63,25 +64,31 @@ impl TablePrinter for JsonTablePrinter {
 		out: &mut dyn std::io::Write,
 	) -> Result<(), std::io::Error> {
 		let mut bw = BufWriter::new(out);
+
 		bw.write_all(b"[")?;
 
 		if !table.cols.is_empty() {
 			let data_len = table.cols[0].data.len();
+
 			for i in 0..data_len {
 				if i > 0 {
 					bw.write_all(b",{")?;
 				} else {
 					bw.write_all(b"{")?;
 				}
+
 				for col in &table.cols {
 					serde_json::to_writer(&mut bw, col.heading)?;
+
 					bw.write_all(b":")?;
+
 					serde_json::to_writer(&mut bw, &col.data[i])?;
 				}
 			}
 		}
 
 		bw.write_all(b"]")?;
+
 		bw.flush()
 	}
 }
@@ -110,6 +117,7 @@ impl TablePrinter for TextTablePrinter {
 		// print each column
 		if !table.cols.is_empty() {
 			let data_len = table.cols[0].data.len();
+
 			for i in 0..data_len {
 				write_columns(&mut bw, table.cols.iter().map(|c| &c.data[i]), &sizes)?;
 			}
@@ -128,8 +136,10 @@ where
 	T: Display,
 {
 	w.write_all(b"|")?;
+
 	for (i, col) in cols.enumerate() {
 		write!(w, " {:width$} |", col, width = sizes[i])?;
 	}
+
 	w.write_all(b"\r\n")
 }

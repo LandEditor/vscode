@@ -24,7 +24,9 @@ pub struct JsonRpcSerializer {}
 impl Serialization for JsonRpcSerializer {
 	fn serialize(&self, value: impl serde::Serialize) -> Vec<u8> {
 		let mut v = serde_json::to_vec(&value).unwrap();
+
 		v.push(b'\n');
+
 		v
 	}
 
@@ -51,10 +53,13 @@ pub async fn start_json_rpc<C: Send + Sync + 'static, S: Clone>(
 	mut shutdown_rx: Barrier<S>,
 ) -> io::Result<Option<S>> {
 	let (write_tx, mut write_rx) = mpsc::channel::<Vec<u8>>(8);
+
 	let mut read = BufReader::new(read);
 
 	let mut read_buf = String::new();
+
 	let shutdown_fut = shutdown_rx.wait();
+
 	pin!(shutdown_fut);
 
 	loop {
@@ -82,6 +87,7 @@ pub async fn start_json_rpc<C: Send + Sync + 'static, S: Clone>(
 					MaybeSync::Sync(None) => continue,
 					MaybeSync::Future(fut) => {
 						let write_tx = write_tx.clone();
+
 						tokio::spawn(async move {
 							if let Some(v) = fut.await {
 								let _ = write_tx.send(v).await;
@@ -92,7 +98,9 @@ pub async fn start_json_rpc<C: Send + Sync + 'static, S: Clone>(
 						if let Some(dto) = dto {
 							dispatcher.register_stream(write_tx.clone(), dto).await;
 						}
+
 						let write_tx = write_tx.clone();
+
 						tokio::spawn(async move {
 							if let Some(v) = fut.await {
 								let _ = write_tx.send(v).await;

@@ -17,7 +17,9 @@ use uuid::Uuid;
 cfg_if::cfg_if! {
 	if #[cfg(unix)] {
 		pub type AsyncPipe = tokio::net::UnixStream;
+
 		pub type AsyncPipeWriteHalf = tokio::net::unix::OwnedWriteHalf;
+
 		pub type AsyncPipeReadHalf = tokio::net::unix::OwnedReadHalf;
 
 		pub async fn get_socket_rw_stream(path: &Path) -> Result<AsyncPipe, CodeError> {
@@ -45,8 +47,11 @@ cfg_if::cfg_if! {
 		}
 	} else {
 		use tokio::{time::sleep, io::ReadBuf};
+
 		use tokio::net::windows::named_pipe::{ClientOptions, ServerOptions, NamedPipeClient, NamedPipeServer};
+
 		use std::{time::Duration, io};
+
 		use pin_project::pin_project;
 
 		#[pin_project(project = AsyncPipeProj)]
@@ -114,6 +119,7 @@ cfg_if::cfg_if! {
 		}
 
 		pub type AsyncPipeWriteHalf = tokio::io::WriteHalf<AsyncPipe>;
+
 		pub type AsyncPipeReadHalf = tokio::io::ReadHalf<AsyncPipe>;
 
 		pub async fn get_socket_rw_stream(path: &Path) -> Result<AsyncPipe, CodeError> {
@@ -201,12 +207,14 @@ async fn make_accept_fut(
 			let c = l.accept().await;
 			(l, c)
 		}
+
 		None => unreachable!("this future should not be pollable in this state"),
 	}
 }
 
 impl hyper::server::accept::Accept for PollableAsyncListener {
 	type Conn = AsyncPipe;
+
 	type Error = CodeError;
 
 	fn poll_accept(
@@ -220,8 +228,10 @@ impl hyper::server::accept::Accept for PollableAsyncListener {
 		match self.write_fut.poll(cx) {
 			Poll::Ready((l, cnx)) => {
 				self.listener = Some(l);
+
 				Poll::Ready(Some(cnx))
 			}
+
 			Poll::Pending => Poll::Pending,
 		}
 	}
@@ -252,7 +262,9 @@ pub trait AsyncRWAccepter {
 impl AsyncRWAccepter for AsyncPipeListener {
 	async fn accept_rw(&mut self) -> Result<AcceptedRW, CodeError> {
 		let pipe = self.accept().await?;
+
 		let (read, write) = socket_stream_split(pipe);
+
 		Ok((Box::new(read), Box::new(write)))
 	}
 }
@@ -264,7 +276,9 @@ impl AsyncRWAccepter for TcpListener {
 			.accept()
 			.await
 			.map_err(CodeError::AsyncPipeListenerFailed)?;
+
 		let (read, write) = tokio::io::split(stream);
+
 		Ok((Box::new(read), Box::new(write)))
 	}
 }

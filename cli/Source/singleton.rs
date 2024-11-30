@@ -87,7 +87,9 @@ async fn start_singleton_server(mut lock: FileLock) -> Result<SingletonServer, C
 	let socket_path = get_socket_name();
 
 	let mut vec = Vec::with_capacity(128);
+
 	let _ = vec.write(&[0; PREFIX_LOCKED_BYTES]);
+
 	let _ = rmp_serde::encode::write(
 		&mut vec,
 		&LockFileMatter {
@@ -101,6 +103,7 @@ async fn start_singleton_server(mut lock: FileLock) -> Result<SingletonServer, C
 		.map_err(CodeError::SingletonLockfileOpenFailed)?;
 
 	let server = listen_socket_rw_stream(&socket_path).await?;
+
 	Ok(SingletonServer {
 		server,
 		_lock: lock,
@@ -113,8 +116,10 @@ async fn connect_as_client_with_file(mut file: &mut File) -> Result<AsyncPipe, C
 	// retry, since someone else could get a lock and we could read it before
 	// the JSON info was finished writing out
 	let mut attempt = 0;
+
 	loop {
 		let _ = file.seek(SeekFrom::Start(PREFIX_LOCKED_BYTES as u64));
+
 		let r = match rmp_serde::from_read::<_, LockFileMatter>(&mut file) {
 			Ok(prev) => {
 				let socket_path = PathBuf::from(prev.socket_path);
@@ -124,6 +129,7 @@ async fn connect_as_client_with_file(mut file: &mut File) -> Result<AsyncPipe, C
 					_ = wait_until_process_exits(Pid::from_u32(prev.pid), 500) => return Err(CodeError::SingletonLockedProcessExited(prev.pid)),
 				}
 			}
+
 			Err(e) => Err(CodeError::SingletonLockfileReadFailed(e)),
 		};
 
@@ -132,6 +138,7 @@ async fn connect_as_client_with_file(mut file: &mut File) -> Result<AsyncPipe, C
 		}
 
 		attempt += 1;
+
 		tokio::time::sleep(Duration::from_millis(500)).await;
 	}
 }
@@ -159,12 +166,14 @@ mod tests {
 	#[tokio::test]
 	async fn test_acquires_singleton() {
 		let dir = tempfile::tempdir().expect("expected to make temp dir");
+
 		let s = acquire_singleton(&dir.path().join("lock"))
 			.await
 			.expect("expected to acquire");
 
 		match s {
 			SingletonConnection::Singleton(_) => {}
+
 			_ => panic!("expected to be singleton"),
 		}
 	}
@@ -172,10 +181,13 @@ mod tests {
 	#[tokio::test]
 	async fn test_acquires_client() {
 		let dir = tempfile::tempdir().expect("expected to make temp dir");
+
 		let lockfile = dir.path().join("lock");
+
 		let s1 = acquire_singleton(&lockfile)
 			.await
 			.expect("expected to acquire1");
+
 		match s1 {
 			SingletonConnection::Singleton(mut l) => tokio::spawn(async move {
 				l.accept().await.expect("expected to accept");
@@ -186,8 +198,10 @@ mod tests {
 		let s2 = acquire_singleton(&lockfile)
 			.await
 			.expect("expected to acquire2");
+
 		match s2 {
 			SingletonConnection::Client(_) => {}
+
 			_ => panic!("expected to be client"),
 		}
 	}

@@ -358,13 +358,19 @@ pub mod forward_singleton {
 
 pub mod singleton {
 	use crate::log;
+
 	use chrono::{DateTime, Utc};
+
 	use serde::{Deserialize, Serialize};
 
 	pub const METHOD_RESTART: &str = "restart";
+
 	pub const METHOD_SHUTDOWN: &str = "shutdown";
+
 	pub const METHOD_STATUS: &str = "status";
+
 	pub const METHOD_LOG: &str = "log";
+
 	pub const METHOD_LOG_REPLY_DONE: &str = "log_done";
 
 	#[derive(Serialize)]

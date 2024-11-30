@@ -41,6 +41,7 @@ impl SystemdService {
 		let connection = Connection::session()
 			.await
 			.map_err(|e| DbusConnectFailedError(e.to_string()))?;
+
 		Ok(connection)
 	}
 
@@ -74,6 +75,7 @@ impl ServiceManager for SystemdService {
 		args: &[&str],
 	) -> Result<(), crate::util::errors::AnyError> {
 		let connection = SystemdService::connect().await?;
+
 		let proxy = SystemdService::proxy(&connection).await?;
 
 		write_systemd_service_file(&self.service_file, exe, args)
@@ -123,7 +125,9 @@ impl ServiceManager for SystemdService {
 
 	async fn is_installed(&self) -> Result<bool, AnyError> {
 		let connection = SystemdService::connect().await?;
+
 		let proxy = SystemdService::proxy(&connection).await?;
+
 		let state = proxy
 			.get_unit_file_state(SystemdService::service_name_string())
 			.await;
@@ -163,11 +167,13 @@ impl ServiceManager for SystemdService {
 			.status()
 			.map(|s| s.code().unwrap_or(1))
 			.map_err(|e| wrap(e, "error running journalctl"))?;
+
 		Ok(())
 	}
 
 	async fn unregister(&self) -> Result<(), crate::util::errors::AnyError> {
 		let connection = SystemdService::connect().await?;
+
 		let proxy = SystemdService::proxy(&connection).await?;
 
 		proxy
@@ -197,6 +203,7 @@ fn write_systemd_service_file(
 	args: &[&str],
 ) -> io::Result<()> {
 	let mut f = File::create(path)?;
+
 	write!(
 		&mut f,
 		"[Unit]\n\
@@ -217,6 +224,7 @@ fn write_systemd_service_file(
 		exe.into_os_string().to_string_lossy(),
 		args.join("\" \"")
 	)?;
+
 	Ok(())
 }
 

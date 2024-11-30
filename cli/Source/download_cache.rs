@@ -51,17 +51,20 @@ impl DownloadCache {
 	/// used if it does exist.
 	pub fn exists(&self, name: &str) -> Option<PathBuf> {
 		let p = self.path.join(name);
+
 		if !p.exists() {
 			return None;
 		}
 
 		let _ = self.touch(name.to_string());
+
 		Some(p)
 	}
 
 	/// Removes the item from the cache, if it exists
 	pub fn delete(&self, name: &str) -> Result<(), WrappedError> {
 		let f = self.path.join(name);
+
 		if f.exists() {
 			std::fs::remove_dir_all(f).map_err(|e| wrap(e, "error removing cached folder"))?;
 		}
@@ -85,15 +88,19 @@ impl DownloadCache {
 		T: Future<Output = Result<(), AnyError>> + Send,
 	{
 		let name = name.as_ref();
+
 		let target_dir = self.path.join(name);
+
 		if target_dir.exists() {
 			return Ok(target_dir);
 		}
 
 		let temp_dir = self.path.join(format!("{name}{STAGING_SUFFIX}"));
+
 		let _ = remove_dir_all(&temp_dir).await; // cleanup any existing
 
 		create_dir_all(&temp_dir).map_err(|e| wrap(e, "error creating server directory"))?;
+
 		do_create(temp_dir.clone()).await?;
 
 		let _ = self.touch(name.to_string());
@@ -104,9 +111,11 @@ impl DownloadCache {
 				Ok(_) => {
 					break;
 				}
+
 				Err(e) if attempt_no == RENAME_ATTEMPTS => {
 					return Err(wrap(e, "error renaming downloaded server").into())
 				}
+
 				Err(_) => {
 					tokio::time::sleep(RENAME_DELAY).await;
 				}
@@ -121,6 +130,7 @@ impl DownloadCache {
 			if let Some(index) = l.iter().position(|s| s == &name) {
 				l.remove(index);
 			}
+
 			l.insert(0, name);
 
 			if l.len() <= KEEP_LRU {
@@ -129,6 +139,7 @@ impl DownloadCache {
 
 			if let Some(f) = l.last() {
 				let f = self.path.join(f);
+
 				if !f.exists() || std::fs::remove_dir_all(f).is_ok() {
 					l.pop();
 				}

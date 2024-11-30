@@ -89,7 +89,9 @@ impl std::fmt::Display for StatusError {
 impl StatusError {
 	pub async fn from_res(res: reqwest::Response) -> Result<StatusError, AnyError> {
 		let status_code = res.status().as_u16();
+
 		let url = res.url().to_string();
+
 		let body = res.text().await.map_err(|e| {
 			wrap(
 				e,
@@ -315,10 +317,15 @@ pub struct WindowsNeedsElevation(pub String);
 impl std::fmt::Display for WindowsNeedsElevation {
 	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
 		writeln!(f, "{}", self.0)?;
+
 		writeln!(f)?;
+
 		writeln!(f, "You may need to run this command as an administrator:")?;
+
 		writeln!(f, " 1. Open the start menu and search for Powershell")?;
+
 		writeln!(f, " 2. Right click and 'Run as administrator'")?;
+
 		if let Ok(exe) = std::env::current_exe() {
 			writeln!(
 				f,
@@ -421,6 +428,7 @@ pub struct DbusConnectFailedError(pub String);
 impl Display for DbusConnectFailedError {
 	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
 		let mut str = String::new();
+
 		str.push_str("Error creating dbus session. This command uses systemd for managing services, you should check that systemd is installed and under your user.");
 
 		if std::env::var("WSL_DISTRO_NAME").is_ok() {
@@ -428,7 +436,9 @@ impl Display for DbusConnectFailedError {
 		}
 
 		str.push_str("If running `systemctl status` works, systemd is ok, but your session dbus may not be. You might need to:\n\n- Install the `dbus-user-session` package, and reboot if it was not installed\n- Start the user dbus session with `systemctl --user enable dbus --now`.\n\nThe error encountered was: ");
+
 		str.push_str(&self.0);
+
 		str.push('\n');
 
 		write!(f, "{str}")

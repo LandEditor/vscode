@@ -51,6 +51,7 @@ impl<T: Clone> BarrierOpener<T> {
 		self.0.send_if_modified(|v| {
 			if v.is_none() {
 				*v = Some(value);
+
 				true
 			} else {
 				false
@@ -188,6 +189,7 @@ mod tests {
 	#[tokio::test]
 	async fn test_barrier_close_after_spawn() {
 		let (mut barrier, opener) = new_barrier::<u32>();
+
 		let (tx, rx) = tokio::sync::oneshot::channel::<u32>();
 
 		tokio::spawn(async move {
@@ -202,20 +204,27 @@ mod tests {
 	#[tokio::test]
 	async fn test_barrier_close_before_spawn() {
 		let (barrier, opener) = new_barrier::<u32>();
+
 		let (tx1, rx1) = tokio::sync::oneshot::channel::<u32>();
+
 		let (tx2, rx2) = tokio::sync::oneshot::channel::<u32>();
 
 		opener.open(42);
+
 		let mut b1 = barrier.clone();
+
 		tokio::spawn(async move {
 			tx1.send(b1.wait().await.unwrap()).unwrap();
 		});
+
 		let mut b2 = barrier.clone();
+
 		tokio::spawn(async move {
 			tx2.send(b2.wait().await.unwrap()).unwrap();
 		});
 
 		assert!(rx1.await.unwrap() == 42);
+
 		assert!(rx2.await.unwrap() == 42);
 	}
 }

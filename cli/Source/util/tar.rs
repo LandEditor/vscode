@@ -20,7 +20,9 @@ fn should_skip_first_segment(file: &fs::File) -> Result<(bool, u64), WrappedErro
 	// different types of archives.
 
 	let tar = GzDecoder::new(file);
+
 	let mut archive = Archive::new(tar);
+
 	let mut entries = archive
 		.entries()
 		.map_err(|e| wrap(e, "error opening archive"))?;
@@ -40,7 +42,9 @@ fn should_skip_first_segment(file: &fs::File) -> Result<(bool, u64), WrappedErro
 	};
 
 	let mut num_entries = 1;
+
 	let mut had_different_prefixes = false;
+
 	for file in entries.flatten() {
 		if !had_different_prefixes {
 			if let Ok(name) = file.path() {
@@ -65,8 +69,11 @@ where
 	T: ReportCopyProgress,
 {
 	let (skip_first, num_entries) = should_skip_first_segment(&tar_gz)?;
+
 	let report_progress_every = num_entries / 20;
+
 	let mut entries_so_far = 0;
+
 	let mut last_reported_at = 0;
 
 	// reset since skip logic read the tar already:
@@ -75,7 +82,9 @@ where
 		.map_err(|e| wrap(e, "error resetting seek position"))?;
 
 	let tar = GzDecoder::new(tar_gz);
+
 	let mut archive = Archive::new(tar);
+
 	archive
 		.entries()
 		.map_err(|e| wrap(e, "error opening archive"))?
@@ -83,9 +92,12 @@ where
 		.try_for_each::<_, Result<_, WrappedError>>(|mut entry| {
 			// approximate progress based on where we are in the archive:
 			entries_so_far += 1;
+
 			if entries_so_far - last_reported_at > report_progress_every {
 				reporter.report_progress(entries_so_far, num_entries);
+
 				entries_so_far += 1;
+
 				last_reported_at = entries_so_far;
 			}
 
@@ -118,7 +130,9 @@ where
 
 pub fn has_gzip_header(path: &Path) -> std::io::Result<(File, bool)> {
 	let mut file = fs::File::open(path)?;
+
 	let mut header = [0; 2];
+
 	let _ = file.read_exact(&mut header);
 
 	file.rewind()?;

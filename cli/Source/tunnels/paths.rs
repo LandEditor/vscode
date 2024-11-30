@@ -46,6 +46,7 @@ impl ServerPaths {
 		if let Some(pid) = machine::find_running_process(&self.executable) {
 			// attempt to backfill process ID:
 			self.write_pid(pid).ok();
+
 			return Some(pid);
 		}
 
@@ -90,6 +91,7 @@ impl InstalledServer {
 	/// Gets path information about where a specific server should be stored.
 	pub fn server_paths(&self, p: &LauncherPaths) -> ServerPaths {
 		let server_dir = self.get_install_folder(p);
+
 		ServerPaths {
 			// allow using the OSS server in development via an override
 			executable: if let Some(p) = option_env!("VSCODE_CLI_OVERRIDE_SERVER_PATH") {
@@ -129,10 +131,13 @@ pub fn prune_stopped_servers(launcher_paths: &LauncherPaths) -> Result<Vec<Serve
 // Gets a list of all servers which look like they might be running.
 pub fn get_all_servers(lp: &LauncherPaths) -> Vec<InstalledServer> {
 	let mut servers: Vec<InstalledServer> = vec![];
+
 	if let Ok(children) = read_dir(lp.server_cache.path()) {
 		for child in children.flatten() {
 			let fname = child.file_name();
+
 			let fname = fname.to_string_lossy();
+
 			let (quality, commit) = match fname.split_once('-') {
 				Some(r) => r,
 				None => continue,
