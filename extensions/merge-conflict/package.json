@@ -150,7 +150,7 @@
 	"dependencies": {},
 	"description": "%description%",
 	"devDependencies": {
-		"@types/node": "22.10.0"
+		"@types/node": "22.10.1"
 	},
 	"displayName": "%displayName%",
 	"icon": "media/icon.png",
