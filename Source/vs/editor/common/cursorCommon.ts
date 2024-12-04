@@ -2,27 +2,22 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { IEditorConfiguration } from "./config/editorConfiguration.js";
-import {
-	ConfigurationChangedEvent,
-	EditorAutoClosingEditStrategy,
-	EditorAutoClosingStrategy,
-	EditorAutoIndentStrategy,
-	EditorAutoSurroundStrategy,
-	EditorOption,
-} from "./config/editorOptions.js";
-import { CursorColumns } from "./core/cursorColumns.js";
-import { normalizeIndentation } from "./core/indentation.js";
-import { Position } from "./core/position.js";
-import { Range } from "./core/range.js";
-import { ISelection, Selection } from "./core/selection.js";
-import { ICommand } from "./editorCommon.js";
-import { AutoClosingPairs } from "./languages/languageConfiguration.js";
-import { ILanguageConfigurationService } from "./languages/languageConfigurationRegistry.js";
-import { createScopedLineTokens } from "./languages/supports.js";
-import { IElectricAction } from "./languages/supports/electricCharacter.js";
-import { PositionAffinity, TextModelResolvedOptions } from "./model.js";
-import { LineTokens } from "./tokens/lineTokens.js";
+
+import { ConfigurationChangedEvent, EditorAutoClosingEditStrategy, EditorAutoClosingStrategy, EditorAutoIndentStrategy, EditorAutoSurroundStrategy, EditorOption } from './config/editorOptions.js';
+import { LineTokens } from './tokens/lineTokens.js';
+import { Position } from './core/position.js';
+import { Range } from './core/range.js';
+import { ISelection, Selection } from './core/selection.js';
+import { ICommand } from './editorCommon.js';
+import { IEditorConfiguration } from './config/editorConfiguration.js';
+import { PositionAffinity, TextModelResolvedOptions } from './model.js';
+import { AutoClosingPairs } from './languages/languageConfiguration.js';
+import { ILanguageConfigurationService } from './languages/languageConfigurationRegistry.js';
+import { createScopedLineTokens } from './languages/supports.js';
+import { IElectricAction } from './languages/supports/electricCharacter.js';
+import { CursorColumns } from './core/cursorColumns.js';
+import { normalizeIndentation } from './core/indentation.js';
+import { InputMode } from './inputMode.js';
 
 export interface IColumnSelectData {
 	isReal: boolean;
@@ -119,6 +114,7 @@ export class CursorConfiguration {
 	};
 
 	public readonly wordSegmenterLocales: string[];
+	public readonly overtypeOnPaste: boolean;
 
 	private readonly _languageId: string;
 
@@ -128,22 +124,23 @@ export class CursorConfiguration {
 
 	public static shouldRecreate(e: ConfigurationChangedEvent): boolean {
 		return (
-			e.hasChanged(EditorOption.layoutInfo) ||
-			e.hasChanged(EditorOption.wordSeparators) ||
-			e.hasChanged(EditorOption.emptySelectionClipboard) ||
-			e.hasChanged(EditorOption.multiCursorMergeOverlapping) ||
-			e.hasChanged(EditorOption.multiCursorPaste) ||
-			e.hasChanged(EditorOption.multiCursorLimit) ||
-			e.hasChanged(EditorOption.autoClosingBrackets) ||
-			e.hasChanged(EditorOption.autoClosingComments) ||
-			e.hasChanged(EditorOption.autoClosingQuotes) ||
-			e.hasChanged(EditorOption.autoClosingDelete) ||
-			e.hasChanged(EditorOption.autoClosingOvertype) ||
-			e.hasChanged(EditorOption.autoSurround) ||
-			e.hasChanged(EditorOption.useTabStops) ||
-			e.hasChanged(EditorOption.fontInfo) ||
-			e.hasChanged(EditorOption.readOnly) ||
-			e.hasChanged(EditorOption.wordSegmenterLocales)
+			e.hasChanged(EditorOption.layoutInfo)
+			|| e.hasChanged(EditorOption.wordSeparators)
+			|| e.hasChanged(EditorOption.emptySelectionClipboard)
+			|| e.hasChanged(EditorOption.multiCursorMergeOverlapping)
+			|| e.hasChanged(EditorOption.multiCursorPaste)
+			|| e.hasChanged(EditorOption.multiCursorLimit)
+			|| e.hasChanged(EditorOption.autoClosingBrackets)
+			|| e.hasChanged(EditorOption.autoClosingComments)
+			|| e.hasChanged(EditorOption.autoClosingQuotes)
+			|| e.hasChanged(EditorOption.autoClosingDelete)
+			|| e.hasChanged(EditorOption.autoClosingOvertype)
+			|| e.hasChanged(EditorOption.autoSurround)
+			|| e.hasChanged(EditorOption.useTabStops)
+			|| e.hasChanged(EditorOption.fontInfo)
+			|| e.hasChanged(EditorOption.readOnly)
+			|| e.hasChanged(EditorOption.wordSegmenterLocales)
+			|| e.hasChanged(EditorOption.overtypeOnPaste)
 		);
 	}
 
@@ -220,10 +217,8 @@ export class CursorConfiguration {
 		this.autoSurround = options.get(EditorOption.autoSurround);
 
 		this.autoIndent = options.get(EditorOption.autoIndent);
-
-		this.wordSegmenterLocales = options.get(
-			EditorOption.wordSegmenterLocales,
-		);
+		this.wordSegmenterLocales = options.get(EditorOption.wordSegmenterLocales);
+		this.overtypeOnPaste = options.get(EditorOption.overtypeOnPaste);
 
 		this.surroundingPairs = {};
 
@@ -287,6 +282,11 @@ export class CursorConfiguration {
 
 		return this._electricChars;
 	}
+
+	public get inputMode(): 'insert' | 'overtype' {
+		return InputMode.getInputMode();
+	}
+
 	/**
 	 * Should return opening bracket type to match indentation with
 	 */

@@ -216,9 +216,10 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
 			joiners: () => [], // Unsupported in web
 			token: CancellationToken.None, // Unsupported in web
 			join(promise, joiner) {
-				logService.error(
-					`[lifecycle] Long running operations during shutdown are unsupported in the web (id: ${joiner.id})`,
-				);
+				if (typeof promise === 'function') {
+					promise();
+				}
+				logService.error(`[lifecycle] Long running operations during shutdown are unsupported in the web (id: ${joiner.id})`);
 			},
 			force: () => {},
 		});

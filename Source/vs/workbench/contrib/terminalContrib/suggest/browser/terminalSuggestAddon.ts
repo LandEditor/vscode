@@ -88,6 +88,7 @@ export class SuggestAddon extends Disposable implements ITerminalAddon, ISuggest
 	private _lastUserData?: string;
 
 	static lastAcceptedCompletionTimestamp: number = 0;
+	private _lastUserDataTimestamp: number = 0;
 
 	private _cancellationTokenSource: CancellationTokenSource | undefined;
 
@@ -151,6 +152,7 @@ export class SuggestAddon extends Disposable implements ITerminalAddon, ISuggest
 
 		this._register(xterm.onData(async e => {
 			this._lastUserData = e;
+			this._lastUserDataTimestamp = Date.now();
 		}));
 	}
 
@@ -169,14 +171,19 @@ export class SuggestAddon extends Disposable implements ITerminalAddon, ISuggest
 			return;
 		}
 
-		const enableExtensionCompletions = this._configurationService.getValue<ITerminalSuggestConfiguration>(terminalSuggestConfigSection).enableExtensionCompletions;
+		let doNotRequestExtensionCompletions = false;
+		// Ensure that a key has been pressed since the last accepted completion in order to prevent
+		// completions being requested again right after accepting a completion
+		if (this._lastUserDataTimestamp < SuggestAddon.lastAcceptedCompletionTimestamp) {
+			doNotRequestExtensionCompletions = true;
+		}
 
-		if (enableExtensionCompletions) {
+		const enableExtensionCompletions = this._configurationService.getValue<ITerminalSuggestConfiguration>(terminalSuggestConfigSection).enableExtensionCompletions;
+		if (enableExtensionCompletions && !doNotRequestExtensionCompletions) {
 			await this._extensionService.activateByEvent('onTerminalCompletionsRequested');
 		}
 
-		const providedCompletions = await this._terminalCompletionService.provideCompletions(this._promptInputModel.value, this._promptInputModel.cursorIndex, this._shellType, token, triggerCharacter);
-
+		const providedCompletions = await this._terminalCompletionService.provideCompletions(this._promptInputModel.value, this._promptInputModel.cursorIndex, this._shellType, token, triggerCharacter, doNotRequestExtensionCompletions);
 		if (!providedCompletions?.length || token.isCancellationRequested) {
 			return;
 		}
@@ -256,8 +263,6 @@ export class SuggestAddon extends Disposable implements ITerminalAddon, ISuggest
 
 		this._showCompletions(model);
 	}
-
-
 
 	setContainerWithOverflow(container: HTMLElement): void {
 		this._container = container;

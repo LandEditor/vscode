@@ -70,6 +70,10 @@ export class FastDomNode<T extends HTMLElement> {
 
 	constructor(public readonly domNode: T) {}
 
+	public focus(): void {
+		this.domNode.focus();
+	}
+
 	public setMaxWidth(_maxWidth: number | string): void {
 		const maxWidth = numberAsPixels(_maxWidth);
 

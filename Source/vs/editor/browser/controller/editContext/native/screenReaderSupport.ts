@@ -32,6 +32,7 @@ export class ScreenReaderSupport {
 	private _fontInfo: FontInfo | undefined;
 
 	private _accessibilityPageSize: number = 1;
+	private _ignoreSelectionChangeTime: number = 0;
 
 	private _primarySelection: Selection = new Selection(1, 1, 1, 1);
 
@@ -48,6 +49,18 @@ export class ScreenReaderSupport {
 		this._updateConfigurationSettings();
 
 		this._updateDomAttributes();
+	}
+
+	public setIgnoreSelectionChangeTime(reason: string): void {
+		this._ignoreSelectionChangeTime = Date.now();
+	}
+
+	public getIgnoreSelectionChangeTime(): number {
+		return this._ignoreSelectionChangeTime;
+	}
+
+	public resetSelectionChangeTime(): void {
+		this._ignoreSelectionChangeTime = 0;
 	}
 
 	public onConfigurationChanged(e: ViewConfigurationChangedEvent): void {
@@ -190,13 +203,9 @@ export class ScreenReaderSupport {
 		if (!this._screenReaderContentState) {
 			return;
 		}
-
-		if (
-			this._domNode.domNode.textContent !==
-			this._screenReaderContentState.value
-		) {
-			this._domNode.domNode.textContent =
-				this._screenReaderContentState.value;
+		if (this._domNode.domNode.textContent !== this._screenReaderContentState.value) {
+			this.setIgnoreSelectionChangeTime('setValue');
+			this._domNode.domNode.textContent = this._screenReaderContentState.value;
 		}
 
 		this._setSelectionOfScreenReaderContent(
@@ -277,7 +286,7 @@ export class ScreenReaderSupport {
 		range.setStart(textContent, selectionOffsetStart);
 
 		range.setEnd(textContent, selectionOffsetEnd);
-
+		this.setIgnoreSelectionChangeTime('setRange');
 		activeDocumentSelection.removeAllRanges();
 
 		activeDocumentSelection.addRange(range);

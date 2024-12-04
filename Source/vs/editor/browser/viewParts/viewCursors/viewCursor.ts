@@ -80,8 +80,7 @@ export class ViewCursor {
 
 		const fontInfo = options.get(EditorOption.fontInfo);
 
-		this._cursorStyle = options.get(EditorOption.cursorStyle);
-
+		this._cursorStyle = options.get(EditorOption.effectiveCursorStyle);
 		this._lineHeight = options.get(EditorOption.lineHeight);
 
 		this._typicalHalfwidthCharacterWidth =
@@ -172,8 +171,7 @@ export class ViewCursor {
 
 		const fontInfo = options.get(EditorOption.fontInfo);
 
-		this._cursorStyle = options.get(EditorOption.cursorStyle);
-
+		this._cursorStyle = options.get(EditorOption.effectiveCursorStyle);
 		this._lineHeight = options.get(EditorOption.lineHeight);
 
 		this._typicalHalfwidthCharacterWidth =

@@ -495,7 +495,7 @@ export class ExplorerView extends ViewPane implements IExplorerView {
 
 		this._register(explorerLabels);
 
-		this.findProvider = this.instantiationService.createInstance(ExplorerFindProvider, () => this.tree);
+		this.findProvider = this.instantiationService.createInstance(ExplorerFindProvider, this.filter, () => this.tree);
 
 		const updateWidth = (stat: ExplorerItem) => this.tree.updateWidth(stat);
 

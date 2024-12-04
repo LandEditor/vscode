@@ -516,6 +516,12 @@
 			},
 			{
 				"category": "Git",
+				"command": "git.checkoutRef",
+				"enablement": "!operationInProgress",
+				"title": "%command.checkoutRef%"
+			},
+			{
+				"category": "Git",
 				"command": "git.checkoutRefDetached",
 				"enablement": "!operationInProgress",
 				"title": "%command.checkoutRefDetached%"
@@ -1091,7 +1097,7 @@
 					"type": "boolean"
 				},
 				"git.blame.statusBarItem.template": {
-					"default": "$(git-commit) ${authorName} (${authorDateAgo})",
+					"default": "${authorName} (${authorDateAgo})",
 					"markdownDescription": "%config.blameStatusBarItem.template%",
 					"scope": "resource",
 					"tags": [
@@ -2298,6 +2304,10 @@
 					"when": "false"
 				},
 				{
+					"command": "git.checkoutRef",
+					"when": "false"
+				},
+				{
 					"command": "git.checkoutRefDetached",
 					"when": "false"
 				},
@@ -2746,6 +2756,7 @@
 					"when": "scmProvider == git && !listMultiSelection"
 				}
 			],
+			"scm/historyItemRef/context": [],
 			"scm/resourceFolder/context": [
 				{
 					"command": "git.stage",
@@ -3408,19 +3419,19 @@
 		]
 	},
 	"dependencies": {
-		"@joaomoreno/unique-names-generator": "5.1.0",
-		"byline": "5.0.0",
-		"file-type": "19.6.0",
+		"@joaomoreno/unique-names-generator": "^5.1.0",
+		"byline": "^5.0.0",
+		"file-type": "16.5.4",
 		"jschardet": "3.1.4",
-		"picomatch": "4.0.2",
-		"which": "5.0.0"
+		"picomatch": "2.3.1",
+		"which": "4.0.0"
 	},
 	"description": "%description%",
 	"devDependencies": {
-		"@types/byline": "4.2.36",
-		"@types/node": "22.x",
-		"@types/picomatch": "3.0.1",
-		"@types/which": "3.0.4"
+		"@types/byline": "4.2.31",
+		"@types/node": "20.x",
+		"@types/picomatch": "2.3.0",
+		"@types/which": "3.0.0"
 	},
 	"displayName": "%displayName%",
 	"enabledApiProposals": [

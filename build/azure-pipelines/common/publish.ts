@@ -1211,37 +1211,22 @@ async function processArtifact(artifact: Artifact, filePath: string) {
 		await releaseService.createRelease(version, filePath, friendlyFileName);
 	}
 
-	const asset: Asset = {
-		platform,
-		type,
-		url,
-		hash: hash.toString("hex"),
-		sha256hash: sha256hash.toString("hex"),
-		size,
-		supportsFastUpdate: true,
-	};
+	const asset: Asset = { platform, type, url, hash: hash.toString('hex'), sha256hash: sha256hash.toString('hex'), size, supportsFastUpdate: true };
+	log('Creating asset...');
 
-	log("Creating asset...", JSON.stringify(asset, undefined, 2));
-
-	await retry(async (attempt) => {
+	const result = await retry(async (attempt) => {
 		log(`Creating asset in Cosmos DB (attempt ${attempt})...`);
-
-		const client = new CosmosClient({
-			endpoint: e("AZURE_DOCUMENTDB_ENDPOINT")!,
-			tokenProvider: () =>
-				Promise.resolve(
-					`type=aad&ver=1.0&sig=${cosmosDBAccessToken.token}`,
-				),
-		});
-
-		const scripts = client.database("builds").container(quality).scripts;
-
-		await scripts
-			.storedProcedure("createAsset")
-			.execute("", [version, asset, true]);
+		const client = new CosmosClient({ endpoint: e('AZURE_DOCUMENTDB_ENDPOINT')!, tokenProvider: () => Promise.resolve(`type=aad&ver=1.0&sig=${cosmosDBAccessToken.token}`) });
+		const scripts = client.database('builds').container(quality).scripts;
+		const { resource: result } = await scripts.storedProcedure('createAsset').execute<'ok' | 'already exists'>('', [version, asset, true]);
+		return result;
 	});
 
-	log("Asset successfully created");
+	if (result === 'already exists') {
+		log('Asset already exists!');
+	} else {
+		log('Asset successfully created: ', JSON.stringify(asset, undefined, 2));
+	}
 }
 // It is VERY important that we don't download artifacts too much too fast from AZDO.
 // AZDO throttles us SEVERELY if we do. Not just that, but they also close open

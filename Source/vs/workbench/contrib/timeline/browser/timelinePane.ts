@@ -264,6 +264,7 @@ class LoadMoreCommand {
 export const TimelineFollowActiveEditorContext = new RawContextKey<boolean>('timelineFollowActiveEditor', true, true);
 
 export const TimelineExcludeSources = new RawContextKey<string>('timelineExcludeSources', '[]', true);
+export const TimelineViewFocusedContext = new RawContextKey<boolean>('timelineFocused', true);
 
 export class TimelinePane extends ViewPane {
 	static readonly TITLE: ILocalizedString = localize2('timeline', "Timeline");
@@ -1074,6 +1075,8 @@ export class TimelinePane extends ViewPane {
 			multipleSelectionSupport: false,
 			overrideStyles: this.getLocationBasedColors().listOverrideStyles,
 		});
+
+		TimelineViewFocusedContext.bindTo(this.tree.contextKeyService);
 
 		this._register(this.tree.onContextMenu(e => this.onContextMenu(this.commands, e)));
 

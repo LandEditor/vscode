@@ -3,25 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	CancellationToken,
-	CancellationTokenSource,
-} from "../../../../base/common/cancellation.js";
-import { Event } from "../../../../base/common/event.js";
-import { IDisposable } from "../../../../base/common/lifecycle.js";
-import { ResourceMap } from "../../../../base/common/map.js";
-import {
-	IObservable,
-	ITransaction,
-} from "../../../../base/common/observable.js";
-import { URI } from "../../../../base/common/uri.js";
-import { IDocumentDiff } from "../../../../editor/common/diff/documentDiffProvider.js";
-import { TextEdit } from "../../../../editor/common/languages.js";
-import { ITextModel } from "../../../../editor/common/model.js";
-import { localize } from "../../../../nls.js";
-import { RawContextKey } from "../../../../platform/contextkey/common/contextkey.js";
-import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
-import { IChatResponseModel } from "./chatModel.js";
+import { CancellationToken, CancellationTokenSource } from '../../../../base/common/cancellation.js';
+import { Event } from '../../../../base/common/event.js';
+import { IDisposable } from '../../../../base/common/lifecycle.js';
+import { ResourceMap } from '../../../../base/common/map.js';
+import { IObservable, IReader, ITransaction } from '../../../../base/common/observable.js';
+import { URI } from '../../../../base/common/uri.js';
+import { IDocumentDiff } from '../../../../editor/common/diff/documentDiffProvider.js';
+import { TextEdit } from '../../../../editor/common/languages.js';
+import { ITextModel } from '../../../../editor/common/model.js';
+import { localize } from '../../../../nls.js';
+import { RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
+import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
+import { IChatResponseModel } from './chatModel.js';
 
 export const IChatEditingService =
 	createDecorator<IChatEditingService>("chatEditingService");
@@ -43,18 +37,8 @@ export interface IChatEditingService {
 
 	readonly editingSessionFileLimit: number;
 
-	startOrContinueEditingSession(
-		chatSessionId: string,
-	): Promise<IChatEditingSession>;
-
-	getEditingSession(resource: URI): IChatEditingSession | null;
-
-	createSnapshot(requestId: string): void;
-
-	getSnapshotUri(requestId: string, uri: URI): URI | undefined;
-
-	restoreSnapshot(requestId: string | undefined): Promise<void>;
-
+	startOrContinueEditingSession(chatSessionId: string): Promise<IChatEditingSession>;
+	getOrRestoreEditingSession(): Promise<IChatEditingSession | null>;
 	hasRelatedFilesProviders(): boolean;
 
 	registerRelatedFilesProvider(
@@ -128,10 +112,16 @@ export interface IChatEditingSession {
 	accept(...uris: URI[]): Promise<void>;
 
 	reject(...uris: URI[]): Promise<void>;
+	getEntry(uri: URI): IModifiedFileEntry | undefined;
+	readEntry(uri: URI, reader?: IReader): IModifiedFileEntry | undefined;
+
+	restoreSnapshot(requestId: string): Promise<void>;
+	getSnapshotUri(requestId: string, uri: URI): URI | undefined;
+
 	/**
 	 * Will lead to this object getting disposed
 	 */
-	stop(): Promise<void>;
+	stop(clearState?: boolean): Promise<void>;
 
 	undoInteraction(): Promise<void>;
 
@@ -169,7 +159,7 @@ export interface IModifiedFileEntry {
 	readonly isCurrentlyBeingModified: IObservable<boolean>;
 
 	readonly rewriteRatio: IObservable<number>;
-
+	readonly maxLineNumber: IObservable<number>;
 	readonly diffInfo: IObservable<IDocumentDiff>;
 
 	readonly lastModifyingRequestId: string;

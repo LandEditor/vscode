@@ -134,6 +134,11 @@ export class ChatEditingModifiedFileEntry
 		return this._rewriteRatioObs;
 	}
 
+	private readonly _maxLineNumberObs = observableValue<number>(this, 0);
+	public get maxLineNumber(): IObservable<number> {
+		return this._maxLineNumberObs;
+	}
+
 	private _isFirstEditAfterStartOrSnapshot: boolean = true;
 
 	private _edit: OffsetEdit = OffsetEdit.empty;
@@ -153,15 +158,7 @@ export class ChatEditingModifiedFileEntry
 		return this._diffInfo;
 	}
 
-	private readonly _editDecorationClear = this._register(
-		new RunOnceScheduler(() => {
-			this._editDecorations = this.doc.deltaDecorations(
-				this._editDecorations,
-				[],
-			);
-		}, 3000),
-	);
-
+	private readonly _editDecorationClear = this._register(new RunOnceScheduler(() => { this._editDecorations = this.doc.deltaDecorations(this._editDecorations, []); }, 500));
 	private _editDecorations: string[] = [];
 
 	private static readonly _editDecorationOptions =
@@ -382,6 +379,7 @@ export class ChatEditingModifiedFileEntry
 			}
 
 			this._allEditsAreFromUs = false;
+			this._updateDiffInfoSeq(true);
 		}
 
 		if (!this.isCurrentlyBeingModified.get()) {
@@ -402,24 +400,16 @@ export class ChatEditingModifiedFileEntry
 					}
 			}
 		}
-
-		this._updateDiffInfoSeq(!this._isEditFromUs);
 	}
 
 	acceptAgentEdits(textEdits: TextEdit[], isLastEdits: boolean): void {
 		// highlight edits
-		this._editDecorations = this.doc.deltaDecorations(
-			this._editDecorations,
-			textEdits.map((edit) => {
-				return {
-					options:
-						ChatEditingModifiedFileEntry._editDecorationOptions,
-					range: edit.range,
-				} satisfies IModelDeltaDecoration;
-			}),
-		);
-
-		this._editDecorationClear.schedule();
+		this._editDecorations = this.doc.deltaDecorations(this._editDecorations, textEdits.map(edit => {
+			return {
+				options: ChatEditingModifiedFileEntry._editDecorationOptions,
+				range: edit.range
+			} satisfies IModelDeltaDecoration;
+		}));
 
 		// push stack element for the first edit
 		if (this._isFirstEditAfterStartOrSnapshot) {
@@ -449,32 +439,24 @@ export class ChatEditingModifiedFileEntry
 		}
 
 		const ops = textEdits.map(TextEdit.asEditOperation);
-
-		this._applyEdits(ops);
+		const undoEdits = this._applyEdits(ops);
 
 		transaction((tx) => {
 			if (!isLastEdits) {
 				this._stateObs.set(WorkingSetEntryState.Modified, tx);
 
 				this._isCurrentlyBeingModifiedObs.set(true, tx);
-
-				const maxLineNumber = ops.reduce(
-					(max, op) => Math.max(max, op.range.endLineNumber),
-					0,
-				);
-
+				const maxLineNumber = undoEdits.reduce((max, op) => Math.max(max, op.range.startLineNumber), 0);
 				const lineCount = this.doc.getLineCount();
-
-				this._rewriteRatioObs.set(
-					Math.min(1, maxLineNumber / lineCount),
-					tx,
-				);
+				this._rewriteRatioObs.set(Math.min(1, maxLineNumber / lineCount), tx);
+				this._maxLineNumberObs.set(maxLineNumber, tx);
 			} else {
 				this._resetEditsState(tx);
 
 				this._updateDiffInfoSeq(true);
 
 				this._rewriteRatioObs.set(1, tx);
+				this._editDecorationClear.schedule();
 			}
 		});
 	}
@@ -484,7 +466,12 @@ export class ChatEditingModifiedFileEntry
 		this._isEditFromUs = true;
 
 		try {
-			this.doc.pushEditOperations(null, edits, () => null);
+			let result: ISingleEditOperation[] = [];
+			this.doc.pushEditOperations(null, edits, (undoEdits) => {
+				result = undoEdits;
+				return null;
+			});
+			return result;
 		} finally {
 			this._isEditFromUs = false;
 		}
@@ -520,7 +507,7 @@ export class ChatEditingModifiedFileEntry
 				},
 				"advanced",
 			),
-			timeout(fast ? 50 : 800), // DON't diff too fast
+			timeout(fast ? 0 : 800) // DON't diff too fast
 		]);
 
 		if (this.docSnapshot.isDisposed() || this.doc.isDisposed()) {
@@ -551,7 +538,7 @@ export class ChatEditingModifiedFileEntry
 		}
 
 		this.docSnapshot.setValue(this.doc.createSnapshot());
-
+		this._diffInfo.set(nullDocumentDiff, transaction);
 		this._edit = OffsetEdit.empty;
 
 		this._stateObs.set(WorkingSetEntryState.Accepted, transaction);
@@ -567,11 +554,8 @@ export class ChatEditingModifiedFileEntry
 			return;
 		}
 
-		this._stateObs.set(WorkingSetEntryState.Rejected, transaction);
-
-		this._notifyAction("rejected");
-
 		if (this.createdInRequestId === this._telemetryInfo.requestId) {
+			await this.docFileEditorModel.revert({ soft: true });
 			await this._fileService.del(this.modifiedURI);
 
 			this._onDidDelete.fire();
@@ -588,6 +572,8 @@ export class ChatEditingModifiedFileEntry
 
 			await this.collapse(transaction);
 		}
+		this._stateObs.set(WorkingSetEntryState.Rejected, transaction);
+		this._notifyAction('rejected');
 	}
 
 	private _setDocValue(value: string): void {

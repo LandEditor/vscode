@@ -8,8 +8,14 @@ import { URI } from "../../../../base/common/uri.js";
 import { LanguageSelector } from "../../../../editor/common/languageSelector.js";
 import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
 
-export const IQuickDiffService =
-	createDecorator<IQuickDiffService>("quickDiff");
+import { URI } from '../../../../base/common/uri.js';
+import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
+import { IDisposable } from '../../../../base/common/lifecycle.js';
+import { LanguageSelector } from '../../../../editor/common/languageSelector.js';
+import { Event } from '../../../../base/common/event.js';
+import { LineRangeMapping } from '../../../../editor/common/diff/rangeMapping.js';
+
+export const IQuickDiffService = createDecorator<IQuickDiffService>('quickDiff');
 
 export interface QuickDiffProvider {
 	label: string;
@@ -33,6 +39,13 @@ export interface QuickDiff {
 
 	visible: boolean;
 }
+
+export interface QuickDiffResult {
+	readonly original: URI;
+	readonly modified: URI;
+	readonly changes: readonly LineRangeMapping[];
+}
+
 export interface IQuickDiffService {
 	readonly _serviceBrand: undefined;
 

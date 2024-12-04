@@ -593,7 +593,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
 	}
 
 	private onDidChangeItems(skipDynamicLayout?: boolean) {
-		if (this.tree && this._visible) {
+		if (this._visible || !this.viewModel) {
 			const treeItems = (this.viewModel?.getItems() ?? [])
 				.map((item): ITreeElement<ChatTreeItem> => {
 					return {
@@ -607,6 +607,8 @@ export class ChatWidget extends Disposable implements IChatWidget {
 
 			this._onWillMaybeChangeHeight.fire();
 
+			this.lastItem = treeItems.at(-1)?.element;
+			ChatContextKeys.lastItemId.bindTo(this.contextKeyService).set(this.lastItem ? [this.lastItem.id] : []);
 			this.tree.setChildren(null, treeItems, {
 				diffIdentityProvider: {
 					getId: (element) => {
@@ -629,12 +631,6 @@ export class ChatWidget extends Disposable implements IChatWidget {
 
 			if (!skipDynamicLayout && this._dynamicMessageLayoutData) {
 				this.layoutDynamicChatTreeItemMode();
-			}
-
-			this.lastItem = treeItems[treeItems.length - 1]?.element;
-
-			if (this.lastItem) {
-				ChatContextKeys.lastItemId.bindTo(this.contextKeyService).set([this.lastItem.id]);
 			}
 
 			if (this.lastItem && isResponseVM(this.lastItem) && this.lastItem.isComplete) {
@@ -1097,6 +1093,25 @@ export class ChatWidget extends Disposable implements IChatWidget {
 
 	async acceptInput(query?: string, options?: IChatAcceptInputOptions): Promise<IChatResponseModel | undefined> {
 		return this._acceptInput(query ? { query } : undefined, options);
+	}
+
+	async rerunLastRequest(): Promise<void> {
+		if (!this.viewModel) {
+			return;
+		}
+
+		const sessionId = this.viewModel.sessionId;
+		const lastRequest = this.chatService.getSession(sessionId)?.getRequests().at(-1);
+		if (!lastRequest) {
+			return;
+		}
+
+		const options: IChatSendRequestOptions = {
+			attempt: lastRequest.attempt + 1,
+			location: this.location,
+			userSelectedModelId: this.input.currentLanguageModel
+		};
+		return await this.chatService.resendRequest(lastRequest, options);
 	}
 
 	async acceptInputWithPrefix(prefix: string): Promise<void> {

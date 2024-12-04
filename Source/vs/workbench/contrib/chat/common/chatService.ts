@@ -54,6 +54,11 @@ export interface IChatResponseErrorDetails {
 	responseIsFiltered?: boolean;
 
 	responseIsRedacted?: boolean;
+
+	quotaExceededDetails?: {
+		command: Command;
+		rerunButtonLabel: string;
+	};
 }
 
 export interface IChatResponseProgressFileTreeData {

@@ -125,8 +125,15 @@ export function registerNewChatActions() {
 					when: ContextKeyExpr.equals('view', EditsViewId),
 					group: 'navigation',
 					order: -1
-				},
-				]
+				}],
+				keybinding: {
+					weight: KeybindingWeight.WorkbenchContrib,
+					primary: KeyMod.CtrlCmd | KeyCode.KeyL,
+					mac: {
+						primary: KeyMod.WinCtrl | KeyCode.KeyL
+					},
+					when: ChatContextKeys.inChatSession
+				}
 			});
 		}
 
@@ -201,8 +208,7 @@ export function registerNewChatActions() {
 				const widget = widgetService.getWidgetBySessionId(context.sessionId);
 
 				if (widget) {
-					chatEditingService.currentEditingSessionObs.get()?.stop();
-
+					chatEditingService.currentEditingSessionObs.get()?.stop(true);
 					widget.clear();
 
 					widget.attachmentModel.clear();
@@ -216,9 +222,7 @@ export function registerNewChatActions() {
 				const widget = chatView.widget;
 
 				announceChatCleared(accessibilitySignalService);
-
-				chatEditingService.currentEditingSessionObs.get()?.stop();
-
+				chatEditingService.currentEditingSessionObs.get()?.stop(true);
 				widget.clear();
 
 				widget.attachmentModel.clear();
