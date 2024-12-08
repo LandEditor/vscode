@@ -718,7 +718,7 @@ export class ChatResponseViewModel
 			return this._usedReferencesExpanded;
 		}
 
-		return this.response.value.length === 0;
+		return this.response.value.length === 0 && !this.errorDetails;
 	}
 
 	set usedReferencesExpanded(v: boolean) {

@@ -447,15 +447,11 @@ export abstract class ZoneWidget implements IHorizontalSashLayoutProvider {
 			this.editor.changeViewZones((accessor) => {
 				accessor.layoutZone(this._viewZone!.id);
 			});
-
-			this._positionMarkerId.set([
-				{
-					range: Range.isIRange(rangeOrPos)
-						? rangeOrPos
-						: Range.fromPositions(rangeOrPos),
-					options: ModelDecorationOptions.EMPTY,
-				},
-			]);
+			this._positionMarkerId.set([{
+				range: Range.isIRange(rangeOrPos) ? rangeOrPos : Range.fromPositions(rangeOrPos),
+				options: ModelDecorationOptions.EMPTY
+			}]);
+			this._updateSashEnablement();
 		}
 	}
 
@@ -583,6 +579,7 @@ export abstract class ZoneWidget implements IHorizontalSashLayoutProvider {
 
 			this.editor.addOverlayWidget(this._overlayWidget);
 		});
+		this._updateSashEnablement();
 
 		if (this.container && this.options.showFrame) {
 			const width = this.options.frameWidth
@@ -670,6 +667,7 @@ export abstract class ZoneWidget implements IHorizontalSashLayoutProvider {
 					accessor.layoutZone(this._viewZone.id);
 				}
 			});
+			this._updateSashEnablement();
 		}
 	}
 
@@ -746,6 +744,13 @@ export abstract class ZoneWidget implements IHorizontalSashLayoutProvider {
 				}
 			}),
 		);
+	}
+
+	private _updateSashEnablement(): void {
+		if (this._resizeSash) {
+			const { minLines, maxLines } = this._getResizeBounds();
+			this._resizeSash.state = minLines === maxLines ? SashState.Disabled : SashState.Enabled;
+		}
 	}
 
 	protected get _usesResizeHeight(): boolean {

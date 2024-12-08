@@ -3,8 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { SetWithKey } from "./collections.js";
-import { ArrayNavigator, INavigator } from "./navigator.js";
+import { SetWithKey } from './collections.js';
+import { Event } from './event.js';
+import { ArrayNavigator, INavigator } from './navigator.js';
 
 export interface IHistory<T> {
 	delete(t: T): boolean;
@@ -21,6 +22,7 @@ export interface IHistory<T> {
 	): void;
 
 	replace?(t: T[]): void;
+	onDidChange?: Event<string[]>;
 }
 
 export class HistoryNavigator<T> implements INavigator<T> {
@@ -35,6 +37,9 @@ export class HistoryNavigator<T> implements INavigator<T> {
 		this._limit = limit;
 
 		this._onChange();
+		if (this._history.onDidChange) {
+			this._history.onDidChange(() => this._onChange());
+		}
 	}
 
 	public getHistory(): T[] {

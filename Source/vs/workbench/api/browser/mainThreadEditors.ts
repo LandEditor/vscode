@@ -28,8 +28,7 @@ import { IExtHostContext } from '../../services/extensions/common/extHostCustome
 import { IEditorControl } from '../../common/editor.js';
 import { getCodeEditor, ICodeEditor } from '../../../editor/browser/editorBrowser.js';
 import { IConfigurationService } from '../../../platform/configuration/common/configuration.js';
-import { DirtyDiffContribution } from '../../contrib/scm/browser/dirtydiffDecorator.js';
-import { IDirtyDiffModelService } from '../../contrib/scm/browser/diff.js';
+import { IDirtyDiffModelService } from '../../contrib/scm/browser/dirtyDiffModel.js';
 import { autorun, constObservable, derived, derivedOpts, IObservable, observableFromEvent } from '../../../base/common/observable.js';
 import { IUriIdentityService } from '../../../platform/uriIdentity/common/uriIdentity.js';
 import { isITextModel } from '../../../editor/common/model.js';
@@ -166,7 +165,12 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 				}
 
 				return observableFromEvent(this, dirtyDiffModel.onDidChange, () => {
-					return dirtyDiffModel.getQuickDiffResults();
+					return dirtyDiffModel.getQuickDiffResults()
+						.map(result => ({
+							original: result.original,
+							modified: result.modified,
+							changes: result.changes2
+						}));
 				});
 			}
 
@@ -180,7 +184,12 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 			}
 
 			return observableFromEvent(Event.any(dirtyDiffModel.onDidChange, diffEditor.onDidUpdateDiff), () => {
-				const dirtyDiffInformation = dirtyDiffModel.getQuickDiffResults();
+				const dirtyDiffInformation = dirtyDiffModel.getQuickDiffResults()
+					.map(result => ({
+						original: result.original,
+						modified: result.modified,
+						changes: result.changes2
+					}));
 
 				const diffChanges = diffEditor.getDiffComputationResult()?.changes2 ?? [];
 				const diffInformation = [{
@@ -376,13 +385,15 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 			return Promise.resolve(diffEditor.getLineChanges() || []);
 		}
 
-		const dirtyDiffContribution = codeEditor.getContribution('editor.contrib.dirtydiff');
-
-		if (dirtyDiffContribution) {
-			return Promise.resolve((dirtyDiffContribution as DirtyDiffContribution).getChanges());
+		if (!codeEditor.hasModel()) {
+			return Promise.resolve([]);
 		}
 
-		return Promise.resolve([]);
+		const dirtyDiffModel = this._dirtyDiffModelService.getDirtyDiffModel(codeEditor.getModel().uri);
+		const scmQuickDiff = dirtyDiffModel?.quickDiffs.find(quickDiff => quickDiff.isSCM);
+		const scmQuickDiffChanges = dirtyDiffModel?.changes.filter(change => change.label === scmQuickDiff?.label);
+
+		return Promise.resolve(scmQuickDiffChanges?.map(change => change.change) ?? []);
 	}
 }
 

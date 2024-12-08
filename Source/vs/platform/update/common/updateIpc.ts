@@ -2,12 +2,11 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Emitter, Event } from "../../../base/common/event.js";
-import {
-	IChannel,
-	IServerChannel,
-} from "../../../base/parts/ipc/common/ipc.js";
-import { IUpdateService, State } from "./update.js";
+
+import { Emitter, Event } from '../../../base/common/event.js';
+import { DisposableStore } from '../../../base/common/lifecycle.js';
+import { IChannel, IServerChannel } from '../../../base/parts/ipc/common/ipc.js';
+import { IUpdateService, State } from './update.js';
 
 export class UpdateChannel implements IServerChannel {
 	constructor(private service: IUpdateService) {}
@@ -50,6 +49,7 @@ export class UpdateChannel implements IServerChannel {
 }
 export class UpdateChannelClient implements IUpdateService {
 	declare readonly _serviceBrand: undefined;
+	private readonly disposables = new DisposableStore();
 
 	private readonly _onStateChange = new Emitter<State>();
 
@@ -68,13 +68,8 @@ export class UpdateChannelClient implements IUpdateService {
 	}
 
 	constructor(private readonly channel: IChannel) {
-		this.channel.listen<State>("onStateChange")(
-			(state) => (this.state = state),
-		);
-
-		this.channel
-			.call<State>("_getInitialState")
-			.then((state) => (this.state = state));
+		this.disposables.add(this.channel.listen<State>('onStateChange')(state => this.state = state));
+		this.channel.call<State>('_getInitialState').then(state => this.state = state);
 	}
 
 	checkForUpdates(explicit: boolean): Promise<void> {
@@ -99,5 +94,9 @@ export class UpdateChannelClient implements IUpdateService {
 
 	_applySpecificUpdate(packagePath: string): Promise<void> {
 		return this.channel.call("_applySpecificUpdate", packagePath);
+	}
+
+	dispose(): void {
+		this.disposables.dispose();
 	}
 }

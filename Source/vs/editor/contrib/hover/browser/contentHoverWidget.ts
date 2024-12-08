@@ -33,8 +33,6 @@ import { ResizableContentWidget } from "./resizableContentWidget.js";
 
 const HORIZONTAL_SCROLLING_BY = 30;
 
-const CONTAINER_HEIGHT_PADDING = 6;
-
 export class ContentHoverWidget extends ResizableContentWidget {
 	public static ID = "editor.contrib.resizableContentHoverWidget";
 
@@ -99,6 +97,8 @@ export class ContentHoverWidget extends ResizableContentWidget {
 			EditorContextKeys.hoverFocused.bindTo(contextKeyService);
 
 		dom.append(this._resizableNode.domNode, this._hover.containerDomNode);
+		this._resizableNode.domNode.style.zIndex = '50';
+		this._resizableNode.domNode.className = 'monaco-resizable-hover';
 
 		this._resizableNode.domNode.style.zIndex = "50";
 
@@ -195,14 +195,15 @@ export class ContentHoverWidget extends ResizableContentWidget {
 		);
 	}
 
-	private _setHoverWidgetDimensions(
-		width: number | string,
-		height: number | string,
-	): void {
-		this._setContentsDomNodeDimensions(width, height);
+	private _setScrollableElementDimensions(width: number | string, height: number | string): void {
+		const scrollbarDomElement = this._hover.scrollbar.getDomNode();
+		return ContentHoverWidget._applyDimensions(scrollbarDomElement, width, height);
+	}
 
+	private _setHoverWidgetDimensions(width: number | string, height: number | string): void {
 		this._setContainerDomNodeDimensions(width, height);
-
+		this._setScrollableElementDimensions(width, height);
+		this._setContentsDomNodeDimensions(width, height);
 		this._layoutContentWidget();
 	}
 
@@ -311,15 +312,11 @@ export class ContentHoverWidget extends ResizableContentWidget {
 		if (!availableSpace) {
 			return;
 		}
-		// Padding needed in order to stop the resizing down to a smaller height
-		let maximumHeight = CONTAINER_HEIGHT_PADDING;
-
-		Array.from(this._hover.contentsDomNode.children).forEach(
-			(hoverPart) => {
-				maximumHeight += hoverPart.clientHeight;
-			},
-		);
-
+		const children = this._hover.contentsDomNode.children;
+		let maximumHeight = children.length - 1;
+		Array.from(this._hover.contentsDomNode.children).forEach((hoverPart) => {
+			maximumHeight += hoverPart.clientHeight;
+		});
 		return Math.min(availableSpace, maximumHeight);
 	}
 
@@ -358,6 +355,11 @@ export class ContentHoverWidget extends ResizableContentWidget {
 		}
 
 		const overflowing = this._isHoverTextOverflowing();
+		const initialWidth = (
+			typeof this._contentWidth === 'undefined'
+				? 0
+				: this._contentWidth
+		);
 
 		const initialWidth =
 			typeof this._contentWidth === "undefined"
@@ -376,7 +378,7 @@ export class ContentHoverWidget extends ResizableContentWidget {
 
 			return bodyBoxWidth - horizontalPadding;
 		} else {
-			return this._hover.containerDomNode.clientWidth + 2;
+			return this._hover.containerDomNode.clientWidth;
 		}
 	}
 
@@ -636,21 +638,16 @@ export class ContentHoverWidget extends ResizableContentWidget {
 
 	public onContentsChanged(): void {
 		this._removeConstraintsRenderNormally();
+		const contentsDomNode = this._hover.contentsDomNode;
 
-		const containerDomNode = this._hover.containerDomNode;
-
-		let height = dom.getTotalHeight(containerDomNode);
-
-		let width = dom.getTotalWidth(containerDomNode);
-
+		let height = dom.getTotalHeight(contentsDomNode);
+		let width = dom.getTotalWidth(contentsDomNode) + 2;
 		this._resizableNode.layout(height, width);
 
 		this._setHoverWidgetDimensions(width, height);
 
-		height = dom.getTotalHeight(containerDomNode);
-
-		width = dom.getTotalWidth(containerDomNode);
-
+		height = dom.getTotalHeight(contentsDomNode);
+		width = dom.getTotalWidth(contentsDomNode);
 		this._contentWidth = width;
 
 		this._updateMinimumWidth();

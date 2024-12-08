@@ -19,7 +19,8 @@ import {
 	InstallOptions, IProductVersion,
 	UninstallExtensionInfo,
 	TargetPlatformToString,
-	IAllowedExtensionsService
+	IAllowedExtensionsService,
+	AllowedExtensionsConfigKey
 } from '../../../../platform/extensionManagement/common/extensionManagement.js';
 import { IWorkbenchExtensionEnablementService, EnablementState, IExtensionManagementServerService, IExtensionManagementServer, IWorkbenchExtensionManagementService, DefaultIconPath, IResourceExtension } from '../../../services/extensionManagement/common/extensionManagement.js';
 import { getGalleryExtensionTelemetryData, getLocalExtensionTelemetryData, areSameExtensions, groupByExtension, getGalleryExtensionId } from '../../../../platform/extensionManagement/common/extensionManagementUtil.js';
@@ -1086,8 +1087,7 @@ export class ExtensionsWorkbenchService extends Disposable implements IExtension
 
 	get onChange(): Event<IExtension | undefined> { return this._onChange.event; }
 
-	private extensionsNotification: IExtensionsNotification | undefined;
-
+	private extensionsNotification: IExtensionsNotification & { readonly key: string } | undefined;
 	private readonly _onDidChangeExtensionsNotification = new Emitter<IExtensionsNotification | undefined>();
 
 	readonly onDidChangeExtensionsNotification = this._onDidChangeExtensionsNotification.event;
@@ -1642,8 +1642,7 @@ export class ExtensionsWorkbenchService extends Disposable implements IExtension
 
 		const dismissedNotifications: string[] = [];
 
-		let extensionsNotification: IExtensionsNotification | undefined;
-
+		let extensionsNotification: IExtensionsNotification & { key: string } | undefined;
 		if (computedNotificiations.length) {
 			// populate dismissed notifications with the ones that are still valid
 			for (const dismissedNotification of this.getDismissedNotifications()) {
@@ -1657,6 +1656,7 @@ export class ExtensionsWorkbenchService extends Disposable implements IExtension
 					message: computedNotificiations[0].message,
 					severity: computedNotificiations[0].severity,
 					extensions: computedNotificiations[0].extensions,
+					key: computedNotificiations[0].key,
 					dismiss: () => {
 						this.setDismissedNotifications([...this.getDismissedNotifications(), computedNotificiations[0].key]);
 
@@ -1668,7 +1668,7 @@ export class ExtensionsWorkbenchService extends Disposable implements IExtension
 
 		this.setDismissedNotifications(dismissedNotifications);
 
-		if (this.extensionsNotification?.message !== extensionsNotification?.message) {
+		if (this.extensionsNotification?.key !== extensionsNotification?.key) {
 			this.extensionsNotification = extensionsNotification;
 
 			this._onDidChangeExtensionsNotification.fire(this.extensionsNotification);
@@ -1677,6 +1677,18 @@ export class ExtensionsWorkbenchService extends Disposable implements IExtension
 
 	private computeExtensionsNotifications(): Array<Omit<IExtensionsNotification, 'dismiss'> & { key: string }> {
 		const computedNotificiations: Array<Omit<IExtensionsNotification, 'dismiss'> & { key: string }> = [];
+
+		const disallowedExtensions = this.local.filter(e => e.enablementState === EnablementState.DisabledByAllowlist);
+		if (disallowedExtensions.length) {
+			computedNotificiations.push({
+				message: this.configurationService.inspect(AllowedExtensionsConfigKey).policy
+					? nls.localize('disallowed extensions by policy', "Some extensions are disabled because they are not allowed by your system administrator.")
+					: nls.localize('disallowed extensions', "Some extensions are disabled because they are configured not to be allowed."),
+				severity: Severity.Warning,
+				extensions: disallowedExtensions,
+				key: 'disallowedExtensions:' + disallowedExtensions.sort((a, b) => a.identifier.id.localeCompare(b.identifier.id)).map(e => e.identifier.id.toLowerCase()).join('-'),
+			});
+		}
 
 		const invalidExtensions = this.local.filter(e => e.enablementState === EnablementState.DisabledByInvalidExtension && !e.isWorkspaceScoped);
 
@@ -1708,17 +1720,6 @@ export class ExtensionsWorkbenchService extends Disposable implements IExtension
 				severity: Severity.Warning,
 				extensions: deprecatedExtensions,
 				key: 'deprecatedExtensions:' + deprecatedExtensions.sort((a, b) => a.identifier.id.localeCompare(b.identifier.id)).map(e => e.identifier.id.toLowerCase()).join('-'),
-			});
-		}
-
-		const disallowedExtensions = this.local.filter(e => e.enablementState === EnablementState.DisabledByAllowlist);
-
-		if (disallowedExtensions.length) {
-			computedNotificiations.push({
-				message: nls.localize('disallowed extensions', "Some extensions are disabled because they are configured not to be in the allowed list."),
-				severity: Severity.Warning,
-				extensions: disallowedExtensions,
-				key: 'disallowedExtensions:' + disallowedExtensions.sort((a, b) => a.identifier.id.localeCompare(b.identifier.id)).map(e => e.identifier.id.toLowerCase()).join('-'),
 			});
 		}
 

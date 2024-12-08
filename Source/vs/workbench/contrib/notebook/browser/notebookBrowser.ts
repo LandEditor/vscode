@@ -704,7 +704,7 @@ export interface INotebookViewModel {
 	): string[];
 
 	getFoldedLength(index: number): number;
-
+	getFoldingStartIndex(index: number): number;
 	replaceOne(cell: ICellViewModel, range: Range, text: string): Promise<void>;
 
 	replaceAll(

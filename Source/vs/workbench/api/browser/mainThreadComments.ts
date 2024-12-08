@@ -153,7 +153,7 @@ export class MainThreadCommentThread<T> implements languages.CommentThread<T> {
 		return this._canReply;
 	}
 
-	private _collapsibleState: languages.CommentThreadCollapsibleState | undefined = languages.CommentThreadCollapsibleState.Expanded;
+	private _collapsibleState: languages.CommentThreadCollapsibleState | undefined = languages.CommentThreadCollapsibleState.Collapsed;
 	get collapsibleState() {
 		return this._collapsibleState;
 	}

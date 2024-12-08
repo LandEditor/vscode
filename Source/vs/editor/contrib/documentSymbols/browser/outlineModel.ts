@@ -553,6 +553,7 @@ export interface IOutlineModelService {
 	): Promise<OutlineModel>;
 
 	getDebounceValue(textModel: ITextModel): number;
+	getCachedModels(): Iterable<OutlineModel>;
 }
 interface CacheEntry {
 	versionId: number;
@@ -573,8 +574,7 @@ export class OutlineModelService implements IOutlineModelService {
 	private readonly _disposables = new DisposableStore();
 
 	private readonly _debounceInformation: IFeatureDebounceInformation;
-
-	private readonly _cache = new LRUCache<string, CacheEntry>(10, 0.7);
+	private readonly _cache = new LRUCache<string, CacheEntry>(15, 0.7);
 
 	constructor(
 		@ILanguageFeaturesService
@@ -670,6 +670,10 @@ export class OutlineModelService implements IOutlineModelService {
 
 	getDebounceValue(textModel: ITextModel): number {
 		return this._debounceInformation.get(textModel);
+	}
+
+	getCachedModels(): Iterable<OutlineModel> {
+		return Iterable.filter<OutlineModel | undefined, OutlineModel>(Iterable.map(this._cache.values(), entry => entry.model), model => model !== undefined);
 	}
 }
 registerSingleton(
