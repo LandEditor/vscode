@@ -1,4 +1,20 @@
 {
+	"name": "markdown",
+	"displayName": "%displayName%",
+	"version": "1.0.0",
+	"description": "%description%",
+	"categories": [
+		"Programming Languages"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/microsoft/vscode.git"
+	},
+	"license": "MIT",
+	"publisher": "vscode",
+	"scripts": {
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin microsoft/vscode-markdown-tm-grammar syntaxes/markdown.tmLanguage ./syntaxes/markdown.tmLanguage.json"
+	},
 	"contributes": {
 		"configurationDefaults": {
 			"[markdown]": {
@@ -93,10 +109,9 @@
 			}
 		]
 	},
-	"description": "%description%",
-	"displayName": "%displayName%",
-	"name": "markdown",
-	"scripts": {
-		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin microsoft/vscode-markdown-tm-grammar syntaxes/markdown.tmLanguage ./syntaxes/markdown.tmLanguage.json"
+	"dependencies": {},
+	"devDependencies": {},
+	"engines": {
+		"vscode": "^1.20.0"
 	}
 }

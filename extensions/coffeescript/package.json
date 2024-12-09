@@ -1,4 +1,20 @@
 {
+	"name": "coffeescript",
+	"displayName": "%displayName%",
+	"version": "1.0.0",
+	"description": "%description%",
+	"categories": [
+		"Programming Languages"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/microsoft/vscode.git"
+	},
+	"license": "MIT",
+	"publisher": "vscode",
+	"scripts": {
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin atom/language-coffee-script grammars/coffeescript.cson ./syntaxes/coffeescript.tmLanguage.json"
+	},
 	"contributes": {
 		"breakpoints": [
 			{
@@ -41,10 +57,9 @@
 			}
 		]
 	},
-	"description": "%description%",
-	"displayName": "%displayName%",
-	"name": "coffeescript",
-	"scripts": {
-		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin atom/language-coffee-script grammars/coffeescript.cson ./syntaxes/coffeescript.tmLanguage.json"
+	"dependencies": {},
+	"devDependencies": {},
+	"engines": {
+		"vscode": "*"
 	}
 }

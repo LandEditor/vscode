@@ -1,4 +1,17 @@
 {
+	"name": "theme-kimbie-dark",
+	"displayName": "%displayName%",
+	"version": "1.0.0",
+	"description": "%description%",
+	"categories": [
+		"Themes"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/microsoft/vscode.git"
+	},
+	"license": "MIT",
+	"publisher": "vscode",
 	"contributes": {
 		"themes": [
 			{
@@ -9,7 +22,9 @@
 			}
 		]
 	},
-	"description": "%description%",
-	"displayName": "%displayName%",
-	"name": "theme-kimbie-dark"
+	"dependencies": {},
+	"devDependencies": {},
+	"engines": {
+		"vscode": "*"
+	}
 }

@@ -1,4 +1,20 @@
 {
+	"name": "yaml",
+	"displayName": "%displayName%",
+	"version": "1.0.0",
+	"description": "%description%",
+	"categories": [
+		"Programming Languages"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/microsoft/vscode.git"
+	},
+	"license": "MIT",
+	"publisher": "vscode",
+	"scripts": {
+		"update-grammar": "node ./build/update-grammar.js"
+	},
 	"contributes": {
 		"configurationDefaults": {
 			"[dockercompose]": {
@@ -65,10 +81,9 @@
 			}
 		]
 	},
-	"description": "%description%",
-	"displayName": "%displayName%",
-	"name": "yaml",
-	"scripts": {
-		"update-grammar": "node ./build/update-grammar.js"
+	"dependencies": {},
+	"devDependencies": {},
+	"engines": {
+		"vscode": "*"
 	}
 }

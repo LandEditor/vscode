@@ -1,4 +1,20 @@
 {
+	"name": "fsharp",
+	"displayName": "%displayName%",
+	"version": "1.0.0",
+	"description": "%description%",
+	"categories": [
+		"Programming Languages"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/microsoft/vscode.git"
+	},
+	"license": "MIT",
+	"publisher": "vscode",
+	"scripts": {
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin ionide/ionide-fsgrammar grammars/fsharp.json ./syntaxes/fsharp.tmLanguage.json"
+	},
 	"contributes": {
 		"configurationDefaults": {
 			"[fsharp]": {
@@ -36,10 +52,9 @@
 			}
 		]
 	},
-	"description": "%description%",
-	"displayName": "%displayName%",
-	"name": "fsharp",
-	"scripts": {
-		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin ionide/ionide-fsgrammar grammars/fsharp.json ./syntaxes/fsharp.tmLanguage.json"
+	"dependencies": {},
+	"devDependencies": {},
+	"engines": {
+		"vscode": "*"
 	}
 }

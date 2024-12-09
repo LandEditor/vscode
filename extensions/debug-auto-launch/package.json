@@ -1,12 +1,18 @@
 {
-	"activationEvents": [
-		"onStartupFinished"
-	],
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": false
+	"name": "debug-auto-launch",
+	"displayName": "%displayName%",
+	"version": "1.0.0",
+	"description": "%description%",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/microsoft/vscode.git"
+	},
+	"license": "MIT",
+	"publisher": "vscode",
+	"main": "./out/extension",
+	"scripts": {
+		"compile": "gulp compile-extension:debug-auto-launch",
+		"watch": "gulp watch-extension:debug-auto-launch"
 	},
 	"contributes": {
 		"commands": [
@@ -17,15 +23,27 @@
 			}
 		]
 	},
-	"description": "%description%",
-	"devDependencies": {
-		"@types/node": "22.10.1"
+	"activationEvents": [
+		"onStartupFinished"
+	],
+	"prettier": {
+		"arrowParens": "avoid",
+		"printWidth": 100,
+		"singleQuote": true,
+		"trailingComma": "all"
 	},
-	"displayName": "%displayName%",
+	"dependencies": {},
+	"devDependencies": {
+		"@types/node": "20.x"
+	},
+	"engines": {
+		"vscode": "^1.5.0"
+	},
 	"icon": "media/icon.png",
-	"main": "./out/extension",
-	"name": "debug-auto-launch",
-	"scripts": {
-		"compile": "gulp compile-extension:debug-auto-launch"
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": false
 	}
 }

@@ -1,4 +1,20 @@
 {
+	"name": "json",
+	"displayName": "%displayName%",
+	"version": "1.0.0",
+	"description": "%description%",
+	"categories": [
+		"Programming Languages"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/microsoft/vscode.git"
+	},
+	"license": "MIT",
+	"publisher": "vscode",
+	"scripts": {
+		"update-grammar": "node ./build/update-grammars.js"
+	},
 	"contributes": {
 		"grammars": [
 			{
@@ -104,10 +120,9 @@
 			}
 		]
 	},
-	"description": "%description%",
-	"displayName": "%displayName%",
-	"name": "json",
-	"scripts": {
-		"update-grammar": "node ./build/update-grammars.js"
+	"dependencies": {},
+	"devDependencies": {},
+	"engines": {
+		"vscode": "0.10.x"
 	}
 }

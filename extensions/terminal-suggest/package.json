@@ -1,16 +1,33 @@
 {
+	"name": "terminal-suggest",
+	"displayName": "%displayName%",
+	"version": "1.0.1",
+	"private": true,
+	"description": "%description%",
+	"categories": [
+		"Other"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/microsoft/vscode.git"
+	},
+	"license": "MIT",
+	"publisher": "vscode",
+	"main": "./out/terminalSuggestMain",
+	"scripts": {
+		"compile": "npx gulp compile-extension:terminal-suggest",
+		"watch": "npx gulp watch-extension:terminal-suggest"
+	},
 	"activationEvents": [
 		"onTerminalCompletionsRequested"
 	],
-	"description": "%description%",
-	"displayName": "%displayName%",
+	"dependencies": {},
+	"devDependencies": {},
+	"engines": {
+		"vscode": "^1.95.0"
+	},
+	"icon": "./src/media/icon.png",
 	"enabledApiProposals": [
 		"terminalCompletionProvider"
-	],
-	"icon": "./src/media/icon.png",
-	"main": "./out/terminalSuggestMain",
-	"name": "terminal-suggest",
-	"scripts": {
-		"compile": "npx gulp compile-extension:terminal-suggest"
-	}
+	]
 }

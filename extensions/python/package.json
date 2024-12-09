@@ -1,4 +1,20 @@
 {
+	"name": "python",
+	"displayName": "%displayName%",
+	"version": "1.0.0",
+	"description": "%description%",
+	"categories": [
+		"Programming Languages"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/microsoft/vscode.git"
+	},
+	"license": "MIT",
+	"publisher": "vscode",
+	"scripts": {
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin MagicStack/MagicPython grammars/MagicPython.tmLanguage ./syntaxes/MagicPython.tmLanguage.json grammars/MagicRegExp.tmLanguage ./syntaxes/MagicRegExp.tmLanguage.json"
+	},
 	"contributes": {
 		"configurationDefaults": {
 			"[python]": {
@@ -44,10 +60,9 @@
 			}
 		]
 	},
-	"description": "%description%",
-	"displayName": "%displayName%",
-	"name": "python",
-	"scripts": {
-		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin MagicStack/MagicPython grammars/MagicPython.tmLanguage ./syntaxes/MagicPython.tmLanguage.json grammars/MagicRegExp.tmLanguage ./syntaxes/MagicRegExp.tmLanguage.json"
+	"dependencies": {},
+	"devDependencies": {},
+	"engines": {
+		"vscode": "*"
 	}
 }

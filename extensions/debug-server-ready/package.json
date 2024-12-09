@@ -1,12 +1,18 @@
 {
-	"activationEvents": [
-		"onDebugResolve"
-	],
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": false
+	"name": "debug-server-ready",
+	"displayName": "%displayName%",
+	"version": "1.0.0",
+	"description": "%description%",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/microsoft/vscode.git"
+	},
+	"license": "MIT",
+	"publisher": "vscode",
+	"main": "./out/extension",
+	"scripts": {
+		"compile": "gulp compile-extension:debug-server-ready",
+		"watch": "gulp watch-extension:debug-server-ready"
 	},
 	"contributes": {
 		"debuggers": [
@@ -193,18 +199,24 @@
 			}
 		]
 	},
-	"description": "%description%",
+	"activationEvents": [
+		"onDebugResolve"
+	],
+	"dependencies": {},
 	"devDependencies": {
-		"@types/node": "22.10.1"
+		"@types/node": "20.x"
 	},
-	"displayName": "%displayName%",
+	"engines": {
+		"vscode": "^1.32.0"
+	},
+	"icon": "media/icon.png",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": false
+	},
 	"enabledApiProposals": [
 		"terminalDataWriteEvent"
-	],
-	"icon": "media/icon.png",
-	"main": "./out/extension",
-	"name": "debug-server-ready",
-	"scripts": {
-		"compile": "gulp compile-extension:debug-server-ready"
-	}
+	]
 }

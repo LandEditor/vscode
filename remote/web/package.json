@@ -1,16 +1,25 @@
 {
+	"name": "@codeeditorland/web",
+	"version": "0.0.0",
+	"private": true,
 	"dependencies": {
-		"@vscode/tree-sitter-wasm": "0.0.5",
-		"@xterm/addon-clipboard": "0.2.0-beta.53",
-		"@xterm/addon-image": "0.9.0-beta.70",
-		"@xterm/addon-ligatures": "0.10.0-beta.70",
-		"@xterm/addon-search": "0.16.0-beta.70",
-		"@xterm/addon-serialize": "0.14.0-beta.70",
-		"@xterm/addon-unicode11": "0.9.0-beta.70",
-		"@xterm/addon-webgl": "0.19.0-beta.70",
-		"@xterm/xterm": "5.6.0-beta.70",
+		"@codeeditorland/1ds-core-js": "^3.2.13",
+		"@codeeditorland/1ds-post-js": "^3.2.13",
+		"@codeeditorland/languagedetection": "1.0.21",
+		"@codeeditorland/iconv-lite-umd": "0.7.0",
+		"@codeeditorland/oniguruma": "1.7.0",
+		"@codeeditorland/textmate": "9.1.0",
+		"@codeeditorland/tree-sitter-wasm": "^0.0.4",
+		"@xterm/addon-clipboard": "^0.2.0-beta.53",
+		"@xterm/addon-image": "^0.9.0-beta.70",
+		"@xterm/addon-ligatures": "^0.10.0-beta.70",
+		"@xterm/addon-search": "^0.16.0-beta.70",
+		"@xterm/addon-serialize": "^0.14.0-beta.70",
+		"@xterm/addon-unicode11": "^0.9.0-beta.70",
+		"@xterm/addon-webgl": "^0.19.0-beta.70",
+		"@xterm/xterm": "^5.6.0-beta.70",
 		"jschardet": "3.1.4",
 		"tas-client-umd": "0.2.0"
 	},
-	"name": "vscode-web"
+	"devDependencies": {}
 }

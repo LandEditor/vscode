@@ -1,5 +1,19 @@
 {
-	"activationEvents": [],
+	"name": "@codeeditorland/api-tests",
+	"version": "0.0.1",
+	"private": true,
+	"description": "API tests for VS Code",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/microsoft/vscode.git"
+	},
+	"license": "MIT",
+	"publisher": "vscode",
+	"main": "./out/extension",
+	"scripts": {
+		"compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
+		"vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:vscode-api-tests ./tsconfig.json"
+	},
 	"contributes": {
 		"breakpoints": [
 			{
@@ -186,13 +200,19 @@
 			]
 		}
 	},
-	"description": "API tests for VS Code",
+	"activationEvents": [],
+	"dependencies": {},
 	"devDependencies": {
-		"@types/node": "22.x",
-		"@types/node-forge": "1.3.11",
-		"node-forge": "1.3.1",
-		"straightforward": "4.2.2"
+		"@types/mocha": "^9.1.1",
+		"@types/node": "20.x",
+		"@types/node-forge": "^1.3.11",
+		"node-forge": "^1.3.1",
+		"straightforward": "^4.2.2"
 	},
+	"engines": {
+		"vscode": "^1.55.0"
+	},
+	"icon": "media/icon.png",
 	"enabledApiProposals": [
 		"activeComment",
 		"authSession",
@@ -244,11 +264,5 @@
 		"treeViewReveal",
 		"tunnels",
 		"workspaceTrust"
-	],
-	"icon": "media/icon.png",
-	"main": "./out/extension",
-	"name": "vscode-api-tests",
-	"scripts": {
-		"compile": "node ./node_modules/vscode/bin/compile -watch -p ./"
-	}
+	]
 }

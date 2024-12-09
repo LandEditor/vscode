@@ -1,7 +1,23 @@
 {
+	"name": "@codeeditorland/reh",
+	"version": "0.0.0",
+	"private": true,
 	"dependencies": {
-		"@vscode/deviceid": "^0.1.1",
-		"@vscode/tree-sitter-wasm": "^0.0.4",
+		"@codeeditorland/1ds-core-js": "^3.2.13",
+		"@codeeditorland/1ds-post-js": "^3.2.13",
+		"@codeeditorland/languagedetection": "1.0.21",
+		"@codeeditorland/deviceid": "^0.1.1",
+		"@codeeditorland/iconv-lite-umd": "0.7.0",
+		"@codeeditorland/oniguruma": "1.7.0",
+		"@codeeditorland/proxy-agent": "^0.27.0",
+		"@codeeditorland/regexpp": "^3.1.0",
+		"@codeeditorland/ripgrep": "^1.15.9",
+		"@codeeditorland/spdlog": "^0.15.0",
+		"@codeeditorland/textmate": "9.1.0",
+		"@codeeditorland/tree-sitter-wasm": "^0.0.4",
+		"@codeeditorland/windows-process-tree": "^0.6.0",
+		"@codeeditorland/windows-registry": "^1.1.0",
+		"@parcel/watcher": "2.1.0",
 		"@xterm/addon-clipboard": "^0.2.0-beta.53",
 		"@xterm/addon-image": "^0.9.0-beta.70",
 		"@xterm/addon-ligatures": "^0.10.0-beta.70",
@@ -23,7 +39,7 @@
 		"yauzl": "^3.0.0",
 		"yazl": "^2.4.3"
 	},
-	"name": "vscode-reh",
+	"devDependencies": {},
 	"overrides": {
 		"@parcel/watcher@2.1.0": {
 			"node-addon-api": "7.1.0"

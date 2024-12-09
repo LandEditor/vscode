@@ -1,7 +1,11 @@
 {
-	"devDependencies": {
-		"node-gyp": "11.0.0"
-	},
 	"name": "code-oss-dev-build",
-	"scripts": {}
+	"version": "1.0.0",
+	"private": true,
+	"license": "MIT",
+	"scripts": {},
+	"dependencies": {},
+	"devDependencies": {
+		"node-gyp": "^10.1.0"
+	}
 }

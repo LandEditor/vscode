@@ -1,13 +1,19 @@
 {
-	"activationEvents": [
-		"onLanguage:search-result"
-	],
+	"name": "search-result",
+	"displayName": "%displayName%",
+	"version": "1.0.0",
+	"description": "%description%",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/microsoft/vscode.git"
+	},
+	"license": "MIT",
+	"publisher": "vscode",
+	"main": "./out/extension.js",
 	"browser": "./dist/extension.js",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": true
+	"scripts": {
+		"generate-grammar": "node ./syntaxes/generateTMLanguage.js",
+		"vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:search-result ./tsconfig.json"
 	},
 	"contributes": {
 		"configurationDefaults": {
@@ -34,15 +40,22 @@
 			}
 		]
 	},
-	"description": "%description%",
-	"displayName": "%displayName%",
+	"activationEvents": [
+		"onLanguage:search-result"
+	],
+	"dependencies": {},
+	"devDependencies": {},
+	"engines": {
+		"vscode": "^1.39.0"
+	},
+	"icon": "images/icon.png",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": true
+	},
 	"enabledApiProposals": [
 		"documentFiltersExclusive"
-	],
-	"icon": "images/icon.png",
-	"main": "./out/extension.js",
-	"name": "search-result",
-	"scripts": {
-		"generate-grammar": "node ./syntaxes/generateTMLanguage.js"
-	}
+	]
 }

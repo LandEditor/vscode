@@ -1,4 +1,16 @@
 {
+	"name": "diff",
+	"displayName": "%displayName%",
+	"version": "1.0.0",
+	"description": "%description%",
+	"categories": [
+		"Programming Languages"
+	],
+	"license": "MIT",
+	"publisher": "vscode",
+	"scripts": {
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin textmate/diff.tmbundle Syntaxes/Diff.plist ./syntaxes/diff.tmLanguage.json"
+	},
 	"contributes": {
 		"grammars": [
 			{
@@ -23,10 +35,9 @@
 			}
 		]
 	},
-	"description": "%description%",
-	"displayName": "%displayName%",
-	"name": "diff",
-	"scripts": {
-		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin textmate/diff.tmbundle Syntaxes/Diff.plist ./syntaxes/diff.tmLanguage.json"
+	"dependencies": {},
+	"devDependencies": {},
+	"engines": {
+		"vscode": "0.10.x"
 	}
 }
