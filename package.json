@@ -54,8 +54,8 @@
 		"web": "echo 'npm run web' is replaced by './scripts/code-server' or './scripts/code-web'"
 	},
 	"dependencies": {
-		"@codeeditorland/deviceid": "^0.1.1",
-		"@codeeditorland/tree-sitter-wasm": "^0.0.4",
+		"@codeeditorland/deviceid": "0.0.1",
+		"@codeeditorland/tree-sitter-wasm": "0.0.1",
 		"@types/semver": "^7.5.8",
 		"@xterm/addon-clipboard": "^0.2.0-beta.53",
 		"@xterm/addon-image": "^0.9.0-beta.70",

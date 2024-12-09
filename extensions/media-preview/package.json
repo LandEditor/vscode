@@ -115,8 +115,8 @@
 	},
 	"activationEvents": [],
 	"dependencies": {
-		"@codeeditorland/extension-telemetry": "^0.9.0",
-		"@codeeditorland/uri": "^3.0.6"
+		"@codeeditorland/extension-telemetry": "0.0.1",
+		"@codeeditorland/uri": "0.0.1"
 	},
 	"devDependencies": {},
 	"engines": {
