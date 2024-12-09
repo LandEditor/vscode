@@ -391,6 +391,10 @@ export function removeFromValueTree(valueTree: any, key: string): void {
 }
 
 function doRemoveFromValueTree(valueTree: any, segments: string[]): void {
+	if (!valueTree) {
+		return;
+	}
+
 	const first = segments.shift()!;
 
 	if (segments.length === 0) {

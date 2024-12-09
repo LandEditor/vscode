@@ -130,6 +130,7 @@ export interface SerializedError {
 	readonly stack: string;
 
 	readonly noTelemetry: boolean;
+	readonly cause?: SerializedError;
 }
 export function transformErrorForSerialization(error: Error): SerializedError;
 
@@ -137,8 +138,7 @@ export function transformErrorForSerialization(error: any): any;
 
 export function transformErrorForSerialization(error: any): any {
 	if (error instanceof Error) {
-		const { name, message } = error;
-
+		const { name, message, cause } = error;
 		const stack: string = (<any>error).stacktrace || (<any>error).stack;
 
 		return {
@@ -147,6 +147,7 @@ export function transformErrorForSerialization(error: any): any {
 			message,
 			stack,
 			noTelemetry: ErrorNoTelemetry.isErrorNoTelemetry(error),
+			cause: cause ? transformErrorForSerialization(cause) : undefined
 		};
 	}
 	// return as is
@@ -166,7 +167,9 @@ export function transformErrorFromSerialization(data: SerializedError): Error {
 	error.message = data.message;
 
 	error.stack = data.stack;
-
+	if (data.cause) {
+		error.cause = transformErrorFromSerialization(data.cause);
+	}
 	return error;
 }
 // see https://github.com/v8/v8/wiki/Stack%20Trace%20API#basic-stack-traces
