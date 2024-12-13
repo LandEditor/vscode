@@ -36,13 +36,16 @@ export async function request(
 		: cancellation.signal;
 
 	try {
-		const res = await fetch(options.url || "", {
-			method: options.type || "GET",
+		const fetchInit: RequestInit = {
+			method: options.type || 'GET',
 			headers: getRequestHeaders(options),
 			body: options.data,
-			signal,
-		});
-
+			signal
+		};
+		if (options.disableCache) {
+			fetchInit.cache = 'no-store';
+		}
+		const res = await fetch(options.url || '', fetchInit);
 		return {
 			res: {
 				statusCode: res.status,

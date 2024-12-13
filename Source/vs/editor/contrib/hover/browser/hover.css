@@ -13,7 +13,14 @@
 	box-sizing: content-box;
 }
 
+.monaco-editor .monaco-resizable-hover > .monaco-hover {
+	border: none;
+	border-radius: none;
+}
+
 .monaco-editor .monaco-hover {
+	border: 1px solid var(--vscode-editorHoverWidget-border);
+	border-radius: 3px;
 	color: var(--vscode-editorHoverWidget-foreground);
 	background-color: var(--vscode-editorHoverWidget-background);
 }

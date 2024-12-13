@@ -893,9 +893,8 @@ export class QuickPick<
 	private _valueSelection: Readonly<[number, number]> | undefined;
 
 	private valueSelectionUpdated = true;
-
-	private _ok: boolean | "default" = "default";
-
+	private _ok: boolean | 'default' = 'default';
+	private _okLabel: string | undefined;
 	private _customButton = false;
 
 	private _customButtonLabel: string | undefined;
@@ -1187,6 +1186,15 @@ export class QuickPick<
 	set ok(showOkButton: boolean | "default") {
 		this._ok = showOkButton;
 
+		this.update();
+	}
+
+	get okLabel() {
+		return this._okLabel ?? localize('ok', "OK");
+	}
+
+	set okLabel(okLabel: string | undefined) {
+		this._okLabel = okLabel;
 		this.update();
 	}
 
@@ -1618,11 +1626,9 @@ export class QuickPick<
 				this.selectedItemsToConfirm = null;
 			}
 		}
-
-		this.ui.customButton.label = this.customLabel || "";
-
-		this.ui.customButton.element.title = this.customHover || "";
-
+		this.ui.ok.label = this.okLabel || '';
+		this.ui.customButton.label = this.customLabel || '';
+		this.ui.customButton.element.title = this.customHover || '';
 		if (!visibilities.inputBox) {
 			// we need to move focus into the tree to detect keybindings
 			// properly when the input box is not visible (quick nav)

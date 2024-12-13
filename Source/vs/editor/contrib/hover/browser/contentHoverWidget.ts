@@ -223,38 +223,17 @@ export class ContentHoverWidget extends ResizableContentWidget {
 		container.style.maxHeight = transformedHeight;
 	}
 
-	private _setHoverWidgetMaxDimensions(
-		width: number | string,
-		height: number | string,
-	): void {
-		ContentHoverWidget._applyMaxDimensions(
-			this._hover.contentsDomNode,
-			width,
-			height,
-		);
-
-		ContentHoverWidget._applyMaxDimensions(
-			this._hover.containerDomNode,
-			width,
-			height,
-		);
-
-		this._hover.containerDomNode.style.setProperty(
-			"--vscode-hover-maxWidth",
-			typeof width === "number" ? `${width}px` : width,
-		);
-
+	private _setHoverWidgetMaxDimensions(width: number | string, height: number | string): void {
+		ContentHoverWidget._applyMaxDimensions(this._hover.contentsDomNode, width, height);
+		ContentHoverWidget._applyMaxDimensions(this._hover.scrollbar.getDomNode(), width, height);
+		ContentHoverWidget._applyMaxDimensions(this._hover.containerDomNode, width, height);
+		this._hover.containerDomNode.style.setProperty('--vscode-hover-maxWidth', typeof width === 'number' ? `${width}px` : width);
 		this._layoutContentWidget();
 	}
 
 	private _setAdjustedHoverWidgetDimensions(size: dom.Dimension): void {
-		this._setHoverWidgetMaxDimensions("none", "none");
-
-		const width = size.width;
-
-		const height = size.height;
-
-		this._setHoverWidgetDimensions(width, height);
+		this._setHoverWidgetMaxDimensions('none', 'none');
+		this._setHoverWidgetDimensions(size.width, size.height);
 	}
 
 	private _updateResizableNodeMaxDimensions(): void {
@@ -485,18 +464,9 @@ export class ContentHoverWidget extends ResizableContentWidget {
 	}
 
 	private _updateMaxDimensions() {
-		const height = Math.max(
-			this._editor.getLayoutInfo().height / 4,
-			250,
-			ContentHoverWidget._lastDimensions.height,
-		);
-
-		const width = Math.max(
-			this._editor.getLayoutInfo().width * 0.66,
-			750,
-			ContentHoverWidget._lastDimensions.width,
-		);
-
+		const height = Math.max(this._editor.getLayoutInfo().height / 4, 250, ContentHoverWidget._lastDimensions.height);
+		const width = Math.max(this._editor.getLayoutInfo().width * 0.66, 750, ContentHoverWidget._lastDimensions.width);
+		this._resizableNode.maxSize = new dom.Dimension(width, height);
 		this._setHoverWidgetMaxDimensions(width, height);
 	}
 
@@ -506,9 +476,6 @@ export class ContentHoverWidget extends ResizableContentWidget {
 		this._updateFont();
 
 		this._updateContent(renderedHover.domNode);
-
-		this._updateMaxDimensions();
-
 		this.onContentsChanged();
 		// Simply force a synchronous render on the editor
 		// such that the widget does not really render with left = '0px'
@@ -610,8 +577,8 @@ export class ContentHoverWidget extends ResizableContentWidget {
 		const layoutInfo = this._editor.getLayoutInfo();
 
 		this._resizableNode.layout(layoutInfo.height, layoutInfo.width);
-
-		this._setHoverWidgetDimensions("auto", "auto");
+		this._setHoverWidgetDimensions('auto', 'auto');
+		this._updateMaxDimensions();
 	}
 
 	public setMinimumDimensions(dimensions: dom.Dimension): void {

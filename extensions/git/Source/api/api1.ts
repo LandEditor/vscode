@@ -296,6 +296,18 @@ export class ApiRepository implements Repository {
 	mergeAbort(): Promise<void> {
 		return this.repository.mergeAbort();
 	}
+
+	applyStash(index?: number): Promise<void> {
+		return this.repository.applyStash(index);
+	}
+
+	popStash(index?: number): Promise<void> {
+		return this.repository.popStash(index);
+	}
+
+	dropStash(index?: number): Promise<void> {
+		return this.repository.dropStash(index);
+	}
 }
 
 export class ApiGit implements Git {

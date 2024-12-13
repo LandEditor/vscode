@@ -453,6 +453,11 @@ export interface IQuickPick<
 	 */
 	ok: boolean | "default";
 	/**
+	 * The OK button label.
+	 */
+	okLabel: string | undefined;
+
+	/**
 	 * An event that is fired when the custom button is triggered. The custom button is a button with text rendered to the right of the input.
 	 */
 	readonly onDidCustom: Event<void>;

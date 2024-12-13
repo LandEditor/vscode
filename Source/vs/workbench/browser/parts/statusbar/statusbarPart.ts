@@ -9,7 +9,7 @@ import { Disposable, DisposableStore, disposeIfDisposable, IDisposable, MutableD
 import { MultiWindowParts, Part } from '../../part.js';
 import { EventType as TouchEventType, Gesture, GestureEvent } from '../../../../base/browser/touch.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
-import { StatusbarAlignment, IStatusbarService, IStatusbarEntry, IStatusbarEntryAccessor, IStatusbarStyleOverride, isStatusbarEntryLocation, IStatusbarEntryLocation, isStatusbarEntryPriority, IStatusbarEntryPriority, IStatusbarEntryOverride } from '../../../services/statusbar/browser/statusbar.js';
+import { StatusbarAlignment, IStatusbarService, IStatusbarEntry, IStatusbarEntryAccessor, IStatusbarStyleOverride, isStatusbarEntryLocation, IStatusbarEntryLocation, isStatusbarEntryPriority, IStatusbarEntryPriority } from '../../../services/statusbar/browser/statusbar.js';
 import { IContextMenuService } from '../../../../platform/contextview/browser/contextView.js';
 import { IAction, Separator, toAction } from '../../../../base/common/actions.js';
 import { IThemeService } from '../../../../platform/theme/common/themeService.js';
@@ -95,10 +95,9 @@ export interface IStatusbarEntryContainer extends IDisposable {
 	updateEntryVisibility(id: string, visible: boolean): void;
 
 	/**
-	 * Allows to override the appearance of an entry with the provided ID. Only a subset
-	 * of properties is allowed to be overridden.
+	 * Allows to override the appearance of an entry with the provided ID.
 	 */
-	overrideEntry(id: string, override: IStatusbarEntryOverride): IDisposable;
+	overrideEntry(id: string, override: Partial<IStatusbarEntry>): IDisposable;
 
 	/**
 	 * Focused the status bar. If one of the status bar entries was focused, focuses it directly.
@@ -169,7 +168,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 	readonly onWillDispose = this._onWillDispose.event;
 
 	private readonly onDidOverrideEntry = this._register(new Emitter<string>());
-	private readonly entryOverrides = new Map<string, IStatusbarEntryOverride>();
+	private readonly entryOverrides = new Map<string, Partial<IStatusbarEntry>>();
 
 	private leftItemsContainer: HTMLElement | undefined;
 
@@ -234,7 +233,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 		);
 	}
 
-	overrideEntry(id: string, override: IStatusbarEntryOverride): IDisposable {
+	overrideEntry(id: string, override: Partial<IStatusbarEntry>): IDisposable {
 		this.entryOverrides.set(id, override);
 		this.onDidOverrideEntry.fire(id);
 
@@ -1182,7 +1181,7 @@ export class StatusbarService
 		}
 	}
 
-	overrideEntry(id: string, override: IStatusbarEntryOverride): IDisposable {
+	overrideEntry(id: string, override: Partial<IStatusbarEntry>): IDisposable {
 		const disposables = new DisposableStore();
 
 		for (const part of this.parts) {
@@ -1282,7 +1281,7 @@ export class ScopedStatusbarService
 		this.statusbarEntryContainer.updateEntryVisibility(id, visible);
 	}
 
-	overrideEntry(id: string, override: IStatusbarEntryOverride): IDisposable {
+	overrideEntry(id: string, override: Partial<IStatusbarEntry>): IDisposable {
 		return this.statusbarEntryContainer.overrideEntry(id, override);
 	}
 

@@ -2,27 +2,14 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Emitter, Event } from "../../../../base/common/event.js";
-import {
-	Disposable,
-	IDisposable,
-	toDisposable,
-} from "../../../../base/common/lifecycle.js";
-import { isUndefined } from "../../../../base/common/types.js";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "../../../../platform/instantiation/common/extensions.js";
-import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
-import {
-	ACCOUNTS_ACTIVITY_ID,
-	GLOBAL_ACTIVITY_ID,
-} from "../../../common/activity.js";
-import {
-	IViewDescriptorService,
-	ViewContainer,
-} from "../../../common/views.js";
-import { IActivity, IActivityService } from "../common/activity.js";
+
+import { IActivityService, IActivity } from '../common/activity.js';
+import { IDisposable, Disposable, toDisposable } from '../../../../base/common/lifecycle.js';
+import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import { IViewDescriptorService, ViewContainer } from '../../../common/views.js';
+import { GLOBAL_ACTIVITY_ID, ACCOUNTS_ACTIVITY_ID } from '../../../common/activity.js';
+import { Emitter, Event } from '../../../../base/common/event.js';
+import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 
 class ViewContainerActivityByView extends Disposable {
 	private activity: IActivity | undefined = undefined;
@@ -114,51 +101,31 @@ export class ActivityService extends Disposable implements IActivityService {
 		super();
 	}
 
-	showViewContainerActivity(
-		viewContainerId: string,
-		activity: IActivity,
-	): IDisposable {
-		const viewContainer =
-			this.viewDescriptorService.getViewContainerById(viewContainerId);
+	showViewContainerActivity(viewContainerId: string, activity: IActivity): IDisposable {
+		const viewContainer = this.viewDescriptorService.getViewContainerById(viewContainerId);
+		if (!viewContainer) {
+			return Disposable.None;
+		}
 
-		if (viewContainer) {
-			let activities = this.viewContainerActivities.get(viewContainerId);
+		let activities = this.viewContainerActivities.get(viewContainerId);
+		if (!activities) {
+			activities = [];
+			this.viewContainerActivities.set(viewContainerId, activities);
+		}
 
-			if (!activities) {
-				activities = [];
+		// add activity
+		activities.push(activity);
 
-				this.viewContainerActivities.set(viewContainerId, activities);
-			}
+		this._onDidChangeActivity.fire(viewContainer);
 
-			for (let i = 0; i <= activities.length; i++) {
-				if (i === activities.length || isUndefined(activity.priority)) {
-					activities.push(activity);
-
-					break;
-				} else if (
-					isUndefined(activities[i].priority) ||
-					activities[i].priority! <= activity.priority
-				) {
-					activities.splice(i, 0, activity);
-
-					break;
-				}
+		return toDisposable(() => {
+			activities.splice(activities.indexOf(activity), 1);
+			if (activities.length === 0) {
+				this.viewContainerActivities.delete(viewContainerId);
 			}
 
 			this._onDidChangeActivity.fire(viewContainer);
-
-			return toDisposable(() => {
-				activities.splice(activities.indexOf(activity), 1);
-
-				if (activities.length === 0) {
-					this.viewContainerActivities.delete(viewContainerId);
-				}
-
-				this._onDidChangeActivity.fire(viewContainer);
-			});
-		}
-
-		return Disposable.None;
+		});
 	}
 
 	getViewContainerActivities(viewContainerId: string): IActivity[] {

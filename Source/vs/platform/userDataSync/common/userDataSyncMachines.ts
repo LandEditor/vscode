@@ -257,7 +257,10 @@ export class UserDataSyncMachinesService
 		);
 
 		if (previousName) {
-			return previousName;
+			if (!machines.some(machine => machine.name === previousName)) {
+				return previousName;
+			}
+			this.storageService.remove(currentMachineNameKey, StorageScope.APPLICATION);
 		}
 
 		const namePrefix = `${this.productService.embedderIdentifier ? `${this.productService.embedderIdentifier} - ` : ""}${getPlatformName()} (${this.productService.nameShort})`;

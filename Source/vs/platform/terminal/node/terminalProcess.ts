@@ -6,44 +6,24 @@ import { exec } from "child_process";
 import * as fs from "fs";
 import { IPty, IPtyForkOptions, IWindowsPtyForkOptions, spawn } from "node-pty";
 
-import { timeout } from "../../../base/common/async.js";
-import { Emitter, Event } from "../../../base/common/event.js";
-import { Disposable, toDisposable } from "../../../base/common/lifecycle.js";
-import * as path from "../../../base/common/path.js";
-import {
-	IProcessEnvironment,
-	isLinux,
-	isMacintosh,
-	isWindows,
-} from "../../../base/common/platform.js";
-import { URI } from "../../../base/common/uri.js";
-import { localize } from "../../../nls.js";
-import { ILogService, LogLevel } from "../../log/common/log.js";
-import { IProductService } from "../../product/common/productService.js";
-import {
-	FlowControlConstants,
-	GeneralShellType,
-	IProcessProperty,
-	IProcessPropertyMap,
-	IProcessReadyEvent,
-	IProcessReadyWindowsPty,
-	IShellLaunchConfig,
-	ITerminalChildProcess,
-	ITerminalLaunchError,
-	ITerminalProcessOptions,
-	PosixShellType,
-	ProcessPropertyType,
-	TerminalShellType,
-} from "../common/terminal.js";
-import { chunkInput } from "../common/terminalProcess.js";
-import { ChildProcessMonitor } from "./childProcessMonitor.js";
-import {
-	findExecutable,
-	getShellIntegrationInjection,
-	getWindowsBuildNumber,
-	IShellIntegrationConfigInjection,
-} from "./terminalEnvironment.js";
-import { WindowsShellHelper } from "./windowsShellHelper.js";
+import * as fs from 'fs';
+import { exec } from 'child_process';
+import { timeout } from '../../../base/common/async.js';
+import { Emitter, Event } from '../../../base/common/event.js';
+import { Disposable, toDisposable } from '../../../base/common/lifecycle.js';
+import * as path from '../../../base/common/path.js';
+import { IProcessEnvironment, isLinux, isMacintosh, isWindows } from '../../../base/common/platform.js';
+import { findExecutable } from '../../../base/node/processes.js';
+import { URI } from '../../../base/common/uri.js';
+import { localize } from '../../../nls.js';
+import { ILogService, LogLevel } from '../../log/common/log.js';
+import { IProductService } from '../../product/common/productService.js';
+import { FlowControlConstants, IShellLaunchConfig, ITerminalChildProcess, ITerminalLaunchError, IProcessProperty, IProcessPropertyMap as IProcessPropertyMap, ProcessPropertyType, TerminalShellType, IProcessReadyEvent, ITerminalProcessOptions, PosixShellType, IProcessReadyWindowsPty, GeneralShellType } from '../common/terminal.js';
+import { ChildProcessMonitor } from './childProcessMonitor.js';
+import { getShellIntegrationInjection, getWindowsBuildNumber, IShellIntegrationConfigInjection } from './terminalEnvironment.js';
+import { WindowsShellHelper } from './windowsShellHelper.js';
+import { IPty, IPtyForkOptions, IWindowsPtyForkOptions, spawn } from 'node-pty';
+import { chunkInput } from '../common/terminalProcess.js';
 
 const enum ShutdownConstants {
 	/**

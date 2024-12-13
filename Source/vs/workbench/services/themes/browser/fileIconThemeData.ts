@@ -3,31 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as css from "../../../../base/browser/cssValue.js";
-import * as Json from "../../../../base/common/json.js";
-import { getParseErrorMessage } from "../../../../base/common/jsonErrorMessages.js";
-import * as paths from "../../../../base/common/path.js";
-import * as resources from "../../../../base/common/resources.js";
-import { URI } from "../../../../base/common/uri.js";
-import { ILanguageService } from "../../../../editor/common/languages/language.js";
-import { fileIconSelectorEscape } from "../../../../editor/common/services/getIconClasses.js";
-import * as nls from "../../../../nls.js";
-import { IExtensionResourceLoaderService } from "../../../../platform/extensionResourceLoader/common/extensionResourceLoader.js";
-import {
-	IStorageService,
-	StorageScope,
-	StorageTarget,
-} from "../../../../platform/storage/common/storage.js";
-import {
-	fontCharacterRegex,
-	fontColorRegex,
-	fontSizeRegex,
-} from "../common/productIconThemeSchema.js";
-import {
-	ExtensionData,
-	IThemeExtensionPoint,
-	IWorkbenchFileIconTheme,
-} from "../common/workbenchThemeService.js";
+import { URI } from '../../../../base/common/uri.js';
+import * as nls from '../../../../nls.js';
+import * as paths from '../../../../base/common/path.js';
+import * as resources from '../../../../base/common/resources.js';
+import * as Json from '../../../../base/common/json.js';
+import { ExtensionData, IThemeExtensionPoint, IWorkbenchFileIconTheme } from '../common/workbenchThemeService.js';
+import { getParseErrorMessage } from '../../../../base/common/jsonErrorMessages.js';
+import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+import { IExtensionResourceLoaderService } from '../../../../platform/extensionResourceLoader/common/extensionResourceLoader.js';
+import { ILanguageService } from '../../../../editor/common/languages/language.js';
+import { fontCharacterRegex, fontColorRegex, fontSizeRegex } from '../../../../platform/theme/common/iconRegistry.js';
+import * as css from '../../../../base/browser/cssValue.js';
+import { fileIconSelectorEscape } from '../../../../editor/common/services/getIconClasses.js';
 
 export class FileIconThemeData implements IWorkbenchFileIconTheme {
 	static readonly STORAGE_KEY = "iconThemeData";

@@ -423,8 +423,8 @@ export class ContentHoverWidgetWrapper
 		const setMinimumDimensions = (dimensions: dom.Dimension) => {
 			this._contentHoverWidget.setMinimumDimensions(dimensions);
 		};
-
-		return { hide, onContentsChanged, setMinimumDimensions };
+		const focus = () => this.focus();
+		return { hide, onContentsChanged, setMinimumDimensions, focus };
 	}
 
 	public showsOrWillShow(mouseEvent: IEditorMouseEvent): boolean {
@@ -612,6 +612,11 @@ export class ContentHoverWidgetWrapper
 	}
 
 	public focus(): void {
+		const hoverPartsCount = this._renderedContentHover?.hoverPartsCount;
+		if (hoverPartsCount === 1) {
+			this.focusHoverPartWithIndex(0);
+			return;
+		}
 		this._contentHoverWidget.focus();
 	}
 

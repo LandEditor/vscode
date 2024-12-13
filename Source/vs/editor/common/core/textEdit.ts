@@ -2,26 +2,18 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { equals } from "../../../base/common/arrays.js";
-import {
-	assert,
-	assertFn,
-	checkAdjacentItems,
-} from "../../../base/common/assert.js";
-import { BugIndicatingError } from "../../../base/common/errors.js";
-import {
-	commonPrefixLength,
-	commonSuffixLength,
-	splitLines,
-} from "../../../base/common/strings.js";
-import { ISingleEditOperation } from "./editOperation.js";
-import { LineEdit } from "./lineEdit.js";
-import { LineRange } from "./lineRange.js";
-import { OffsetEdit } from "./offsetEdit.js";
-import { Position } from "./position.js";
-import { PositionOffsetTransformer } from "./positionToOffset.js";
-import { Range } from "./range.js";
-import { TextLength } from "./textLength.js";
+
+import { equals } from '../../../base/common/arrays.js';
+import { assert, assertFn, checkAdjacentItems } from '../../../base/common/assert.js';
+import { BugIndicatingError } from '../../../base/common/errors.js';
+import { commonPrefixLength, commonSuffixLength, splitLines } from '../../../base/common/strings.js';
+import { ISingleEditOperation } from './editOperation.js';
+import { LineRange } from './lineRange.js';
+import { OffsetEdit } from './offsetEdit.js';
+import { Position } from './position.js';
+import { PositionOffsetTransformer } from './positionToOffset.js';
+import { Range } from './range.js';
+import { TextLength } from './textLength.js';
 
 export class TextEdit {
 	public static fromOffsetEdit(
@@ -600,17 +592,5 @@ export class StringText extends AbstractText {
 
 	get length(): TextLength {
 		return this._t.textLength;
-	}
-}
-export class BasedTextEdit {
-	constructor(
-		public readonly base: AbstractText,
-		public readonly edit: TextEdit,
-	) {}
-
-	toString() {
-		const lineEdit = LineEdit.fromTextEdit(this.edit, this.base);
-
-		return lineEdit.humanReadablePatch(this.base.getLines());
 	}
 }

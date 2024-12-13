@@ -55,6 +55,11 @@ export interface IRequestOptions {
 	followRedirects?: number;
 
 	proxyAuthorization?: string;
+	/**
+	 * A signal to not cache the response. This may not
+	 * be supported in all implementations.
+	 */
+	disableCache?: boolean;
 }
 export interface IRequestContext {
 	res: {

@@ -3,33 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "./media/suggest.css";
-
-import * as dom from "../../../../base/browser/dom.js";
-import {
-	IListEvent,
-	IListGestureEvent,
-	IListMouseEvent,
-} from "../../../../base/browser/ui/list/list.js";
-import { List } from "../../../../base/browser/ui/list/listWidget.js";
-import { ResizableHTMLElement } from "../../../../base/browser/ui/resizable/resizable.js";
-import { TimeoutTimer } from "../../../../base/common/async.js";
-import { Emitter, Event } from "../../../../base/common/event.js";
-import {
-	Disposable,
-	MutableDisposable,
-} from "../../../../base/common/lifecycle.js";
-import { clamp } from "../../../../base/common/numbers.js";
-import { SuggestWidgetStatus } from "../../../../editor/contrib/suggest/browser/suggestWidgetStatus.js";
-import { localize } from "../../../../nls.js";
-import { MenuId } from "../../../../platform/actions/common/actions.js";
-import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
-import { SimpleCompletionItem } from "./simpleCompletionItem.js";
-import { LineContext, SimpleCompletionModel } from "./simpleCompletionModel.js";
-import {
-	SimpleSuggestWidgetItemRenderer,
-	type ISimpleSuggestWidgetFontInfo,
-} from "./simpleSuggestWidgetRenderer.js";
+import './media/suggest.css';
+import * as dom from '../../../../base/browser/dom.js';
+import { IListEvent, IListGestureEvent, IListMouseEvent } from '../../../../base/browser/ui/list/list.js';
+import { List } from '../../../../base/browser/ui/list/listWidget.js';
+import { ResizableHTMLElement } from '../../../../base/browser/ui/resizable/resizable.js';
+import { SimpleCompletionItem } from './simpleCompletionItem.js';
+import { LineContext, SimpleCompletionModel } from './simpleCompletionModel.js';
+import { SimpleSuggestWidgetItemRenderer, type ISimpleSuggestWidgetFontInfo } from './simpleSuggestWidgetRenderer.js';
+import { TimeoutTimer } from '../../../../base/common/async.js';
+import { Emitter, Event } from '../../../../base/common/event.js';
+import { MutableDisposable, Disposable } from '../../../../base/common/lifecycle.js';
+import { clamp } from '../../../../base/common/numbers.js';
+import { localize } from '../../../../nls.js';
+import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+import { SuggestWidgetStatus } from '../../../../editor/contrib/suggest/browser/suggestWidgetStatus.js';
+import { MenuId } from '../../../../platform/actions/common/actions.js';
+import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 
 const $ = dom.$;
 
@@ -119,6 +109,7 @@ export class SimpleSuggestWidget extends Disposable {
 		private readonly _getFontInfo: () => ISimpleSuggestWidgetFontInfo,
 		options: IWorkbenchSuggestWidgetOptions,
 		@IInstantiationService instantiationService: IInstantiationService,
+		@IConfigurationService configurationService: IConfigurationService,
 	) {
 		super();
 
@@ -171,16 +162,35 @@ export class SimpleSuggestWidget extends Disposable {
 					// only store changes that are above a certain threshold
 					const { itemHeight, defaultSize } = this._getLayoutInfo();
 
-					const threshold = Math.round(itemHeight / 2);
+		const applyIconStyle = () => this.element.domNode.classList.toggle('no-icons', !configurationService.getValue('editor.suggest.showIcons'));
+		applyIconStyle();
 
-					let { width, height } = this.element.size;
-
-					if (
-						!state.persistHeight ||
-						Math.abs(state.currentSize.height - height) <= threshold
-					) {
-						height =
-							state.persistedSize?.height ?? defaultSize.height;
+		const renderer = new SimpleSuggestWidgetItemRenderer(_getFontInfo);
+		this._register(renderer);
+		this._listElement = dom.append(this.element.domNode, $('.tree'));
+		this._list = this._register(new List('SuggestWidget', this._listElement, {
+			getHeight: (_element: SimpleCompletionItem): number => this._getLayoutInfo().itemHeight,
+			getTemplateId: (_element: SimpleCompletionItem): string => 'suggestion'
+		}, [renderer], {
+			alwaysConsumeMouseWheel: true,
+			useShadows: false,
+			mouseSupport: false,
+			multipleSelectionSupport: false,
+			accessibilityProvider: {
+				getRole: () => 'option',
+				getWidgetAriaLabel: () => localize('suggest', "Suggest"),
+				getWidgetRole: () => 'listbox',
+				getAriaLabel: (item: SimpleCompletionItem) => {
+					let label = item.completion.label;
+					if (typeof item.completion.label !== 'string') {
+						const { detail, description } = item.completion.label;
+						if (detail && description) {
+							label = localize('label.full', '{0}{1}, {2}', label, detail, description);
+						} else if (detail) {
+							label = localize('label.detail', '{0}{1}', label, detail);
+						} else if (description) {
+							label = localize('label.desc', '{0}, {1}', label, description);
+						}
 					}
 
 					if (
@@ -297,15 +307,14 @@ export class SimpleSuggestWidget extends Disposable {
 			this.element.domNode.classList.toggle("with-status-bar", true);
 		}
 
-		this._register(
-			this._list.onMouseDown((e) => this._onListMouseDownOrTap(e)),
-		);
-
-		this._register(this._list.onTap((e) => this._onListMouseDownOrTap(e)));
-
-		this._register(
-			this._list.onDidChangeSelection((e) => this._onListSelection(e)),
-		);
+		this._register(this._list.onMouseDown(e => this._onListMouseDownOrTap(e)));
+		this._register(this._list.onTap(e => this._onListMouseDownOrTap(e)));
+		this._register(this._list.onDidChangeSelection(e => this._onListSelection(e)));
+		this._register(configurationService.onDidChangeConfiguration(e => {
+			if (e.affectsConfiguration('editor.suggest.showIcons')) {
+				applyIconStyle();
+			}
+		}));
 	}
 
 	private _cursorPosition?: { top: number; left: number; height: number };

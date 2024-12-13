@@ -242,3 +242,10 @@ export function isChatEditingActionContext(
 ): thing is IChatEditingActionContext {
 	return typeof thing === "object" && !!thing && "sessionId" in thing;
 }
+
+export function getMultiDiffSourceUri(): URI {
+	return URI.from({
+		scheme: CHAT_EDITING_MULTI_DIFF_SOURCE_RESOLVER_SCHEME,
+		path: '',
+	});
+}

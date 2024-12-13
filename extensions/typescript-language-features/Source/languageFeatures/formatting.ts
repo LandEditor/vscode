@@ -22,8 +22,8 @@ class TypeScriptFormattingProvider
 {
 	public constructor(
 		private readonly client: ITypeScriptServiceClient,
-		private readonly formattingOptionsManager: FileConfigurationManager,
-	) {}
+		private readonly fileConfigurationManager: FileConfigurationManager
+	) { }
 
 	public async provideDocumentRangeFormattingEdits(
 		document: vscode.TextDocument,
@@ -37,11 +37,7 @@ class TypeScriptFormattingProvider
 			return undefined;
 		}
 
-		await this.formattingOptionsManager.ensureConfigurationOptions(
-			document,
-			options,
-			token,
-		);
+		await this.fileConfigurationManager.ensureConfigurationOptions(document, options, token);
 
 		const args = typeConverters.Range.toFormattingRequestArgs(file, range);
 
@@ -67,11 +63,7 @@ class TypeScriptFormattingProvider
 			return [];
 		}
 
-		await this.formattingOptionsManager.ensureConfigurationOptions(
-			document,
-			options,
-			token,
-		);
+		await this.fileConfigurationManager.ensureConfigurationOptions(document, options, token);
 
 		const args: Proto.FormatOnKeyRequestArgs = {
 			...typeConverters.Position.toFileLocationRequestArgs(

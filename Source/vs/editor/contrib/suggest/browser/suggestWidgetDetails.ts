@@ -256,28 +256,20 @@ export class SuggestDetailsWidget {
 			this._docs.classList.add("markdown-docs");
 
 			dom.clearNode(this._docs);
-
-			const renderedContents =
-				this._markdownRenderer.render(documentation);
-
+			const renderedContents = this._markdownRenderer.render(documentation, {
+				asyncRenderCallback: () => {
+					this.layout(this._size.width, this._type.clientHeight + this._docs.clientHeight);
+					this._onDidChangeContents.fire(this);
+				}
+			});
 			this._docs.appendChild(renderedContents.element);
 
 			this._renderDisposeable.add(renderedContents);
-
-			this._renderDisposeable.add(
-				this._markdownRenderer.onDidRenderAsync(() => {
-					this.layout(
-						this._size.width,
-						this._type.clientHeight + this._docs.clientHeight,
-					);
-
-					this._onDidChangeContents.fire(this);
-				}),
-			);
 		}
 
-		this.domNode.style.userSelect = "text";
+		this.domNode.classList.toggle('detail-and-doc', !!detail && !!documentation);
 
+		this.domNode.style.userSelect = 'text';
 		this.domNode.tabIndex = -1;
 
 		this._close.onmousedown = (e) => {

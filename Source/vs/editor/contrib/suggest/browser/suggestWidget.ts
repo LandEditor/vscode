@@ -5,94 +5,38 @@
 import * as dom from "../../../../base/browser/dom.js";
 import { IKeyboardEvent } from "../../../../base/browser/keyboardEvent.js";
 
-import "../../../../base/browser/ui/codicons/codiconStyles.js"; // The codicon symbol styles are defined here and must be loaded
-
-import {
-	IListEvent,
-	IListGestureEvent,
-	IListMouseEvent,
-} from "../../../../base/browser/ui/list/list.js";
-import { List } from "../../../../base/browser/ui/list/listWidget.js";
-import {
-	CancelablePromise,
-	createCancelablePromise,
-	disposableTimeout,
-	TimeoutTimer,
-} from "../../../../base/common/async.js";
-import { onUnexpectedError } from "../../../../base/common/errors.js";
-import {
-	Emitter,
-	Event,
-	PauseableEmitter,
-} from "../../../../base/common/event.js";
-import {
-	DisposableStore,
-	IDisposable,
-	MutableDisposable,
-} from "../../../../base/common/lifecycle.js";
-import { clamp } from "../../../../base/common/numbers.js";
-import * as strings from "../../../../base/common/strings.js";
-
-import "./media/suggest.css";
-
-import {
-	ContentWidgetPositionPreference,
-	ICodeEditor,
-	IContentWidget,
-	IContentWidgetPosition,
-	IEditorMouseEvent,
-} from "../../../browser/editorBrowser.js";
-import { EmbeddedCodeEditorWidget } from "../../../browser/widget/codeEditor/embeddedCodeEditorWidget.js";
-import { EditorOption } from "../../../common/config/editorOptions.js";
-import { IPosition } from "../../../common/core/position.js";
-import { SuggestWidgetStatus } from "./suggestWidgetStatus.js";
-
-import "../../symbolIcons/browser/symbolIcons.js"; // The codicon symbol colors are defined here and must be loaded to get colors
-
-import { status } from "../../../../base/browser/ui/aria/aria.js";
-import { ResizableHTMLElement } from "../../../../base/browser/ui/resizable/resizable.js";
-import * as nls from "../../../../nls.js";
-import {
-	IContextKey,
-	IContextKeyService,
-} from "../../../../platform/contextkey/common/contextkey.js";
-import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
-import {
-	IStorageService,
-	StorageScope,
-	StorageTarget,
-} from "../../../../platform/storage/common/storage.js";
-import { getListStyles } from "../../../../platform/theme/browser/defaultStyles.js";
-import {
-	activeContrastBorder,
-	editorForeground,
-	editorWidgetBackground,
-	editorWidgetBorder,
-	listFocusHighlightForeground,
-	listHighlightForeground,
-	quickInputListFocusBackground,
-	quickInputListFocusForeground,
-	quickInputListFocusIconForeground,
-	registerColor,
-	transparent,
-} from "../../../../platform/theme/common/colorRegistry.js";
-import { isHighContrast } from "../../../../platform/theme/common/theme.js";
-import {
-	IColorTheme,
-	IThemeService,
-} from "../../../../platform/theme/common/themeService.js";
-import { CompletionModel } from "./completionModel.js";
-import {
-	CompletionItem,
-	Context as SuggestContext,
-	suggestWidgetStatusbarMenu,
-} from "./suggest.js";
-import {
-	canExpandCompletionItem,
-	SuggestDetailsOverlay,
-	SuggestDetailsWidget,
-} from "./suggestWidgetDetails.js";
-import { getAriaId, ItemRenderer } from "./suggestWidgetRenderer.js";
+import * as dom from '../../../../base/browser/dom.js';
+import { IKeyboardEvent } from '../../../../base/browser/keyboardEvent.js';
+import '../../../../base/browser/ui/codicons/codiconStyles.js'; // The codicon symbol styles are defined here and must be loaded
+import { IListEvent, IListGestureEvent, IListMouseEvent } from '../../../../base/browser/ui/list/list.js';
+import { List } from '../../../../base/browser/ui/list/listWidget.js';
+import { CancelablePromise, createCancelablePromise, disposableTimeout, TimeoutTimer } from '../../../../base/common/async.js';
+import { onUnexpectedError } from '../../../../base/common/errors.js';
+import { Emitter, Event, PauseableEmitter } from '../../../../base/common/event.js';
+import { DisposableStore, IDisposable, MutableDisposable } from '../../../../base/common/lifecycle.js';
+import { clamp } from '../../../../base/common/numbers.js';
+import * as strings from '../../../../base/common/strings.js';
+import './media/suggest.css';
+import { ContentWidgetPositionPreference, ICodeEditor, IContentWidget, IContentWidgetPosition, IEditorMouseEvent } from '../../../browser/editorBrowser.js';
+import { EmbeddedCodeEditorWidget } from '../../../browser/widget/codeEditor/embeddedCodeEditorWidget.js';
+import { EditorOption } from '../../../common/config/editorOptions.js';
+import { IPosition } from '../../../common/core/position.js';
+import { SuggestWidgetStatus } from './suggestWidgetStatus.js';
+import '../../symbolIcons/browser/symbolIcons.js'; // The codicon symbol colors are defined here and must be loaded to get colors
+import * as nls from '../../../../nls.js';
+import { IContextKey, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+import { activeContrastBorder, editorForeground, editorWidgetBackground, editorWidgetBorder, listFocusHighlightForeground, listHighlightForeground, quickInputListFocusBackground, quickInputListFocusForeground, quickInputListFocusIconForeground, registerColor, transparent } from '../../../../platform/theme/common/colorRegistry.js';
+import { isHighContrast } from '../../../../platform/theme/common/theme.js';
+import { IColorTheme, IThemeService } from '../../../../platform/theme/common/themeService.js';
+import { CompletionModel } from './completionModel.js';
+import { ResizableHTMLElement } from '../../../../base/browser/ui/resizable/resizable.js';
+import { CompletionItem, Context as SuggestContext, suggestWidgetStatusbarMenu } from './suggest.js';
+import { canExpandCompletionItem, SuggestDetailsOverlay, SuggestDetailsWidget } from './suggestWidgetDetails.js';
+import { ItemRenderer } from './suggestWidgetRenderer.js';
+import { getListStyles } from '../../../../platform/theme/browser/defaultStyles.js';
+import { status } from '../../../../base/browser/ui/aria/aria.js';
 
 /**
  * Suggest widget colors
@@ -785,19 +729,8 @@ export class SuggestWidget implements IDisposable {
 
 					this._list.setFocus([index]);
 
-					this._ignoreFocusEvents = false;
-
-					if (this._isDetailsVisible()) {
-						this._showDetails(false, false);
-					} else {
-						this.element.domNode.classList.remove("docs-side");
-					}
-
-					this.editor.setAriaOptions({
-						activeDescendant: getAriaId(index),
-					});
-				})
-				.catch(onUnexpectedError);
+				this.editor.setAriaOptions({ activeDescendant: this._list.getElementID(index) });
+			}).catch(onUnexpectedError);
 		}
 		// emit an event
 		this._onDidFocus.fire({ item, index, model: this._completionModel });

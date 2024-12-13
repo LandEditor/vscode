@@ -20,8 +20,6 @@ import { ViewContainer } from "../../../common/views.js";
 
 export interface IActivity {
 	readonly badge: IBadge;
-
-	readonly priority?: number;
 }
 
 export const IActivityService =

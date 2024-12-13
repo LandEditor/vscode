@@ -159,7 +159,7 @@ export class SimpleSettingRenderer {
 		const setting = this.getSetting(settingId);
 
 		if (!setting) {
-			return "";
+			return `<code>${settingId}</code>`;
 		}
 
 		return this.renderSetting(setting, newValue);

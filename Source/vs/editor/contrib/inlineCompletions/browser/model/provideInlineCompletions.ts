@@ -3,43 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { assertNever } from "../../../../../base/common/assert.js";
-import {
-	AsyncIterableObject,
-	DeferredPromise,
-} from "../../../../../base/common/async.js";
-import {
-	CancellationToken,
-	CancellationTokenSource,
-} from "../../../../../base/common/cancellation.js";
-import { onUnexpectedExternalError } from "../../../../../base/common/errors.js";
-import {
-	Disposable,
-	IDisposable,
-} from "../../../../../base/common/lifecycle.js";
-import { SetMap } from "../../../../../base/common/map.js";
-import { ISingleEditOperation } from "../../../../common/core/editOperation.js";
-import { OffsetRange } from "../../../../common/core/offsetRange.js";
-import { Position } from "../../../../common/core/position.js";
-import { Range } from "../../../../common/core/range.js";
-import { SingleTextEdit } from "../../../../common/core/textEdit.js";
-import { LanguageFeatureRegistry } from "../../../../common/languageFeatureRegistry.js";
-import {
-	Command,
-	InlineCompletion,
-	InlineCompletionContext,
-	InlineCompletionProviderGroupId,
-	InlineCompletions,
-	InlineCompletionsProvider,
-	InlineCompletionTriggerKind,
-} from "../../../../common/languages.js";
-import { ILanguageConfigurationService } from "../../../../common/languages/languageConfigurationRegistry.js";
-import { ITextModel } from "../../../../common/model.js";
-import { fixBracketsInLine } from "../../../../common/model/bracketPairsTextModelPart/fixBrackets.js";
-import { TextModelText } from "../../../../common/model/textModelText.js";
-import { LineEditWithAdditionalLines } from "../../../../common/tokenizationTextModelPart.js";
-import { SnippetParser, Text } from "../../../snippet/browser/snippetParser.js";
-import { getReadonlyEmptyArray } from "../utils.js";
+import { assertNever } from '../../../../../base/common/assert.js';
+import { AsyncIterableObject, DeferredPromise } from '../../../../../base/common/async.js';
+import { CancellationToken, CancellationTokenSource } from '../../../../../base/common/cancellation.js';
+import { onUnexpectedExternalError } from '../../../../../base/common/errors.js';
+import { Disposable, IDisposable } from '../../../../../base/common/lifecycle.js';
+import { SetMap } from '../../../../../base/common/map.js';
+import { generateUuid } from '../../../../../base/common/uuid.js';
+import { ISingleEditOperation } from '../../../../common/core/editOperation.js';
+import { OffsetRange } from '../../../../common/core/offsetRange.js';
+import { Position } from '../../../../common/core/position.js';
+import { Range } from '../../../../common/core/range.js';
+import { SingleTextEdit } from '../../../../common/core/textEdit.js';
+import { LanguageFeatureRegistry } from '../../../../common/languageFeatureRegistry.js';
+import { Command, InlineCompletion, InlineCompletionContext, InlineCompletionProviderGroupId, InlineCompletions, InlineCompletionsProvider, InlineCompletionTriggerKind } from '../../../../common/languages.js';
+import { ILanguageConfigurationService } from '../../../../common/languages/languageConfigurationRegistry.js';
+import { ITextModel } from '../../../../common/model.js';
+import { fixBracketsInLine } from '../../../../common/model/bracketPairsTextModelPart/fixBrackets.js';
+import { TextModelText } from '../../../../common/model/textModelText.js';
+import { LineEditWithAdditionalLines } from '../../../../common/tokenizationTextModelPart.js';
+import { SnippetParser, Text } from '../../../snippet/browser/snippetParser.js';
+import { getReadonlyEmptyArray } from '../utils.js';
 
 export async function provideInlineCompletions(
 	registry: LanguageFeatureRegistry<InlineCompletionsProvider>,
@@ -49,9 +33,11 @@ export async function provideInlineCompletions(
 	baseToken: CancellationToken = CancellationToken.None,
 	languageConfigurationService?: ILanguageConfigurationService,
 ): Promise<InlineCompletionProviderResult> {
+	const requestUuid = generateUuid();
 	const tokenSource = new CancellationTokenSource(baseToken);
 
 	const token = tokenSource.token;
+	const contextWithUuid = { ...context, requestUuid: requestUuid };
 
 	const defaultReplaceRange =
 		positionOrRange instanceof Position
@@ -182,19 +168,9 @@ export async function provideInlineCompletions(
 
 		try {
 			if (positionOrRange instanceof Position) {
-				result = await provider.provideInlineCompletions(
-					model,
-					positionOrRange,
-					context,
-					token,
-				);
+				result = await provider.provideInlineCompletions(model, positionOrRange, contextWithUuid, token);
 			} else {
-				result = await provider.provideInlineEditsForRange?.(
-					model,
-					positionOrRange,
-					context,
-					token,
-				);
+				result = await provider.provideInlineEditsForRange?.(model, positionOrRange, contextWithUuid, token);
 			}
 		} catch (e) {
 			onUnexpectedExternalError(e);
@@ -223,14 +199,7 @@ export async function provideInlineCompletions(
 		return new InlineCompletionProviderResult([], new Set(), []);
 	}
 
-	const result = await addRefAndCreateResult(
-		context,
-		inlineCompletionLists,
-		defaultReplaceRange,
-		model,
-		languageConfigurationService,
-	);
-
+	const result = await addRefAndCreateResult(contextWithUuid, inlineCompletionLists, defaultReplaceRange, model, languageConfigurationService);
 	tokenSource.dispose(true); // This disposes results that are not referenced.
 	return result;
 }

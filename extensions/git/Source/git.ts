@@ -2583,14 +2583,18 @@ export class Repository {
 		await this.exec(["merge", "--abort"]);
 	}
 
-	async tag(options: {
-		name: string;
+	async mergeContinue(): Promise<void> {
+		const args = ['merge', '--continue'];
 
-		message?: string;
+		try {
+			await this.exec(args, { env: { GIT_EDITOR: 'true' } });
+		} catch (commitErr) {
+			await this.handleCommitError(commitErr);
+		}
+	}
 
-		ref?: string;
-	}): Promise<void> {
-		let args = ["tag"];
+	async tag(options: { name: string; message?: string; ref?: string }): Promise<void> {
+		let args = ['tag'];
 
 		if (options.message) {
 			args = [...args, "-a", options.name, "-m", options.message];

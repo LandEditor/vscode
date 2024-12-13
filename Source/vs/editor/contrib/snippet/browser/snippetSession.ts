@@ -720,7 +720,7 @@ export class SnippetSession {
 
 		const readClipboardText = () => clipboardText;
 		// know what text the overwrite[Before|After] extensions
-		// of the primary curser have selected because only when
+		// of the primary cursor have selected because only when
 		// secondary selections extend to the same text we can grow them
 		const firstBeforeText = model.getValueInRange(
 			SnippetSession.adjustSelection(
@@ -842,7 +842,7 @@ export class SnippetSession {
 				]),
 			);
 			// store snippets with the index of their originating selection.
-			// that ensures the primiary cursor stays primary despite not being
+			// that ensures the primary cursor stays primary despite not being
 			// the one with lowest start position
 			edits[idx] = EditOperation.replace(
 				snippetSelection,

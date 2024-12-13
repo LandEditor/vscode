@@ -50,8 +50,7 @@ export class InlineCompletionsModel extends Disposable {
 
 	// We use a semantic id to keep the same inline completion selected even if the provider reorders the completions.
 	private readonly _selectedInlineCompletionId = observableValue<string | undefined>(this, undefined);
-
-	private readonly _primaryPosition = derived(this, reader => this._positions.read(reader)[0] ?? new Position(1, 1));
+	public readonly primaryPosition = derived(this, reader => this._positions.read(reader)[0] ?? new Position(1, 1));
 
 	private _isAcceptingPartially = false;
 
@@ -227,8 +226,7 @@ export class InlineCompletionsModel extends Disposable {
 			});
 		}
 
-		const cursorPosition = this._primaryPosition.get();
-
+		const cursorPosition = this.primaryPosition.get();
 		if (changeSummary.dontRefetch) {
 			return Promise.resolve(true);
 		}
@@ -302,9 +300,7 @@ export class InlineCompletionsModel extends Disposable {
 		const c = this._source.inlineCompletions.read(reader);
 
 		if (!c) { return undefined; }
-
-		const cursorPosition = this._primaryPosition.read(reader);
-
+		const cursorPosition = this.primaryPosition.read(reader);
 		let inlineEdit: InlineCompletionWithUpdatedRange | undefined = undefined;
 
 		const visibleCompletions: InlineCompletionWithUpdatedRange[] = [];
@@ -424,11 +420,10 @@ export class InlineCompletionsModel extends Disposable {
 
 			edit = singleTextRemoveCommonPrefix(edit, model);
 
-			const cursorPos = this._primaryPosition.read(reader);
-
+			const cursorPos = this.primaryPosition.read(reader);
 			const cursorAtInlineEdit = LineRange.fromRangeInclusive(edit.range).addMargin(1, 1).contains(cursorPos.lineNumber);
 
-			const cursorDist = LineRange.fromRange(edit.range).distanceToLine(this._primaryPosition.read(reader).lineNumber);
+			const cursorDist = LineRange.fromRange(edit.range).distanceToLine(this.primaryPosition.read(reader).lineNumber);
 
 			if (this._onlyShowWhenCloseToCursor.read(reader) && cursorDist > 3 && !item.inlineEdit.request.isExplicitRequest && !this._inAcceptFlow.read(reader)) {
 				return undefined;
@@ -909,9 +904,7 @@ export class InlineCompletionsModel extends Disposable {
 			this.dontRefetchSignal.trigger(tx);
 
 			this._editor.setPosition(s.inlineEdit.range.getStartPosition(), 'inlineCompletions.jump');
-
-			this._editor.revealLine(s.inlineEdit.range.startLineNumber);
-
+			this._editor.revealPosition(s.inlineEdit.range.getStartPosition());
 			this._editor.focus();
 		});
 	}
