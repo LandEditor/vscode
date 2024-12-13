@@ -3420,8 +3420,8 @@
 		"onFileSystem:git-show"
 	],
 	"dependencies": {
-		"@joaomoreno/unique-names-generator": "^5.2.0",
-		"byline": "^5.0.0",
+		"@joaomoreno/unique-names-generator": "5.2.0",
+		"byline": "5.0.0",
 		"file-type": "16.5.4",
 		"jschardet": "3.1.4",
 		"picomatch": "2.3.1",
