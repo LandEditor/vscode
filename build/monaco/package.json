@@ -1,8 +1,8 @@
 {
-	"dependencies": {},
-	"description": "A browser based code editor",
-	"devDependencies": {},
-	"module": "./esm/vs/editor/editor.main.js",
 	"name": "monaco-editor-core",
-	"typings": "./esm/vs/editor/editor.api.d.ts"
+	"description": "A browser based code editor",
+	"module": "./esm/vs/editor/editor.main.js",
+	"typings": "./esm/vs/editor/editor.api.d.ts",
+	"dependencies": {},
+	"devDependencies": {}
 }

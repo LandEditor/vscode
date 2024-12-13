@@ -1,7 +1,5 @@
 {
 	"name": "@codeeditorland/web",
-	"version": "0.0.0",
-	"private": true,
 	"dependencies": {
 		"@codeeditorland/1ds-core-js": "0.0.1",
 		"@codeeditorland/1ds-post-js": "0.0.1",

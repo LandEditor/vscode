@@ -1,12 +1,8 @@
 {
 	"name": "code-oss-dev-build",
-	"version": "1.0.0",
-	"license": "MIT",
-	"type": "commonjs",
 	"scripts": {
 		"compile": "../node_modules/.bin/tsc -p tsconfig.build.json",
-		"npmCheckJs": "../node_modules/.bin/tsc --noEmit",
-		"watch": "../node_modules/.bin/tsc -p tsconfig.build.json --watch"
+		"npmCheckJs": "../node_modules/.bin/tsc --noEmit"
 	},
 	"dependencies": {},
 	"devDependencies": {
@@ -18,7 +14,6 @@
 		"@codeeditorland/storage-blob": "0.0.1",
 		"@codeeditorland/universal-bundler": "0.0.1",
 		"@codeeditorland/vsce": "0.0.1",
-		"@electron/get": "^2.0.0",
 		"@types/ansi-colors": "^3.2.0",
 		"@types/byline": "^4.2.32",
 		"@types/debounce": "^1.0.0",
@@ -26,18 +21,11 @@
 		"@types/fancy-log": "^1.3.0",
 		"@types/fs-extra": "^9.0.12",
 		"@types/glob": "^7.1.1",
-		"@types/gulp": "^4.0.17",
-		"@types/gulp-filter": "^3.0.32",
-		"@types/gulp-gzip": "^0.0.31",
-		"@types/gulp-json-editor": "^2.2.31",
-		"@types/gulp-rename": "^0.0.33",
 		"@types/gulp-sort": "^2.0.4",
-		"@types/gulp-sourcemaps": "^0.0.32",
 		"@types/jws": "^3.2.10",
 		"@types/mime": "0.0.29",
 		"@types/minimatch": "^3.0.3",
 		"@types/minimist": "^1.2.1",
-		"@types/mocha": "^9.1.1",
 		"@types/node": "20.x",
 		"@types/pump": "^1.0.1",
 		"@types/rimraf": "^2.0.4",
@@ -47,10 +35,8 @@
 		"@types/xml2js": "0.0.33",
 		"byline": "^5.0.0",
 		"debug": "^4.3.2",
-		"electron-osx-sign": "^0.4.16",
 		"esbuild": "0.23.0",
 		"extract-zip": "^2.0.1",
-		"gulp-merge-json": "^2.1.1",
 		"gulp-sort": "^2.0.0",
 		"jsonc-parser": "^2.3.0",
 		"jws": "^4.0.0",
@@ -63,7 +49,6 @@
 		"yauzl": "^2.10.0"
 	},
 	"optionalDependencies": {
-		"tree-sitter-typescript": "^0.20.5",
-		"vscode-gulp-watch": "^5.0.3"
+		"tree-sitter-typescript": "^0.20.5"
 	}
 }

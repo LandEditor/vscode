@@ -1,17 +1,7 @@
 {
 	"name": "sql",
 	"displayName": "%displayName%",
-	"version": "1.0.0",
 	"description": "%description%",
-	"categories": [
-		"Programming Languages"
-	],
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/microsoft/vscode.git"
-	},
-	"license": "MIT",
-	"publisher": "vscode",
 	"scripts": {
 		"update-grammar": "node ./build/update-grammar.mjs"
 	},
@@ -39,8 +29,5 @@
 		]
 	},
 	"dependencies": {},
-	"devDependencies": {},
-	"engines": {
-		"vscode": "*"
-	}
+	"devDependencies": {}
 }

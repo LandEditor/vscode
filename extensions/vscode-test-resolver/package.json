@@ -1,19 +1,10 @@
 {
 	"name": "@codeeditorland/test-resolver",
-	"version": "0.0.1",
-	"private": true,
 	"description": "Test resolver for VS Code",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/microsoft/vscode.git"
-	},
-	"license": "MIT",
-	"publisher": "vscode",
 	"main": "./out/extension",
 	"browser": "./dist/browser/testResolverMain",
 	"scripts": {
-		"compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
-		"vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:vscode-test-resolver"
+		"compile": "node ./node_modules/vscode/bin/compile -watch -p ./"
 	},
 	"contributes": {
 		"commands": [
@@ -157,9 +148,6 @@
 	"dependencies": {},
 	"devDependencies": {
 		"@types/node": "20.x"
-	},
-	"engines": {
-		"vscode": "^1.25.0"
 	},
 	"icon": "media/icon.png",
 	"capabilities": {

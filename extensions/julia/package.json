@@ -1,13 +1,7 @@
 {
 	"name": "julia",
 	"displayName": "%displayName%",
-	"version": "1.0.0",
 	"description": "%description%",
-	"categories": [
-		"Programming Languages"
-	],
-	"license": "MIT",
-	"publisher": "vscode",
 	"scripts": {
 		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin JuliaEditorSupport/atom-language-julia grammars/julia_vscode.json ./syntaxes/julia.tmLanguage.json"
 	},
@@ -57,8 +51,5 @@
 		]
 	},
 	"dependencies": {},
-	"devDependencies": {},
-	"engines": {
-		"vscode": "0.10.x"
-	}
+	"devDependencies": {}
 }

@@ -1,13 +1,7 @@
 {
 	"name": "dart",
 	"displayName": "%displayName%",
-	"version": "1.0.0",
 	"description": "%description%",
-	"categories": [
-		"Programming Languages"
-	],
-	"license": "MIT",
-	"publisher": "vscode",
 	"scripts": {
 		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin dart-lang/dart-syntax-highlight grammars/dart.json ./syntaxes/dart.tmLanguage.json"
 	},
@@ -33,8 +27,5 @@
 		]
 	},
 	"dependencies": {},
-	"devDependencies": {},
-	"engines": {
-		"vscode": "0.10.x"
-	}
+	"devDependencies": {}
 }

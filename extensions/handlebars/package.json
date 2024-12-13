@@ -1,17 +1,7 @@
 {
 	"name": "handlebars",
 	"displayName": "%displayName%",
-	"version": "1.0.0",
 	"description": "%description%",
-	"categories": [
-		"Programming Languages"
-	],
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/microsoft/vscode.git"
-	},
-	"license": "MIT",
-	"publisher": "vscode",
 	"scripts": {
 		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin daaain/Handlebars grammars/Handlebars.json ./syntaxes/Handlebars.tmLanguage.json"
 	},
@@ -50,9 +40,6 @@
 	},
 	"dependencies": {},
 	"devDependencies": {},
-	"engines": {
-		"vscode": "0.10.x"
-	},
 	"extensionKind": [
 		"ui",
 		"workspace"

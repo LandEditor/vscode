@@ -1,18 +1,7 @@
 {
 	"name": "typescript",
 	"displayName": "%displayName%",
-	"version": "1.0.0",
 	"description": "%description%",
-	"categories": [
-		"Programming Languages"
-	],
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/microsoft/vscode.git"
-	},
-	"license": "MIT",
-	"author": "vscode",
-	"publisher": "vscode",
 	"scripts": {
 		"update-grammar": "node ./build/update-grammars.mjs"
 	},
@@ -203,8 +192,5 @@
 		]
 	},
 	"dependencies": {},
-	"devDependencies": {},
-	"engines": {
-		"vscode": "*"
-	}
+	"devDependencies": {}
 }

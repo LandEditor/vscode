@@ -1,33 +1,7 @@
 {
 	"name": "java",
 	"displayName": "%displayName%",
-	"version": "0.0.1",
-	"private": false,
 	"description": "%description%",
-	"categories": [
-		"Programming Languages"
-	],
-	"keywords": [
-		"codeeditorland",
-		"land",
-		"playform"
-	],
-	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
-	"bugs": {
-		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "🖋️ Source — 👐🏻 Open —",
-		"email": "Source/Open@Editor.Land",
-		"url": "HTTPS://Editor.Land"
-	},
-	"publisher": "vscode",
-	"type": "module",
 	"scripts": {
 		"prepublishOnly": "Build 'Source/**/*.ts'",
 		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin redhat-developer/vscode-java language-support/java/java.tmLanguage.json ./syntaxes/java.tmLanguage.json"
@@ -64,11 +38,5 @@
 	"dependencies": {},
 	"devDependencies": {
 		"@playform/build": "0.2.0"
-	},
-	"engines": {
-		"vscode": "*"
-	},
-	"publishConfig": {
-		"access": "public"
 	}
 }

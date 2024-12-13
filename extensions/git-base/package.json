@@ -1,23 +1,12 @@
 {
 	"name": "git-base",
 	"displayName": "%displayName%",
-	"version": "1.0.0",
 	"description": "%description%",
-	"categories": [
-		"Other"
-	],
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/microsoft/vscode.git"
-	},
-	"license": "MIT",
-	"publisher": "vscode",
 	"main": "./out/extension.js",
 	"browser": "./dist/browser/extension.js",
 	"scripts": {
 		"compile": "gulp compile-extension:git-base",
-		"update-grammar": "node ./build/update-grammars.js",
-		"watch": "gulp watch-extension:git-base"
+		"update-grammar": "node ./build/update-grammars.js"
 	},
 	"contributes": {
 		"commands": [
@@ -100,9 +89,6 @@
 	"dependencies": {},
 	"devDependencies": {
 		"@types/node": "20.x"
-	},
-	"engines": {
-		"vscode": "0.10.x"
 	},
 	"icon": "resources/icons/git.png",
 	"capabilities": {
