@@ -471,9 +471,7 @@ export class DeleteDuplicateLinesAction extends EditorAction {
 
 			for (
 				let i = selection.startLineNumber;
-
 				i <= selection.endLineNumber;
-
 				i++
 			) {
 				const line = model.getLineContent(i);

@@ -383,10 +383,8 @@ export class TextModelSearch {
 		// Collect results from middle lines
 		for (
 			let lineNumber = searchRange.startLineNumber + 1;
-
 			lineNumber < searchRange.endLineNumber &&
 			resultLen < limitResultCount;
-
 			lineNumber++
 		) {
 			resultLen = this._findMatchesInLine(

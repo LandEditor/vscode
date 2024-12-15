@@ -287,9 +287,7 @@ export class SnippetController2 implements IEditorContribution {
 
 					for (
 						let i = 0;
-
 						i < activeChoice.choice.options.length;
-
 						i++
 					) {
 						const option = activeChoice.choice.options[i];

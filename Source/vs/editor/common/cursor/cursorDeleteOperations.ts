@@ -150,9 +150,7 @@ export class DeleteOperations {
 
 				for (
 					let j = 0, lenJ = autoClosedCharacters.length;
-
 					j < lenJ;
-
 					j++
 				) {
 					const autoClosedCharacter = autoClosedCharacters[j];

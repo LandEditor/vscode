@@ -297,9 +297,7 @@ export class DiffEditorViewZones extends Disposable {
 					if (a.diff) {
 						for (
 							let i = a.originalRange.startLineNumber;
-
 							i < a.originalRange.endLineNumberExclusive;
-
 							i++
 						) {
 							// `i` can be out of bound when the diff has not been updated yet.

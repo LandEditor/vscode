@@ -936,10 +936,8 @@ export class NotebookTextModel
 
 		for (
 			let i = 0;
-
 			i < maxResult &&
 			a[aDelta + i].fastEqual(b[bDelta + i], isExecuting(a[aDelta + i]));
-
 			i++
 		) {
 			result++;
@@ -963,13 +961,11 @@ export class NotebookTextModel
 
 		for (
 			let i = 0;
-
 			i < maxResult &&
 			a[aDelta + aLen - i - 1].fastEqual(
 				b[bDelta + bLen - i - 1],
 				isExecuting(a[aDelta + aLen - i - 1]),
 			);
-
 			i++
 		) {
 			result++;
@@ -1352,9 +1348,7 @@ export class NotebookTextModel
 		// prepare remove
 		for (
 			let i = index;
-
 			i < Math.min(index + count, this._cells.length);
-
 			i++
 		) {
 			const cell = this._cells[i];

@@ -161,9 +161,7 @@ function* allMessages([result]: readonly ITestResult[]) {
 
 			for (
 				let messageIndex = 0;
-
 				messageIndex < messages.length;
-
 				messageIndex++
 			) {
 				if (messages[messageIndex].type === TestMessageType.Error) {

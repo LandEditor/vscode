@@ -1,13 +1,14 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+// ---------------------------------------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation. All rights reserved.
+//  Licensed under the MIT License. See License.txt in the project root for
+// license information.
+// --------------------------------------------------------------------------------------------
 
-use zbus::{dbus_proxy, Connection};
+use zbus::{Connection, dbus_proxy};
 
 use crate::{
 	constants::APPLICATION_NAME,
-	util::errors::{wrap, AnyError},
+	util::errors::{AnyError, wrap},
 };
 
 /// An basically undocumented API, but seems widely implemented, and is what
@@ -25,7 +26,7 @@ use crate::{
 )]
 trait PMInhibitor {
 	#[dbus_proxy(name = "Inhibit")]
-	fn inhibit(&self, what: &str, why: &str) -> zbus::Result<u32>;
+	fn inhibit(&self, what:&str, why:&str) -> zbus::Result<u32>;
 }
 
 /// A slightly better documented version which seems commonly used.
@@ -37,11 +38,11 @@ trait PMInhibitor {
 )]
 trait ScreenSaver {
 	#[dbus_proxy(name = "Inhibit")]
-	fn inhibit(&self, what: &str, why: &str) -> zbus::Result<u32>;
+	fn inhibit(&self, what:&str, why:&str) -> zbus::Result<u32>;
 }
 
 pub struct SleepInhibitor {
-	_connection: Connection, // Inhibition is released when the connection is closed
+	_connection:Connection, // Inhibition is released when the connection is closed
 }
 
 impl SleepInhibitor {
@@ -64,15 +65,14 @@ impl SleepInhibitor {
 				return Err(wrap(
 					e2,
 					format!(
-						"error requesting sleep inhibition, pminhibitor gave {e1}, screensaver gave"
+						"error requesting sleep inhibition, pminhibitor gave {e1}, screensaver \
+						 gave"
 					),
 				)
 				.into());
 			}
 		}
 
-		Ok(SleepInhibitor {
-			_connection: connection,
-		})
+		Ok(SleepInhibitor { _connection:connection })
 	}
 }

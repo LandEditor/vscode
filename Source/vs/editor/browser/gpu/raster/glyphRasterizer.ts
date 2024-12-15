@@ -3,12 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { memoize } from '../../../../base/common/decorators.js';
-import { Disposable } from '../../../../base/common/lifecycle.js';
-import { StringBuilder } from '../../../common/core/stringBuilder.js';
-import { FontStyle, TokenMetadata } from '../../../common/encodedTokenAttributes.js';
-import { ensureNonNullable } from '../gpuUtils.js';
-import { type IBoundingBox, type IGlyphRasterizer, type IRasterizedGlyph } from './raster.js';
+import { memoize } from "../../../../base/common/decorators.js";
+import { Disposable } from "../../../../base/common/lifecycle.js";
+import { StringBuilder } from "../../../common/core/stringBuilder.js";
+import {
+	FontStyle,
+	TokenMetadata,
+} from "../../../common/encodedTokenAttributes.js";
+import { ensureNonNullable } from "../gpuUtils.js";
+import {
+	type IBoundingBox,
+	type IGlyphRasterizer,
+	type IRasterizedGlyph,
+} from "./raster.js";
 
 let nextId = 0;
 
@@ -53,25 +60,30 @@ export class GlyphRasterizer extends Disposable implements IGlyphRasterizer {
 	constructor(
 		readonly fontSize: number,
 		readonly fontFamily: string,
-		readonly devicePixelRatio: number
+		readonly devicePixelRatio: number,
 	) {
 		super();
 
 		const devicePixelFontSize = Math.ceil(this.fontSize * devicePixelRatio);
 
-		this._canvas = new OffscreenCanvas(devicePixelFontSize * 3, devicePixelFontSize * 3);
+		this._canvas = new OffscreenCanvas(
+			devicePixelFontSize * 3,
+			devicePixelFontSize * 3,
+		);
 
-		this._ctx = ensureNonNullable(this._canvas.getContext('2d', {
-			willReadFrequently: true
-		}));
+		this._ctx = ensureNonNullable(
+			this._canvas.getContext("2d", {
+				willReadFrequently: true,
+			}),
+		);
 
-		this._ctx.textBaseline = 'top';
+		this._ctx.textBaseline = "top";
 
-		this._ctx.fillStyle = '#FFFFFF';
+		this._ctx.fillStyle = "#FFFFFF";
 
 		this._ctx.font = `${devicePixelFontSize}px ${this.fontFamily}`;
 
-		this._textMetrics = this._ctx.measureText('A');
+		this._textMetrics = this._ctx.measureText("A");
 	}
 
 	// TODO: Support drawing multiple fonts and sizes
@@ -125,7 +137,9 @@ export class GlyphRasterizer extends Disposable implements IGlyphRasterizer {
 		charMetadata: number,
 		colorMap: string[],
 	): Readonly<IRasterizedGlyph> {
-		const devicePixelFontSize = Math.ceil(this.fontSize * this.devicePixelRatio);
+		const devicePixelFontSize = Math.ceil(
+			this.fontSize * this.devicePixelRatio,
+		);
 
 		const canvasDim = devicePixelFontSize * 3;
 
@@ -169,7 +183,7 @@ export class GlyphRasterizer extends Disposable implements IGlyphRasterizer {
 				colorMap[TokenMetadata.getForeground(metadata)];
 		}
 
-		this._ctx.textBaseline = 'top';
+		this._ctx.textBaseline = "top";
 
 		this._ctx.fillText(chars, originX, originY);
 
@@ -195,13 +209,17 @@ export class GlyphRasterizer extends Disposable implements IGlyphRasterizer {
 
 		this._workGlyph.source = this._canvas;
 
-		this._workGlyph.originOffset.x = this._workGlyph.boundingBox.left - originX;
+		this._workGlyph.originOffset.x =
+			this._workGlyph.boundingBox.left - originX;
 
-		this._workGlyph.originOffset.y = this._workGlyph.boundingBox.top - originY;
+		this._workGlyph.originOffset.y =
+			this._workGlyph.boundingBox.top - originY;
 
-		this._workGlyph.fontBoundingBoxAscent = this._textMetrics.fontBoundingBoxAscent;
+		this._workGlyph.fontBoundingBoxAscent =
+			this._textMetrics.fontBoundingBoxAscent;
 
-		this._workGlyph.fontBoundingBoxDescent = this._textMetrics.fontBoundingBoxDescent;
+		this._workGlyph.fontBoundingBoxDescent =
+			this._textMetrics.fontBoundingBoxDescent;
 
 		// const result2: IRasterizedGlyph = {
 		// 	source: this._canvas,

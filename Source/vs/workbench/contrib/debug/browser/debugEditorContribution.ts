@@ -266,9 +266,7 @@ function getWordToLineNumbersMap(
 
 	for (
 		let tokenIndex = 0, tokenCount = lineTokens.getCount();
-
 		tokenIndex < tokenCount;
-
 		tokenIndex++
 	) {
 		const tokenType = lineTokens.getStandardTokenType(tokenIndex);
@@ -1473,9 +1471,7 @@ class WordsToLineNumbersCache {
 	public ensureRangePopulated(range: Range) {
 		for (
 			let lineNumber = range.startLineNumber;
-
 			lineNumber <= range.endLineNumber;
-
 			lineNumber++
 		) {
 			const bin = lineNumber >> 3; /* Math.floor(i / 8) */

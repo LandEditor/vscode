@@ -135,9 +135,7 @@ export class RenderedLinesCollection<T extends ILine> {
 
 		for (
 			let lineNumber = startLineNumber;
-
 			lineNumber <= endLineNumber;
-
 			lineNumber++
 		) {
 			const lineIndex = lineNumber - this._rendLineNumberStart;
@@ -197,9 +195,7 @@ export class RenderedLinesCollection<T extends ILine> {
 
 		for (
 			let changedLineNumber = changeFromLineNumber;
-
 			changedLineNumber <= changeToLineNumber;
-
 			changedLineNumber++
 		) {
 			if (
@@ -627,9 +623,7 @@ class ViewLayerRenderer<T extends IVisibleLine> {
 
 		for (
 			let lineNumber = fromLineNumber;
-
 			lineNumber <= toLineNumber;
-
 			lineNumber++
 		) {
 			newLines[newLinesLen++] = this._lineFactory.createLine();
@@ -664,9 +658,7 @@ class ViewLayerRenderer<T extends IVisibleLine> {
 
 		for (
 			let lineNumber = fromLineNumber;
-
 			lineNumber <= toLineNumber;
-
 			lineNumber++
 		) {
 			newLines[newLinesLen++] = this._lineFactory.createLine();

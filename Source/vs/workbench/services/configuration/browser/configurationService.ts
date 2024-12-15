@@ -1249,9 +1249,7 @@ export class WorkspaceService
 
 		for (
 			let currentIndex = 0;
-
 			currentIndex < currentFolders.length;
-
 			currentIndex++
 		) {
 			const currentFolder = currentFolders[currentIndex];
@@ -1260,11 +1258,9 @@ export class WorkspaceService
 
 			for (
 				newIndex = 0;
-
 				newIndex < newFolders.length &&
 				currentFolder.uri.toString() !==
 					newFolders[newIndex].uri.toString();
-
 				newIndex++
 			) {}
 

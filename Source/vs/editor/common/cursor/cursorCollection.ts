@@ -202,9 +202,7 @@ export class CursorCollection {
 
 		for (
 			let sortedCursorIndex = 0;
-
 			sortedCursorIndex < sortedCursors.length - 1;
-
 			sortedCursorIndex++
 		) {
 			const current = sortedCursors[sortedCursorIndex];

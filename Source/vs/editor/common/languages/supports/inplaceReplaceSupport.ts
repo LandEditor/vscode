@@ -105,9 +105,7 @@ export class BasicInplaceReplace {
 
 		for (
 			let i = 0, len = valueSets.length;
-
 			result === null && i < len;
-
 			i++
 		) {
 			result = this.valueSetReplace(valueSets[i], value, up);

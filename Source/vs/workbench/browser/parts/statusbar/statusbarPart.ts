@@ -3,38 +3,99 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import './media/statusbarpart.css';
-import { localize } from '../../../../nls.js';
-import { Disposable, DisposableStore, disposeIfDisposable, IDisposable, MutableDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
-import { MultiWindowParts, Part } from '../../part.js';
-import { EventType as TouchEventType, Gesture, GestureEvent } from '../../../../base/browser/touch.js';
-import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
-import { StatusbarAlignment, IStatusbarService, IStatusbarEntry, IStatusbarEntryAccessor, IStatusbarStyleOverride, isStatusbarEntryLocation, IStatusbarEntryLocation, isStatusbarEntryPriority, IStatusbarEntryPriority } from '../../../services/statusbar/browser/statusbar.js';
-import { IContextMenuService } from '../../../../platform/contextview/browser/contextView.js';
-import { IAction, Separator, toAction } from '../../../../base/common/actions.js';
-import { IThemeService } from '../../../../platform/theme/common/themeService.js';
-import { STATUS_BAR_BACKGROUND, STATUS_BAR_FOREGROUND, STATUS_BAR_NO_FOLDER_BACKGROUND, STATUS_BAR_ITEM_HOVER_BACKGROUND, STATUS_BAR_BORDER, STATUS_BAR_NO_FOLDER_FOREGROUND, STATUS_BAR_NO_FOLDER_BORDER, STATUS_BAR_ITEM_COMPACT_HOVER_BACKGROUND, STATUS_BAR_ITEM_FOCUS_BORDER, STATUS_BAR_FOCUS_BORDER } from '../../../common/theme.js';
-import { IWorkspaceContextService, WorkbenchState } from '../../../../platform/workspace/common/workspace.js';
-import { contrastBorder, activeContrastBorder } from '../../../../platform/theme/common/colorRegistry.js';
-import { EventHelper, addDisposableListener, EventType, clearNode, getWindow } from '../../../../base/browser/dom.js';
-import { createStyleSheet } from '../../../../base/browser/domStylesheets.js';
-import { IStorageService } from '../../../../platform/storage/common/storage.js';
-import { Parts, IWorkbenchLayoutService } from '../../../services/layout/browser/layoutService.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
-import { equals } from '../../../../base/common/arrays.js';
-import { StandardMouseEvent } from '../../../../base/browser/mouseEvent.js';
-import { ToggleStatusbarVisibilityAction } from '../../actions/layoutActions.js';
-import { assertIsDefined } from '../../../../base/common/types.js';
-import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
-import { isHighContrast } from '../../../../platform/theme/common/theme.js';
-import { hash } from '../../../../base/common/hash.js';
-import { WorkbenchHoverDelegate } from '../../../../platform/hover/browser/hover.js';
-import { HideStatusbarEntryAction, ToggleStatusbarEntryVisibilityAction } from './statusbarActions.js';
-import { IStatusbarViewModelEntry, StatusbarViewModel } from './statusbarModel.js';
-import { StatusbarEntryItem } from './statusbarItem.js';
-import { StatusBarFocused } from '../../../common/contextkeys.js';
-import { Emitter, Event } from '../../../../base/common/event.js';
-import { IView } from '../../../../base/browser/ui/grid/grid.js';
+import "./media/statusbarpart.css";
+
+import {
+	addDisposableListener,
+	clearNode,
+	EventHelper,
+	EventType,
+	getWindow,
+} from "../../../../base/browser/dom.js";
+import { createStyleSheet } from "../../../../base/browser/domStylesheets.js";
+import { StandardMouseEvent } from "../../../../base/browser/mouseEvent.js";
+import {
+	Gesture,
+	GestureEvent,
+	EventType as TouchEventType,
+} from "../../../../base/browser/touch.js";
+import { IView } from "../../../../base/browser/ui/grid/grid.js";
+import {
+	IAction,
+	Separator,
+	toAction,
+} from "../../../../base/common/actions.js";
+import { equals } from "../../../../base/common/arrays.js";
+import { Emitter, Event } from "../../../../base/common/event.js";
+import { hash } from "../../../../base/common/hash.js";
+import {
+	Disposable,
+	DisposableStore,
+	disposeIfDisposable,
+	IDisposable,
+	MutableDisposable,
+	toDisposable,
+} from "../../../../base/common/lifecycle.js";
+import { assertIsDefined } from "../../../../base/common/types.js";
+import { localize } from "../../../../nls.js";
+import { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
+import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
+import { WorkbenchHoverDelegate } from "../../../../platform/hover/browser/hover.js";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "../../../../platform/instantiation/common/extensions.js";
+import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
+import { IStorageService } from "../../../../platform/storage/common/storage.js";
+import {
+	activeContrastBorder,
+	contrastBorder,
+} from "../../../../platform/theme/common/colorRegistry.js";
+import { isHighContrast } from "../../../../platform/theme/common/theme.js";
+import { IThemeService } from "../../../../platform/theme/common/themeService.js";
+import {
+	IWorkspaceContextService,
+	WorkbenchState,
+} from "../../../../platform/workspace/common/workspace.js";
+import { StatusBarFocused } from "../../../common/contextkeys.js";
+import {
+	STATUS_BAR_BACKGROUND,
+	STATUS_BAR_BORDER,
+	STATUS_BAR_FOCUS_BORDER,
+	STATUS_BAR_FOREGROUND,
+	STATUS_BAR_ITEM_COMPACT_HOVER_BACKGROUND,
+	STATUS_BAR_ITEM_FOCUS_BORDER,
+	STATUS_BAR_ITEM_HOVER_BACKGROUND,
+	STATUS_BAR_NO_FOLDER_BACKGROUND,
+	STATUS_BAR_NO_FOLDER_BORDER,
+	STATUS_BAR_NO_FOLDER_FOREGROUND,
+} from "../../../common/theme.js";
+import {
+	IWorkbenchLayoutService,
+	Parts,
+} from "../../../services/layout/browser/layoutService.js";
+import {
+	isStatusbarEntryLocation,
+	isStatusbarEntryPriority,
+	IStatusbarEntry,
+	IStatusbarEntryAccessor,
+	IStatusbarEntryLocation,
+	IStatusbarEntryPriority,
+	IStatusbarService,
+	IStatusbarStyleOverride,
+	StatusbarAlignment,
+} from "../../../services/statusbar/browser/statusbar.js";
+import { ToggleStatusbarVisibilityAction } from "../../actions/layoutActions.js";
+import { MultiWindowParts, Part } from "../../part.js";
+import {
+	HideStatusbarEntryAction,
+	ToggleStatusbarEntryVisibilityAction,
+} from "./statusbarActions.js";
+import { StatusbarEntryItem } from "./statusbarItem.js";
+import {
+	IStatusbarViewModelEntry,
+	StatusbarViewModel,
+} from "./statusbarModel.js";
 
 export interface IStatusbarEntryContainer extends IDisposable {
 	/**
@@ -168,7 +229,10 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 	readonly onWillDispose = this._onWillDispose.event;
 
 	private readonly onDidOverrideEntry = this._register(new Emitter<string>());
-	private readonly entryOverrides = new Map<string, Partial<IStatusbarEntry>>();
+	private readonly entryOverrides = new Map<
+		string,
+		Partial<IStatusbarEntry>
+	>();
 
 	private leftItemsContainer: HTMLElement | undefined;
 
@@ -246,7 +310,10 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 		});
 	}
 
-	private withEntryOverride(entry: IStatusbarEntry, id: string): IStatusbarEntry {
+	private withEntryOverride(
+		entry: IStatusbarEntry,
+		id: string,
+	): IStatusbarEntry {
 		const override = this.entryOverrides.get(id);
 		if (override) {
 			entry = { ...entry, ...override };
@@ -255,7 +322,15 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 		return entry;
 	}
 
-	addEntry(entry: IStatusbarEntry, id: string, alignment: StatusbarAlignment, priorityOrLocation: number | IStatusbarEntryLocation | IStatusbarEntryPriority = 0): IStatusbarEntryAccessor {
+	addEntry(
+		entry: IStatusbarEntry,
+		id: string,
+		alignment: StatusbarAlignment,
+		priorityOrLocation:
+			| number
+			| IStatusbarEntryLocation
+			| IStatusbarEntryPriority = 0,
+	): IStatusbarEntryAccessor {
 		let priority: IStatusbarEntryPriority;
 
 		if (isStatusbarEntryPriority(priorityOrLocation)) {
@@ -315,12 +390,24 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 		return accessor;
 	}
 
-	private doAddEntry(entry: IStatusbarEntry, id: string, alignment: StatusbarAlignment, priority: IStatusbarEntryPriority): IStatusbarEntryAccessor {
+	private doAddEntry(
+		entry: IStatusbarEntry,
+		id: string,
+		alignment: StatusbarAlignment,
+		priority: IStatusbarEntryPriority,
+	): IStatusbarEntryAccessor {
 		const disposables = new DisposableStore();
 
 		// View model item
 		const itemContainer = this.doCreateStatusItem(id, alignment);
-		const item = disposables.add(this.instantiationService.createInstance(StatusbarEntryItem, itemContainer, this.withEntryOverride(entry, id), this.hoverDelegate));
+		const item = disposables.add(
+			this.instantiationService.createInstance(
+				StatusbarEntryItem,
+				itemContainer,
+				this.withEntryOverride(entry, id),
+				this.hoverDelegate,
+			),
+		);
 
 		// View model entry
 		const viewModelEntry: IStatusbarViewModelEntry = new (class
@@ -359,7 +446,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 
 		let lastEntry = entry;
 		const accessor: IStatusbarEntryAccessor = {
-			update: entry => {
+			update: (entry) => {
 				lastEntry = entry;
 				item.update(this.withEntryOverride(entry, id));
 			},
@@ -376,15 +463,17 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 					this.updateCompactEntries();
 				}
 				disposables.dispose();
-			}
+			},
 		};
 
 		// React to overrides
-		disposables.add(this.onDidOverrideEntry.event(overrideEntryId => {
-			if (overrideEntryId === id) {
-				accessor.update(lastEntry);
-			}
-		}));
+		disposables.add(
+			this.onDidOverrideEntry.event((overrideEntryId) => {
+				if (overrideEntryId === id) {
+					accessor.update(lastEntry);
+				}
+			}),
+		);
 
 		return accessor;
 	}
@@ -797,9 +886,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 
 		for (
 			let element: HTMLElement | null = event.target;
-
 			element;
-
 			element = element.parentElement
 		) {
 			const entry = this.viewModel.findEntry(element);

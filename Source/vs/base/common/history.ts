@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { SetWithKey } from './collections.js';
-import { Event } from './event.js';
-import { ArrayNavigator, INavigator } from './navigator.js';
+import { SetWithKey } from "./collections.js";
+import { Event } from "./event.js";
+import { ArrayNavigator, INavigator } from "./navigator.js";
 
 export interface IHistory<T> {
 	delete(t: T): boolean;

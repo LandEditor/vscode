@@ -3763,7 +3763,13 @@ declare namespace monaco.editor {
 		 * Control the cursor style in overtype mode.
 		 * Defaults to 'block'.
 		 */
-		overtypeCursorStyle?: 'line' | 'block' | 'underline' | 'line-thin' | 'block-outline' | 'underline-thin';
+		overtypeCursorStyle?:
+			| "line"
+			| "block"
+			| "underline"
+			| "line-thin"
+			| "block-outline"
+			| "underline-thin";
 		/**
 		 *  Controls whether paste in overtype mode should overwrite or insert.
 		 */
@@ -3785,7 +3791,7 @@ declare namespace monaco.editor {
 		/**
 		 * Controls whether to use default color decorations or not using the default document color provider
 		 */
-		defaultColorDecorators?: 'auto' | 'always' | 'never';
+		defaultColorDecorators?: "auto" | "always" | "never";
 		/**
 		 * Disable the use of `transform: translate3d(0px, 0px, 0px)` for the editor margin and lines layers.
 		 * The usage of `transform: translate3d(0px, 0px, 0px)` acts as a hint for browsers to create an extra layer.
@@ -5149,8 +5155,12 @@ declare namespace monaco.editor {
 		edits?: {
 			experimental?: {
 				enabled?: boolean;
-				useMixedLinesDiff?: 'never' | 'whenPossible' | 'forStableInsertions' | 'afterJumpWhenPossible';
-				useInterleavedLinesDiff?: 'never' | 'always' | 'afterJump';
+				useMixedLinesDiff?:
+					| "never"
+					| "whenPossible"
+					| "forStableInsertions"
+					| "afterJumpWhenPossible";
+				useInterleavedLinesDiff?: "never" | "always" | "afterJump";
 				onlyShowWhenCloseToCursor?: boolean;
 			};
 		};
@@ -5597,7 +5607,7 @@ declare namespace monaco.editor {
 		wrappingInfo = 152,
 		defaultColorDecorators = 153,
 		colorDecoratorsActivatedOn = 154,
-		inlineCompletionsAccessibilityVerbose = 155
+		inlineCompletionsAccessibilityVerbose = 155,
 	}
 
 	export const EditorOptions: {
@@ -5624,17 +5634,47 @@ declare namespace monaco.editor {
 		ariaLabel: IEditorOption<EditorOption.ariaLabel, string>;
 
 		ariaRequired: IEditorOption<EditorOption.ariaRequired, boolean>;
-		screenReaderAnnounceInlineSuggestion: IEditorOption<EditorOption.screenReaderAnnounceInlineSuggestion, boolean>;
-		autoClosingBrackets: IEditorOption<EditorOption.autoClosingBrackets, 'always' | 'never' | 'languageDefined' | 'beforeWhitespace'>;
-		autoClosingComments: IEditorOption<EditorOption.autoClosingComments, 'always' | 'never' | 'languageDefined' | 'beforeWhitespace'>;
-		autoClosingDelete: IEditorOption<EditorOption.autoClosingDelete, 'auto' | 'always' | 'never'>;
-		autoClosingOvertype: IEditorOption<EditorOption.autoClosingOvertype, 'auto' | 'always' | 'never'>;
-		autoClosingQuotes: IEditorOption<EditorOption.autoClosingQuotes, 'always' | 'never' | 'languageDefined' | 'beforeWhitespace'>;
-		autoIndent: IEditorOption<EditorOption.autoIndent, EditorAutoIndentStrategy>;
+		screenReaderAnnounceInlineSuggestion: IEditorOption<
+			EditorOption.screenReaderAnnounceInlineSuggestion,
+			boolean
+		>;
+		autoClosingBrackets: IEditorOption<
+			EditorOption.autoClosingBrackets,
+			"always" | "never" | "languageDefined" | "beforeWhitespace"
+		>;
+		autoClosingComments: IEditorOption<
+			EditorOption.autoClosingComments,
+			"always" | "never" | "languageDefined" | "beforeWhitespace"
+		>;
+		autoClosingDelete: IEditorOption<
+			EditorOption.autoClosingDelete,
+			"auto" | "always" | "never"
+		>;
+		autoClosingOvertype: IEditorOption<
+			EditorOption.autoClosingOvertype,
+			"auto" | "always" | "never"
+		>;
+		autoClosingQuotes: IEditorOption<
+			EditorOption.autoClosingQuotes,
+			"always" | "never" | "languageDefined" | "beforeWhitespace"
+		>;
+		autoIndent: IEditorOption<
+			EditorOption.autoIndent,
+			EditorAutoIndentStrategy
+		>;
 		automaticLayout: IEditorOption<EditorOption.automaticLayout, boolean>;
-		autoSurround: IEditorOption<EditorOption.autoSurround, 'never' | 'languageDefined' | 'quotes' | 'brackets'>;
-		bracketPairColorization: IEditorOption<EditorOption.bracketPairColorization, Readonly<Required<IBracketPairColorizationOptions>>>;
-		bracketPairGuides: IEditorOption<EditorOption.guides, Readonly<Required<IGuidesOptions>>>;
+		autoSurround: IEditorOption<
+			EditorOption.autoSurround,
+			"never" | "languageDefined" | "quotes" | "brackets"
+		>;
+		bracketPairColorization: IEditorOption<
+			EditorOption.bracketPairColorization,
+			Readonly<Required<IBracketPairColorizationOptions>>
+		>;
+		bracketPairGuides: IEditorOption<
+			EditorOption.guides,
+			Readonly<Required<IGuidesOptions>>
+		>;
 		stickyTabStops: IEditorOption<EditorOption.stickyTabStops, boolean>;
 
 		codeLens: IEditorOption<EditorOption.codeLens, boolean>;
@@ -5666,13 +5706,34 @@ declare namespace monaco.editor {
 		>;
 
 		contextmenu: IEditorOption<EditorOption.contextmenu, boolean>;
-		copyWithSyntaxHighlighting: IEditorOption<EditorOption.copyWithSyntaxHighlighting, boolean>;
-		cursorBlinking: IEditorOption<EditorOption.cursorBlinking, TextEditorCursorBlinkingStyle>;
-		cursorSmoothCaretAnimation: IEditorOption<EditorOption.cursorSmoothCaretAnimation, 'on' | 'off' | 'explicit'>;
-		cursorStyle: IEditorOption<EditorOption.cursorStyle, TextEditorCursorStyle>;
-		overtypeCursorStyle: IEditorOption<EditorOption.overtypeCursorStyle, TextEditorCursorStyle>;
-		cursorSurroundingLines: IEditorOption<EditorOption.cursorSurroundingLines, number>;
-		cursorSurroundingLinesStyle: IEditorOption<EditorOption.cursorSurroundingLinesStyle, 'default' | 'all'>;
+		copyWithSyntaxHighlighting: IEditorOption<
+			EditorOption.copyWithSyntaxHighlighting,
+			boolean
+		>;
+		cursorBlinking: IEditorOption<
+			EditorOption.cursorBlinking,
+			TextEditorCursorBlinkingStyle
+		>;
+		cursorSmoothCaretAnimation: IEditorOption<
+			EditorOption.cursorSmoothCaretAnimation,
+			"on" | "off" | "explicit"
+		>;
+		cursorStyle: IEditorOption<
+			EditorOption.cursorStyle,
+			TextEditorCursorStyle
+		>;
+		overtypeCursorStyle: IEditorOption<
+			EditorOption.overtypeCursorStyle,
+			TextEditorCursorStyle
+		>;
+		cursorSurroundingLines: IEditorOption<
+			EditorOption.cursorSurroundingLines,
+			number
+		>;
+		cursorSurroundingLinesStyle: IEditorOption<
+			EditorOption.cursorSurroundingLinesStyle,
+			"default" | "all"
+		>;
 		cursorWidth: IEditorOption<EditorOption.cursorWidth, number>;
 
 		disableLayerHinting: IEditorOption<
@@ -5864,15 +5925,39 @@ declare namespace monaco.editor {
 		>;
 
 		multiCursorLimit: IEditorOption<EditorOption.multiCursorLimit, number>;
-		occurrencesHighlight: IEditorOption<EditorOption.occurrencesHighlight, 'off' | 'singleFile' | 'multiFile'>;
-		occurrencesHighlightDelay: IEditorOption<EditorOption.occurrencesHighlightDelay, number>;
+		occurrencesHighlight: IEditorOption<
+			EditorOption.occurrencesHighlight,
+			"off" | "singleFile" | "multiFile"
+		>;
+		occurrencesHighlightDelay: IEditorOption<
+			EditorOption.occurrencesHighlightDelay,
+			number
+		>;
 		overtypeOnPaste: IEditorOption<EditorOption.overtypeOnPaste, boolean>;
-		overviewRulerBorder: IEditorOption<EditorOption.overviewRulerBorder, boolean>;
-		overviewRulerLanes: IEditorOption<EditorOption.overviewRulerLanes, number>;
-		padding: IEditorOption<EditorOption.padding, Readonly<Required<IEditorPaddingOptions>>>;
-		pasteAs: IEditorOption<EditorOption.pasteAs, Readonly<Required<IPasteAsOptions>>>;
-		parameterHints: IEditorOption<EditorOption.parameterHints, Readonly<Required<IEditorParameterHintOptions>>>;
-		peekWidgetDefaultFocus: IEditorOption<EditorOption.peekWidgetDefaultFocus, 'tree' | 'editor'>;
+		overviewRulerBorder: IEditorOption<
+			EditorOption.overviewRulerBorder,
+			boolean
+		>;
+		overviewRulerLanes: IEditorOption<
+			EditorOption.overviewRulerLanes,
+			number
+		>;
+		padding: IEditorOption<
+			EditorOption.padding,
+			Readonly<Required<IEditorPaddingOptions>>
+		>;
+		pasteAs: IEditorOption<
+			EditorOption.pasteAs,
+			Readonly<Required<IPasteAsOptions>>
+		>;
+		parameterHints: IEditorOption<
+			EditorOption.parameterHints,
+			Readonly<Required<IEditorParameterHintOptions>>
+		>;
+		peekWidgetDefaultFocus: IEditorOption<
+			EditorOption.peekWidgetDefaultFocus,
+			"tree" | "editor"
+		>;
 		placeholder: IEditorOption<EditorOption.placeholder, string>;
 
 		definitionLinkOpensInPeek: IEditorOption<
@@ -6076,11 +6161,23 @@ declare namespace monaco.editor {
 		>;
 
 		wordWrapColumn: IEditorOption<EditorOption.wordWrapColumn, number>;
-		wordWrapOverride1: IEditorOption<EditorOption.wordWrapOverride1, 'on' | 'off' | 'inherit'>;
-		wordWrapOverride2: IEditorOption<EditorOption.wordWrapOverride2, 'on' | 'off' | 'inherit'>;
-		effectiveCursorStyle: IEditorOption<EditorOption.effectiveCursorStyle, TextEditorCursorStyle>;
+		wordWrapOverride1: IEditorOption<
+			EditorOption.wordWrapOverride1,
+			"on" | "off" | "inherit"
+		>;
+		wordWrapOverride2: IEditorOption<
+			EditorOption.wordWrapOverride2,
+			"on" | "off" | "inherit"
+		>;
+		effectiveCursorStyle: IEditorOption<
+			EditorOption.effectiveCursorStyle,
+			TextEditorCursorStyle
+		>;
 		editorClassName: IEditorOption<EditorOption.editorClassName, string>;
-		defaultColorDecorators: IEditorOption<EditorOption.defaultColorDecorators, 'auto' | 'always' | 'never'>;
+		defaultColorDecorators: IEditorOption<
+			EditorOption.defaultColorDecorators,
+			"auto" | "always" | "never"
+		>;
 		pixelRatio: IEditorOption<EditorOption.pixelRatio, number>;
 
 		tabFocusMode: IEditorOption<EditorOption.tabFocusMode, boolean>;

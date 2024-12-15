@@ -582,7 +582,10 @@ export class Derived<T, TChangeSummary = any>
 		super.addObserver(observer);
 
 		if (shouldCallBeginUpdate) {
-			if (this._removedObserverToCallEndUpdateOn && this._removedObserverToCallEndUpdateOn.has(observer)) {
+			if (
+				this._removedObserverToCallEndUpdateOn &&
+				this._removedObserverToCallEndUpdateOn.has(observer)
+			) {
 				this._removedObserverToCallEndUpdateOn.delete(observer);
 			} else {
 				observer.beginUpdate(this);

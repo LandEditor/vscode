@@ -223,7 +223,6 @@ export class SelectionsOverlay extends DynamicViewOverlay {
 				for (
 					let i = 0;
 					!previousFrameTop && i < previousFrame.length;
-
 					i++
 				) {
 					if (previousFrame[i].lineNumber === topLineNumber) {
@@ -239,7 +238,6 @@ export class SelectionsOverlay extends DynamicViewOverlay {
 				for (
 					let i = previousFrame.length - 1;
 					!previousFrameBottom && i >= 0;
-
 					i--
 				) {
 					if (previousFrame[i].lineNumber === bottomLineNumber) {
@@ -427,9 +425,7 @@ export class SelectionsOverlay extends DynamicViewOverlay {
 
 			for (
 				let j = 0, lenJ = lineVisibleRanges.ranges.length;
-
 				j < lenJ;
-
 				j++
 			) {
 				const visibleRange = lineVisibleRanges.ranges[j];
@@ -573,9 +569,7 @@ export class SelectionsOverlay extends DynamicViewOverlay {
 
 		for (
 			let lineNumber = visibleStartLineNumber;
-
 			lineNumber <= visibleEndLineNumber;
-
 			lineNumber++
 		) {
 			const lineIndex = lineNumber - visibleStartLineNumber;

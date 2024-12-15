@@ -1,7 +1,8 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+// ---------------------------------------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation. All rights reserved.
+//  Licensed under the MIT License. See License.txt in the project root for
+// license information.
+// --------------------------------------------------------------------------------------------
 
 use std::{
 	collections::HashMap,
@@ -14,34 +15,34 @@ use tokio::{
 	sync::{mpsc, watch},
 };
 
+use super::{
+	dev_tunnels::ActiveTunnel,
+	protocol::{
+		self,
+		PortPrivacy,
+		PortProtocol,
+		forward_singleton::{PortList, SetPortsResponse},
+	},
+	shutdown_signal::ShutdownSignal,
+};
 use crate::{
-	async_pipe::{socket_stream_split, AsyncPipe},
+	async_pipe::{AsyncPipe, socket_stream_split},
 	json_rpc::{new_json_rpc, start_json_rpc},
 	log,
 	singleton::SingletonServer,
 	util::{errors::CodeError, sync::Barrier},
 };
 
-use super::{
-	dev_tunnels::ActiveTunnel,
-	protocol::{
-		self,
-		forward_singleton::{PortList, SetPortsResponse},
-		PortPrivacy, PortProtocol,
-	},
-	shutdown_signal::ShutdownSignal,
-};
-
 #[derive(Default, Clone)]
 struct PortCount {
-	public: u32,
-	private: u32,
+	public:u32,
+	private:u32,
 }
 
 impl Index<PortPrivacy> for PortCount {
 	type Output = u32;
 
-	fn index(&self, privacy: PortPrivacy) -> &Self::Output {
+	fn index(&self, privacy:PortPrivacy) -> &Self::Output {
 		match privacy {
 			PortPrivacy::Public => &self.public,
 			PortPrivacy::Private => &self.private,
@@ -50,7 +51,7 @@ impl Index<PortPrivacy> for PortCount {
 }
 
 impl IndexMut<PortPrivacy> for PortCount {
-	fn index_mut(&mut self, privacy: PortPrivacy) -> &mut Self::Output {
+	fn index_mut(&mut self, privacy:PortPrivacy) -> &mut Self::Output {
 		match privacy {
 			PortPrivacy::Public => &mut self.public,
 			PortPrivacy::Private => &mut self.private,
@@ -59,22 +60,16 @@ impl IndexMut<PortPrivacy> for PortCount {
 }
 
 impl PortCount {
-	fn is_empty(&self) -> bool {
-		self.public == 0 && self.private == 0
-	}
+	fn is_empty(&self) -> bool { self.public == 0 && self.private == 0 }
 
 	fn primary_privacy(&self) -> PortPrivacy {
-		if self.public > 0 {
-			PortPrivacy::Public
-		} else {
-			PortPrivacy::Private
-		}
+		if self.public > 0 { PortPrivacy::Public } else { PortPrivacy::Private }
 	}
 }
 #[derive(Clone)]
 struct PortMapRec {
-	count: PortCount,
-	protocol: PortProtocol,
+	count:PortCount,
+	protocol:PortProtocol,
 }
 
 type PortMap = HashMap<u16, PortMapRec>;
@@ -82,23 +77,23 @@ type PortMap = HashMap<u16, PortMapRec>;
 /// The PortForwardingHandle is given out to multiple consumers to allow
 /// them to set_ports that they want to be forwarded.
 struct PortForwardingSender {
-	/// Todo: when `SyncUnsafeCell` is no longer nightly, we can use it here with
-	/// the following comment:
+	/// Todo: when `SyncUnsafeCell` is no longer nightly, we can use it here
+	/// with the following comment:
 	///
-	/// SyncUnsafeCell is used and safe here because PortForwardingSender is used
-	/// exclusively in synchronous dispatch *and* we create a new sender in the
-	/// context for each connection, in `serve_singleton_rpc`.
+	/// SyncUnsafeCell is used and safe here because PortForwardingSender is
+	/// used exclusively in synchronous dispatch *and* we create a new sender
+	/// in the context for each connection, in `serve_singleton_rpc`.
 	///
 	/// If PortForwardingSender is ever used in a different context, this should
 	/// be refactored, e.g. to use locks or `&mut self` in set_ports`
 	///
 	/// see https://doc.rust-lang.org/stable/std/cell/struct.SyncUnsafeCell.html
-	current: Mutex<PortList>,
-	sender: Arc<Mutex<watch::Sender<PortMap>>>,
+	current:Mutex<PortList>,
+	sender:Arc<Mutex<watch::Sender<PortMap>>>,
 }
 
 impl PortForwardingSender {
-	pub fn set_ports(&self, ports: PortList) {
+	pub fn set_ports(&self, ports:PortList) {
 		let mut current = self.current.lock().unwrap();
 
 		self.sender.lock().unwrap().send_modify(|v| {
@@ -121,21 +116,15 @@ impl PortForwardingSender {
 							n.count[p.privacy] += 1;
 
 							n.protocol = p.protocol;
-						}
+						},
 
 						None => {
 							let mut count = PortCount::default();
 
 							count[p.privacy] += 1;
 
-							v.insert(
-								p.number,
-								PortMapRec {
-									count,
-									protocol: p.protocol,
-								},
-							);
-						}
+							v.insert(p.number, PortMapRec { count, protocol:p.protocol });
+						},
 					};
 				}
 			}
@@ -146,22 +135,15 @@ impl PortForwardingSender {
 }
 
 impl Clone for PortForwardingSender {
-	fn clone(&self) -> Self {
-		Self {
-			current: Mutex::new(vec![]),
-			sender: self.sender.clone(),
-		}
-	}
+	fn clone(&self) -> Self { Self { current:Mutex::new(vec![]), sender:self.sender.clone() } }
 }
 
 impl Drop for PortForwardingSender {
-	fn drop(&mut self) {
-		self.set_ports(vec![]);
-	}
+	fn drop(&mut self) { self.set_ports(vec![]); }
 }
 
 struct PortForwardingReceiver {
-	receiver: watch::Receiver<PortMap>,
+	receiver:watch::Receiver<PortMap>,
 }
 
 impl PortForwardingReceiver {
@@ -169,8 +151,8 @@ impl PortForwardingReceiver {
 		let (sender, receiver) = watch::channel(HashMap::new());
 
 		let handle = PortForwardingSender {
-			current: Mutex::new(vec![]),
-			sender: Arc::new(Mutex::new(sender)),
+			current:Mutex::new(vec![]),
+			sender:Arc::new(Mutex::new(sender)),
 		};
 
 		let tracker = Self { receiver };
@@ -179,8 +161,8 @@ impl PortForwardingReceiver {
 	}
 
 	/// Applies all changes from PortForwardingHandles to the tunnel.
-	pub async fn apply_to(&mut self, log: log::Logger, tunnel: Arc<ActiveTunnel>) {
-		let mut current: PortMap = HashMap::new();
+	pub async fn apply_to(&mut self, log:log::Logger, tunnel:Arc<ActiveTunnel>) {
+		let mut current:PortMap = HashMap::new();
 
 		while self.receiver.changed().await.is_ok() {
 			let next = self.receiver.borrow().clone();
@@ -190,14 +172,21 @@ impl PortForwardingReceiver {
 
 				if !matches!(next.get(port), Some(n) if n.count.primary_privacy() == privacy) {
 					match tunnel.remove_port(*port).await {
-						Ok(_) => info!(
-							log,
-							"stopped forwarding {} port {} at {:?}", rec.protocol, *port, privacy
-						),
-						Err(e) => error!(
-							log,
-							"failed to stop forwarding {} port {}: {}", rec.protocol, port, e
-						),
+						Ok(_) => {
+							info!(
+								log,
+								"stopped forwarding {} port {} at {:?}",
+								rec.protocol,
+								*port,
+								privacy
+							)
+						},
+						Err(e) => {
+							error!(
+								log,
+								"failed to stop forwarding {} port {}: {}", rec.protocol, port, e
+							)
+						},
 					}
 				}
 			}
@@ -207,14 +196,12 @@ impl PortForwardingReceiver {
 
 				if !matches!(current.get(port), Some(n) if n.count.primary_privacy() == privacy) {
 					match tunnel.add_port_tcp(*port, privacy, rec.protocol).await {
-						Ok(_) => info!(
-							log,
-							"forwarding {} port {} at {:?}", rec.protocol, port, privacy
-						),
-						Err(e) => error!(
-							log,
-							"failed to forward {} port {}: {}", rec.protocol, port, e
-						),
+						Ok(_) => {
+							info!(log, "forwarding {} port {} at {:?}", rec.protocol, port, privacy)
+						},
+						Err(e) => {
+							error!(log, "failed to forward {} port {}: {}", rec.protocol, port, e)
+						},
 					}
 				}
 			}
@@ -225,31 +212,26 @@ impl PortForwardingReceiver {
 }
 
 pub struct SingletonClientArgs {
-	pub log: log::Logger,
-	pub stream: AsyncPipe,
-	pub shutdown: Barrier<ShutdownSignal>,
-	pub port_requests: watch::Receiver<PortList>,
+	pub log:log::Logger,
+	pub stream:AsyncPipe,
+	pub shutdown:Barrier<ShutdownSignal>,
+	pub port_requests:watch::Receiver<PortList>,
 }
 
 #[derive(Clone)]
 struct SingletonServerContext {
-	log: log::Logger,
-	handle: PortForwardingSender,
-	tunnel: Arc<ActiveTunnel>,
+	log:log::Logger,
+	handle:PortForwardingSender,
+	tunnel:Arc<ActiveTunnel>,
 }
 
 /// Serves a client singleton for port forwarding.
-pub async fn client(args: SingletonClientArgs) -> Result<(), std::io::Error> {
+pub async fn client(args:SingletonClientArgs) -> Result<(), std::io::Error> {
 	let mut rpc = new_json_rpc();
 
 	let (msg_tx, msg_rx) = mpsc::unbounded_channel();
 
-	let SingletonClientArgs {
-		log,
-		shutdown,
-		stream,
-		mut port_requests,
-	} = args;
+	let SingletonClientArgs { log, shutdown, stream, mut port_requests } = args;
 
 	debug!(
 		log,
@@ -291,11 +273,11 @@ pub async fn client(args: SingletonClientArgs) -> Result<(), std::io::Error> {
 
 /// Serves a port-forwarding singleton.
 pub async fn server(
-	log: log::Logger,
-	tunnel: ActiveTunnel,
-	server: SingletonServer,
-	mut port_requests: watch::Receiver<PortList>,
-	shutdown_rx: Barrier<ShutdownSignal>,
+	log:log::Logger,
+	tunnel:ActiveTunnel,
+	server:SingletonServer,
+	mut port_requests:watch::Receiver<PortList>,
+	shutdown_rx:Barrier<ShutdownSignal>,
 ) -> Result<(), CodeError> {
 	let tunnel = Arc::new(tunnel);
 
@@ -310,7 +292,7 @@ pub async fn server(
 			forward_own_tx.set_ports(port_requests.borrow().clone());
 
 			print_forwarding_addr(&SetPortsResponse {
-				port_format: forward_own_tunnel.get_port_format().ok(),
+				port_format:forward_own_tunnel.get_port_format().ok(),
 			});
 		}
 	};
@@ -323,11 +305,11 @@ pub async fn server(
 }
 
 async fn serve_singleton_rpc(
-	mut server: SingletonServer,
-	log: log::Logger,
-	tunnel: Arc<ActiveTunnel>,
-	forward_tx: PortForwardingSender,
-	shutdown_rx: Barrier<ShutdownSignal>,
+	mut server:SingletonServer,
+	log:log::Logger,
+	tunnel:Arc<ActiveTunnel>,
+	forward_tx:PortForwardingSender,
+	shutdown_rx:Barrier<ShutdownSignal>,
 ) -> Result<(), CodeError> {
 	let mut own_shutdown = shutdown_rx.clone();
 
@@ -356,22 +338,16 @@ async fn serve_singleton_rpc(
 			// so that we can have the "handle" drop when the connection drops.
 			let rpc = new_json_rpc();
 
-			let mut rpc = rpc.methods(SingletonServerContext {
-				log: log.clone(),
-				handle,
-				tunnel,
-			});
+			let mut rpc = rpc.methods(SingletonServerContext { log:log.clone(), handle, tunnel });
 
 			rpc.register_sync(
 				protocol::forward_singleton::METHOD_SET_PORTS,
-				|p: protocol::forward_singleton::SetPortsParams, ctx| {
+				|p:protocol::forward_singleton::SetPortsParams, ctx| {
 					info!(ctx.log, "client setting ports to {:?}", p.ports);
 
 					ctx.handle.set_ports(p.ports);
 
-					Ok(SetPortsResponse {
-						port_format: ctx.tunnel.get_port_format().ok(),
-					})
+					Ok(SetPortsResponse { port_format:ctx.tunnel.get_port_format().ok() })
 				},
 			);
 
@@ -380,6 +356,6 @@ async fn serve_singleton_rpc(
 	}
 }
 
-fn print_forwarding_addr(r: &SetPortsResponse) {
+fn print_forwarding_addr(r:&SetPortsResponse) {
 	eprintln!("{}\n", serde_json::to_string(r).unwrap());
 }

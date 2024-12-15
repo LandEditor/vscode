@@ -98,9 +98,7 @@ export function trimTrailingWhitespace(
 
 	for (
 		let lineNumber = 1, lineCount = model.getLineCount();
-
 		lineNumber <= lineCount;
-
 		lineNumber++
 	) {
 		const lineContent = model.getLineContent(lineNumber);

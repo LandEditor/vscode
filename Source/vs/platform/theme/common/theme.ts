@@ -13,12 +13,11 @@ export enum ColorScheme {
 }
 
 export enum ThemeTypeSelector {
-	VS = 'vs',
-	VS_DARK = 'vs-dark',
-	HC_BLACK = 'hc-black',
-	HC_LIGHT = 'hc-light'
+	VS = "vs",
+	VS_DARK = "vs-dark",
+	HC_BLACK = "hc-black",
+	HC_LIGHT = "hc-light",
 }
-
 
 export function isHighContrast(scheme: ColorScheme): boolean {
 	return (

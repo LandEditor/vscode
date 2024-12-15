@@ -330,9 +330,7 @@ export class BulkEditDataSource
 						startTokens.findTokenIndexAtOffset(
 							range.startColumn - 1,
 						) - 1;
-
 					prefixLen < 50 && idx >= 0;
-
 					idx--
 				) {
 					prefixLen =
@@ -349,9 +347,7 @@ export class BulkEditDataSource
 					let idx = endTokens.findTokenIndexAtOffset(
 						range.endColumn - 1,
 					);
-
 					suffixLen < 50 && idx < endTokens.getCount();
-
 					idx++
 				) {
 					suffixLen +=

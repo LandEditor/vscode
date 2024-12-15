@@ -786,9 +786,7 @@ export class OutputPeekTree extends Disposable {
 
 				for (
 					let parent = this.tree.getParentElement(revealElement);
-
 					parent;
-
 					parent = this.tree.getParentElement(parent)
 				) {
 					parents.unshift(parent);
@@ -978,8 +976,7 @@ interface TemplateData {
 }
 
 class TestRunElementRenderer
-	implements
-		ICompressibleTreeRenderer<ITreeElement, FuzzyScore, TemplateData>
+	implements ICompressibleTreeRenderer<ITreeElement, FuzzyScore, TemplateData>
 {
 	public static readonly ID = "testRunElementRenderer";
 

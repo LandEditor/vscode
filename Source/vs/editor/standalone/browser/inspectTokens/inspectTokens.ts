@@ -165,9 +165,7 @@ function renderTokenText(tokenText: string): string {
 
 	for (
 		let charIndex = 0, len = tokenText.length;
-
 		charIndex < len;
-
 		charIndex++
 	) {
 		const charCode = tokenText.charCodeAt(charIndex);

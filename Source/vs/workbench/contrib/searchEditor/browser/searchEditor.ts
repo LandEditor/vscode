@@ -781,9 +781,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 
 			for (
 				let inner = selection.startLineNumber;
-
 				inner <= selection.endLineNumber;
-
 				inner++
 			) {
 				linesToDelete.add(inner);

@@ -3,23 +3,39 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { getActiveWindow } from '../../../../../base/browser/dom.js';
-import { FastDomNode } from '../../../../../base/browser/fastDomNode.js';
-import { localize } from '../../../../../nls.js';
-import { AccessibilitySupport, IAccessibilityService } from '../../../../../platform/accessibility/common/accessibility.js';
-import { IKeybindingService } from '../../../../../platform/keybinding/common/keybinding.js';
-import { EditorOption } from '../../../../common/config/editorOptions.js';
-import { FontInfo } from '../../../../common/config/fontInfo.js';
-import { Position } from '../../../../common/core/position.js';
-import { Range } from '../../../../common/core/range.js';
-import { Selection } from '../../../../common/core/selection.js';
-import { EndOfLinePreference } from '../../../../common/model.js';
-import { ViewConfigurationChangedEvent, ViewCursorStateChangedEvent } from '../../../../common/viewEvents.js';
-import { ViewContext } from '../../../../common/viewModel/viewContext.js';
-import { applyFontInfo } from '../../../config/domFontInfo.js';
-import { IEditorAriaOptions } from '../../../editorBrowser.js';
-import { RestrictedRenderingContext, RenderingContext, HorizontalPosition } from '../../../view/renderingContext.js';
-import { ariaLabelForScreenReaderContent, ISimpleModel, newlinecount, PagedScreenReaderStrategy, ScreenReaderContentState } from '../screenReaderUtils.js';
+import { getActiveWindow } from "../../../../../base/browser/dom.js";
+import { FastDomNode } from "../../../../../base/browser/fastDomNode.js";
+import { localize } from "../../../../../nls.js";
+import {
+	AccessibilitySupport,
+	IAccessibilityService,
+} from "../../../../../platform/accessibility/common/accessibility.js";
+import { IKeybindingService } from "../../../../../platform/keybinding/common/keybinding.js";
+import { EditorOption } from "../../../../common/config/editorOptions.js";
+import { FontInfo } from "../../../../common/config/fontInfo.js";
+import { Position } from "../../../../common/core/position.js";
+import { Range } from "../../../../common/core/range.js";
+import { Selection } from "../../../../common/core/selection.js";
+import { EndOfLinePreference } from "../../../../common/model.js";
+import {
+	ViewConfigurationChangedEvent,
+	ViewCursorStateChangedEvent,
+} from "../../../../common/viewEvents.js";
+import { ViewContext } from "../../../../common/viewModel/viewContext.js";
+import { applyFontInfo } from "../../../config/domFontInfo.js";
+import { IEditorAriaOptions } from "../../../editorBrowser.js";
+import {
+	HorizontalPosition,
+	RenderingContext,
+	RestrictedRenderingContext,
+} from "../../../view/renderingContext.js";
+import {
+	ariaLabelForScreenReaderContent,
+	ISimpleModel,
+	newlinecount,
+	PagedScreenReaderStrategy,
+	ScreenReaderContentState,
+} from "../screenReaderUtils.js";
 
 export class ScreenReaderSupport {
 	// Configuration values
@@ -128,7 +144,9 @@ export class ScreenReaderSupport {
 
 	public prepareRender(ctx: RenderingContext): void {
 		this.writeScreenReaderContent();
-		this._primaryCursorVisibleRange = ctx.visibleRangeForPosition(this._primarySelection.getPosition());
+		this._primaryCursorVisibleRange = ctx.visibleRangeForPosition(
+			this._primarySelection.getPosition(),
+		);
 	}
 
 	public render(ctx: RestrictedRenderingContext): void {
@@ -142,23 +160,38 @@ export class ScreenReaderSupport {
 			return;
 		}
 
-		const editorScrollLeft = this._context.viewLayout.getCurrentScrollLeft();
-		const left = this._contentLeft + this._primaryCursorVisibleRange.left - editorScrollLeft;
-		if (left < this._contentLeft || left > this._contentLeft + this._contentWidth) {
+		const editorScrollLeft =
+			this._context.viewLayout.getCurrentScrollLeft();
+		const left =
+			this._contentLeft +
+			this._primaryCursorVisibleRange.left -
+			editorScrollLeft;
+		if (
+			left < this._contentLeft ||
+			left > this._contentLeft + this._contentWidth
+		) {
 			// cursor is outside the viewport
 			this._renderAtTopLeft();
 			return;
 		}
 
 		const editorScrollTop = this._context.viewLayout.getCurrentScrollTop();
-		const top = this._context.viewLayout.getVerticalOffsetForLineNumber(this._primarySelection.positionLineNumber) - editorScrollTop;
+		const top =
+			this._context.viewLayout.getVerticalOffsetForLineNumber(
+				this._primarySelection.positionLineNumber,
+			) - editorScrollTop;
 		if (top < 0 || top > this._contentHeight) {
 			// cursor is outside the viewport
 			this._renderAtTopLeft();
 			return;
 		}
 
-		this._doRender(top, this._contentLeft, this._contentWidth, this._lineHeight);
+		this._doRender(
+			top,
+			this._contentLeft,
+			this._contentWidth,
+			this._lineHeight,
+		);
 		this._setScrollTop();
 	}
 
@@ -166,7 +199,12 @@ export class ScreenReaderSupport {
 		this._doRender(0, 0, this._contentWidth, 1);
 	}
 
-	private _doRender(top: number, left: number, width: number, height: number): void {
+	private _doRender(
+		top: number,
+		left: number,
+		width: number,
+		height: number,
+	): void {
 		// For correct alignment of the screen reader content, we need to apply the correct font
 		applyFontInfo(this._domNode, this._fontInfo);
 
@@ -197,21 +235,24 @@ export class ScreenReaderSupport {
 
 	public setAriaOptions(options: IEditorAriaOptions): void {
 		if (options.activeDescendant) {
-			this._domNode.setAttribute('aria-haspopup', 'true');
+			this._domNode.setAttribute("aria-haspopup", "true");
 
-			this._domNode.setAttribute('aria-autocomplete', 'list');
+			this._domNode.setAttribute("aria-autocomplete", "list");
 
-			this._domNode.setAttribute('aria-activedescendant', options.activeDescendant);
+			this._domNode.setAttribute(
+				"aria-activedescendant",
+				options.activeDescendant,
+			);
 		} else {
-			this._domNode.setAttribute('aria-haspopup', 'false');
+			this._domNode.setAttribute("aria-haspopup", "false");
 
-			this._domNode.setAttribute('aria-autocomplete', 'both');
+			this._domNode.setAttribute("aria-autocomplete", "both");
 
-			this._domNode.removeAttribute('aria-activedescendant');
+			this._domNode.removeAttribute("aria-activedescendant");
 		}
 
 		if (options.role) {
-			this._domNode.setAttribute('role', options.role);
+			this._domNode.setAttribute("role", options.role);
 		}
 	}
 
@@ -221,18 +262,27 @@ export class ScreenReaderSupport {
 		if (!focusedElement || focusedElement !== this._domNode.domNode) {
 			return;
 		}
-		const isScreenReaderOptimized = this._accessibilityService.isScreenReaderOptimized();
+		const isScreenReaderOptimized =
+			this._accessibilityService.isScreenReaderOptimized();
 		if (isScreenReaderOptimized) {
-			this._screenReaderContentState = this._getScreenReaderContentState();
-			if (this._domNode.domNode.textContent !== this._screenReaderContentState.value) {
-				this.setIgnoreSelectionChangeTime('setValue');
-				this._domNode.domNode.textContent = this._screenReaderContentState.value;
+			this._screenReaderContentState =
+				this._getScreenReaderContentState();
+			if (
+				this._domNode.domNode.textContent !==
+				this._screenReaderContentState.value
+			) {
+				this.setIgnoreSelectionChangeTime("setValue");
+				this._domNode.domNode.textContent =
+					this._screenReaderContentState.value;
 			}
-			this._setSelectionOfScreenReaderContent(this._screenReaderContentState.selectionStart, this._screenReaderContentState.selectionEnd);
+			this._setSelectionOfScreenReaderContent(
+				this._screenReaderContentState.selectionStart,
+				this._screenReaderContentState.selectionEnd,
+			);
 		} else {
 			this._screenReaderContentState = undefined;
-			this.setIgnoreSelectionChangeTime('setValue');
-			this._domNode.domNode.textContent = '';
+			this.setIgnoreSelectionChangeTime("setValue");
+			this._domNode.domNode.textContent = "";
 		}
 	}
 
@@ -302,7 +352,7 @@ export class ScreenReaderSupport {
 		range.setStart(textContent, selectionOffsetStart);
 
 		range.setEnd(textContent, selectionOffsetEnd);
-		this.setIgnoreSelectionChangeTime('setRange');
+		this.setIgnoreSelectionChangeTime("setRange");
 		activeDocumentSelection.removeAllRanges();
 
 		activeDocumentSelection.addRange(range);

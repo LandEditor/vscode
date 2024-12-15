@@ -83,9 +83,7 @@ export abstract class DedupOverlay extends DynamicViewOverlay {
 
 		for (
 			let lineNumber = visibleStartLineNumber;
-
 			lineNumber <= visibleEndLineNumber;
-
 			lineNumber++
 		) {
 			const lineIndex = lineNumber - visibleStartLineNumber;
@@ -371,9 +369,7 @@ export class GlyphMarginWidgets extends ViewPart {
 
 			for (
 				let lineNumber = startLineNumber;
-
 				lineNumber <= endLineNumber;
-
 				lineNumber++
 			) {
 				const modelPosition =

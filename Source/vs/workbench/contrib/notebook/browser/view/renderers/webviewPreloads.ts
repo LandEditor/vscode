@@ -905,9 +905,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 	function eventTargetShouldHandleScroll(event: WheelEvent) {
 		for (
 			let node = event.target as Node | null;
-
 			node;
-
 			node = node.parentNode
 		) {
 			if (
@@ -2214,9 +2212,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 							// Traverse up the DOM to find the container
 							for (
 								let node = anchorNode as Element | null;
-
 								node;
-
 								node = node.parentElement
 							) {
 								if (!(node instanceof Element)) {

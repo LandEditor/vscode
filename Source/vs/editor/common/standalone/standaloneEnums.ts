@@ -314,7 +314,7 @@ export enum EditorOption {
 	wrappingInfo = 152,
 	defaultColorDecorators = 153,
 	colorDecoratorsActivatedOn = 154,
-	inlineCompletionsAccessibilityVerbose = 155
+	inlineCompletionsAccessibilityVerbose = 155,
 }
 /**
  * End of line character preference.

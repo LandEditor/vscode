@@ -10,9 +10,7 @@ import { getDocumentDir, Mimes, Schemes } from "./shared";
 import { UriList } from "./uriList";
 
 class DropOrPasteResourceProvider
-	implements
-		vscode.DocumentDropEditProvider,
-		vscode.DocumentPasteEditProvider
+	implements vscode.DocumentDropEditProvider, vscode.DocumentPasteEditProvider
 {
 	readonly kind = vscode.DocumentDropOrPasteEditKind.Empty.append(
 		"css",

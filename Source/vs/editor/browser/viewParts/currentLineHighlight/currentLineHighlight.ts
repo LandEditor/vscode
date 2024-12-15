@@ -209,9 +209,7 @@ export abstract class AbstractLineHighlightOverlay extends DynamicViewOverlay {
 
 		for (
 			let lineNumber = visibleStartLineNumber;
-
 			lineNumber <= visibleEndLineNumber;
-
 			lineNumber++
 		) {
 			const lineIndex = lineNumber - visibleStartLineNumber;
@@ -259,9 +257,7 @@ export abstract class AbstractLineHighlightOverlay extends DynamicViewOverlay {
 
 				for (
 					let lineNumber = firstLine;
-
 					lineNumber <= lastLine;
-
 					lineNumber++
 				) {
 					const lineIndex = lineNumber - visibleStartLineNumber;

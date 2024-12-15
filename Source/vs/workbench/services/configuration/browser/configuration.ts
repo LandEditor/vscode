@@ -587,9 +587,7 @@ class FileServiceBasedConfiguration extends Disposable {
 
 		for (
 			let index = 0;
-
 			index < standAloneConfigurationContents.length;
-
 			index++
 		) {
 			const contents = standAloneConfigurationContents[index][1];

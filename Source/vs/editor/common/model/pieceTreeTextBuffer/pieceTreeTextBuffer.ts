@@ -224,9 +224,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 
 			for (
 				let lineNumber = fromLineNumber;
-
 				lineNumber <= toLineNumber;
-
 				lineNumber++
 			) {
 				const lineContent = this.getLineContent(lineNumber);
@@ -485,9 +483,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 					// Record already the future line numbers that might be auto whitespace removal candidates on next edit
 					for (
 						let lineNumber = reverseRange.startLineNumber;
-
 						lineNumber <= reverseRange.endLineNumber;
-
 						lineNumber++
 					) {
 						let currentLineContent = "";
@@ -577,9 +573,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 
 			for (
 				let i = 0, len = newTrimAutoWhitespaceCandidates.length;
-
 				i < len;
-
 				i++
 			) {
 				const lineNumber =

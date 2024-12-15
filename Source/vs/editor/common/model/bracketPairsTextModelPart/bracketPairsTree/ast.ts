@@ -829,9 +829,7 @@ export class TextAstNode extends ImmutableLeafAstNode {
 
 		for (
 			let lineNumber = startLineNumber;
-
 			lineNumber <= endLineNumber;
-
 			lineNumber++
 		) {
 			const firstNonWsColumn =

@@ -295,9 +295,7 @@ class ModelLineProjection implements IModelLineProjection {
 
 			for (
 				let outputLineIndex = 0;
-
 				outputLineIndex < lineBreakData.getOutputLineCount();
-
 				outputLineIndex++
 			) {
 				const inlineDecorations =
@@ -437,9 +435,7 @@ class ModelLineProjection implements IModelLineProjection {
 
 		for (
 			let outputLineIndex = outputLineIdx;
-
 			outputLineIndex < outputLineIdx + lineCount;
-
 			outputLineIndex++
 		) {
 			const globalIndex =

@@ -30,7 +30,7 @@ function getTagBodyText(
 			return text;
 		}
 
-		return '```tsx\n' + text + '\n```';
+		return "```tsx\n" + text + "\n```";
 	}
 
 	let text = convertLinkTags(tag.text, filePathConverter);

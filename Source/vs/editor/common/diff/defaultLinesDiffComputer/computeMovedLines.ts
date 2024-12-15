@@ -157,9 +157,7 @@ function computeUnchangedMoves(
 	for (const change of changes) {
 		for (
 			let i = change.original.startLineNumber;
-
 			i < change.original.endLineNumberExclusive - 2;
-
 			i++
 		) {
 			const key = `${hashedOriginalLines[i - 1]}:${hashedOriginalLines[i + 1 - 1]}:${hashedOriginalLines[i + 2 - 1]}`;
@@ -185,9 +183,7 @@ function computeUnchangedMoves(
 
 		for (
 			let i = change.modified.startLineNumber;
-
 			i < change.modified.endLineNumberExclusive - 2;
-
 			i++
 		) {
 			const key = `${hashedModifiedLines[i - 1]}:${hashedModifiedLines[i + 1 - 1]}:${hashedModifiedLines[i + 2 - 1]}`;
@@ -382,9 +378,7 @@ function computeUnchangedMoves(
 
 		for (
 			extendToBottom = 0;
-
 			extendToBottom < linesBelow;
-
 			extendToBottom++
 		) {
 			const origLine =

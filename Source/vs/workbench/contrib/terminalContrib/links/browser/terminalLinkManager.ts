@@ -455,9 +455,7 @@ export class TerminalLinkManager extends DisposableStore {
 
 		for (
 			let i = this._xterm.buffer.active.viewportY + this._xterm.rows - 1;
-
 			i >= this._xterm.buffer.active.viewportY;
-
 			i--
 		) {
 			viewportLinksByLinePromises.push(this._getLinksForLine(i));
@@ -515,9 +513,7 @@ export class TerminalLinkManager extends DisposableStore {
 
 		for (
 			let i = this._xterm.buffer.active.length - 1;
-
 			i >= this._xterm.buffer.active.viewportY + this._xterm.rows;
-
 			i--
 		) {
 			belowViewportLinksPromises.push(this._getLinksForLine(i));

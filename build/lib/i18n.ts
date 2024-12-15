@@ -881,9 +881,7 @@ export function createXlfFilesForExtensions(): ThroughStream {
 
 									for (
 										let i = 0;
-
 										i < fileContent.messages.length;
-
 										i++
 									) {
 										const message = fileContent.messages[i];

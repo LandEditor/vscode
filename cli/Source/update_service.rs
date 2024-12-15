@@ -1,7 +1,8 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+// ---------------------------------------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation. All rights reserved.
+//  Licensed under the MIT License. See License.txt in the project root for
+// license information.
+// --------------------------------------------------------------------------------------------
 
 use std::{fmt, path::Path};
 
@@ -9,9 +10,12 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
 	constants::VSCODE_CLI_UPDATE_ENDPOINT,
-	debug, log, options, spanf,
+	debug,
+	log,
+	options,
+	spanf,
 	util::{
-		errors::{wrap, AnyError, CodeError, WrappedError},
+		errors::{AnyError, CodeError, WrappedError, wrap},
 		http::{BoxedHttp, SimpleResponse},
 		io::ReportCopyProgress,
 		tar::{self, has_gzip_header},
@@ -22,33 +26,34 @@ use crate::{
 /// Implementation of the VS Code Update service for use in the CLI.
 #[derive(Clone)]
 pub struct UpdateService {
-	client: BoxedHttp,
-	log: log::Logger,
+	client:BoxedHttp,
+	log:log::Logger,
 }
 
-/// Describes a specific release, can be created manually or returned from the update service.
+/// Describes a specific release, can be created manually or returned from the
+/// update service.
 #[derive(Clone, Eq, PartialEq)]
 pub struct Release {
-	pub name: String,
-	pub platform: Platform,
-	pub target: TargetKind,
-	pub quality: options::Quality,
-	pub commit: String,
+	pub name:String,
+	pub platform:Platform,
+	pub target:TargetKind,
+	pub quality:options::Quality,
+	pub commit:String,
 }
 
 impl std::fmt::Display for Release {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+	fn fmt(&self, f:&mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		write!(f, "{} (commit {})", self.name, self.commit)
 	}
 }
 
 #[derive(Deserialize)]
 struct UpdateServerVersion {
-	pub version: String,
-	pub name: String,
+	pub version:String,
+	pub name:String,
 }
 
-fn quality_download_segment(quality: options::Quality) -> &'static str {
+fn quality_download_segment(quality:options::Quality) -> &'static str {
 	match quality {
 		options::Quality::Stable => "stable",
 		options::Quality::Insiders => "insider",
@@ -61,16 +66,14 @@ fn get_update_endpoint() -> Result<&'static str, CodeError> {
 }
 
 impl UpdateService {
-	pub fn new(log: log::Logger, http: BoxedHttp) -> Self {
-		UpdateService { client: http, log }
-	}
+	pub fn new(log:log::Logger, http:BoxedHttp) -> Self { UpdateService { client:http, log } }
 
 	pub async fn get_release_by_semver_version(
 		&self,
-		platform: Platform,
-		target: TargetKind,
-		quality: options::Quality,
-		version: &str,
+		platform:Platform,
+		target:TargetKind,
+		quality:options::Quality,
+		version:&str,
 	) -> Result<Release, AnyError> {
 		let update_endpoint = get_update_endpoint()?;
 
@@ -100,21 +103,15 @@ impl UpdateService {
 
 		debug!(self.log, "Resolved version {} to {}", version, res.version);
 
-		Ok(Release {
-			target,
-			platform,
-			quality,
-			name: res.name,
-			commit: res.version,
-		})
+		Ok(Release { target, platform, quality, name:res.name, commit:res.version })
 	}
 
 	/// Gets the latest commit for the target of the given quality.
 	pub async fn get_latest_commit(
 		&self,
-		platform: Platform,
-		target: TargetKind,
-		quality: options::Quality,
+		platform:Platform,
+		target:TargetKind,
+		quality:options::Quality,
 	) -> Result<Release, AnyError> {
 		let update_endpoint = get_update_endpoint()?;
 
@@ -143,17 +140,11 @@ impl UpdateService {
 
 		debug!(self.log, "Resolved quality {} to {}", quality, res.version);
 
-		Ok(Release {
-			target,
-			platform,
-			quality,
-			name: res.name,
-			commit: res.version,
-		})
+		Ok(Release { target, platform, quality, name:res.name, commit:res.version })
 	}
 
 	/// Gets the download stream for the release.
-	pub async fn get_download_stream(&self, release: &Release) -> Result<SimpleResponse, AnyError> {
+	pub async fn get_download_stream(&self, release:&Release) -> Result<SimpleResponse, AnyError> {
 		let update_endpoint = get_update_endpoint()?;
 
 		let download_segment = release
@@ -180,13 +171,12 @@ impl UpdateService {
 }
 
 pub fn unzip_downloaded_release<T>(
-	compressed_file: &Path,
-	target_dir: &Path,
-	reporter: T,
+	compressed_file:&Path,
+	target_dir:&Path,
+	reporter:T,
 ) -> Result<(), WrappedError>
 where
-	T: ReportCopyProgress,
-{
+	T: ReportCopyProgress, {
 	match has_gzip_header(compressed_file) {
 		Ok((f, true)) => tar::decompress_tarball(f, target_dir, reporter),
 		Ok((f, false)) => zipper::unzip_file(f, target_dir, reporter),
@@ -203,7 +193,7 @@ pub enum TargetKind {
 }
 
 impl TargetKind {
-	fn download_segment(&self, platform: Platform) -> Option<String> {
+	fn download_segment(&self, platform:Platform) -> Option<String> {
 		match *self {
 			TargetKind::Server => Some(platform.headless()),
 			TargetKind::Archive => platform.archive(),
@@ -283,22 +273,12 @@ impl Platform {
 		.to_owned()
 	}
 
-	pub fn web(&self) -> String {
-		format!("{}-web", self.headless())
-	}
+	pub fn web(&self) -> String { format!("{}-web", self.headless()) }
 
 	pub fn env_default() -> Option<Platform> {
-		if cfg!(all(
-			target_os = "linux",
-			target_arch = "x86_64",
-			target_env = "musl"
-		)) {
+		if cfg!(all(target_os = "linux", target_arch = "x86_64", target_env = "musl")) {
 			Some(Platform::LinuxAlpineX64)
-		} else if cfg!(all(
-			target_os = "linux",
-			target_arch = "aarch64",
-			target_env = "musl"
-		)) {
+		} else if cfg!(all(target_os = "linux", target_arch = "aarch64", target_env = "musl")) {
 			Some(Platform::LinuxAlpineARM64)
 		} else if cfg!(all(target_os = "linux", target_arch = "x86_64")) {
 			Some(Platform::LinuxX64)
@@ -323,7 +303,7 @@ impl Platform {
 }
 
 impl fmt::Display for Platform {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+	fn fmt(&self, f:&mut fmt::Formatter) -> fmt::Result {
 		f.write_str(match self {
 			Platform::LinuxAlpineARM64 => "LinuxAlpineARM64",
 			Platform::LinuxAlpineX64 => "LinuxAlpineX64",

@@ -78,9 +78,7 @@ export function tokenizeLineToHTML(
 
 	for (
 		let tokenIndex = 0, tokenCount = viewLineTokens.getCount();
-
 		tokenIndex < tokenCount;
-
 		tokenIndex++
 	) {
 		const tokenEndIndex = viewLineTokens.getEndOffset(tokenIndex);
@@ -93,9 +91,7 @@ export function tokenizeLineToHTML(
 
 		for (
 			;
-
 			charIndex < tokenEndIndex && charIndex < endOffset;
-
 			charIndex++
 		) {
 			const charCode = text.charCodeAt(charIndex);

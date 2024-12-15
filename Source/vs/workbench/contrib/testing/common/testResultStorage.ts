@@ -167,11 +167,9 @@ export abstract class BaseTestResultStorage
 		// 3. We store the min results, and have no more byte budget
 		for (
 			let i = 0;
-
 			i < results.length &&
 			i < RETAIN_MAX_RESULTS &&
 			(budget > 0 || toStore.length < RETAIN_MIN_RESULTS);
-
 			i++
 		) {
 			const result = results[i];

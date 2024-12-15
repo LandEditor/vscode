@@ -642,11 +642,9 @@ export class WorkspacesHistoryMainService
 
 		for (
 			let i = 0;
-
 			i < mru.workspaces.length &&
 			entries <
 				WorkspacesHistoryMainService.MAX_MACOS_DOCK_RECENT_WORKSPACES;
-
 			i++
 		) {
 			const loc = this.location(mru.workspaces[i]);
@@ -666,11 +664,9 @@ export class WorkspacesHistoryMainService
 
 		for (
 			let i = 0;
-
 			i < mru.files.length &&
 			entries <
 				WorkspacesHistoryMainService.MAX_MACOS_DOCK_RECENT_ENTRIES_TOTAL;
-
 			i++
 		) {
 			const loc = this.location(mru.files[i]);

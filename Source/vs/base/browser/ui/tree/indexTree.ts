@@ -17,7 +17,7 @@ export class IndexTree<T, TFilterData = void> extends AbstractTree<
 	TFilterData,
 	number[]
 > {
-	protected declare model: IndexTreeModel<T, TFilterData>;
+	declare protected model: IndexTreeModel<T, TFilterData>;
 
 	constructor(
 		private readonly user: string,

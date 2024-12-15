@@ -29,7 +29,7 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 	TFilterData,
 	T | null
 > {
-	protected declare model: ObjectTreeModel<T, TFilterData>;
+	declare protected model: ObjectTreeModel<T, TFilterData>;
 
 	private input: TInput | undefined;
 

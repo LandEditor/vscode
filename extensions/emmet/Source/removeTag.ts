@@ -123,9 +123,7 @@ function getRangesToRemove(
 
 			for (
 				let i = openTagRange.start.line + 1;
-
 				i < closeTagRange.start.line;
-
 				i++
 			) {
 				if (!document.lineAt(i).isEmptyOrWhitespace) {

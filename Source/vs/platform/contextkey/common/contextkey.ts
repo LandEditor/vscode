@@ -492,9 +492,7 @@ export class Parser {
 									case TokenType.QuotedStr:
 										for (
 											let i = 0;
-
 											i < followingToken.lexeme.length;
-
 											i++
 										) {
 											if (

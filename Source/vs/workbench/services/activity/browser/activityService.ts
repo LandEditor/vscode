@@ -3,13 +3,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IActivityService, IActivity } from '../common/activity.js';
-import { IDisposable, Disposable, toDisposable } from '../../../../base/common/lifecycle.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
-import { IViewDescriptorService, ViewContainer } from '../../../common/views.js';
-import { GLOBAL_ACTIVITY_ID, ACCOUNTS_ACTIVITY_ID } from '../../../common/activity.js';
-import { Emitter, Event } from '../../../../base/common/event.js';
-import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+import { Emitter, Event } from "../../../../base/common/event.js";
+import {
+	Disposable,
+	IDisposable,
+	toDisposable,
+} from "../../../../base/common/lifecycle.js";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "../../../../platform/instantiation/common/extensions.js";
+import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
+import {
+	ACCOUNTS_ACTIVITY_ID,
+	GLOBAL_ACTIVITY_ID,
+} from "../../../common/activity.js";
+import {
+	IViewDescriptorService,
+	ViewContainer,
+} from "../../../common/views.js";
+import { IActivity, IActivityService } from "../common/activity.js";
 
 class ViewContainerActivityByView extends Disposable {
 	private activity: IActivity | undefined = undefined;
@@ -101,8 +114,12 @@ export class ActivityService extends Disposable implements IActivityService {
 		super();
 	}
 
-	showViewContainerActivity(viewContainerId: string, activity: IActivity): IDisposable {
-		const viewContainer = this.viewDescriptorService.getViewContainerById(viewContainerId);
+	showViewContainerActivity(
+		viewContainerId: string,
+		activity: IActivity,
+	): IDisposable {
+		const viewContainer =
+			this.viewDescriptorService.getViewContainerById(viewContainerId);
 		if (!viewContainer) {
 			return Disposable.None;
 		}

@@ -601,9 +601,7 @@ export class BracketPairsTextModelPart
 
 		for (
 			let lineNumber = position.lineNumber;
-
 			lineNumber >= 1;
-
 			lineNumber--
 		) {
 			const lineTokens =
@@ -756,9 +754,7 @@ export class BracketPairsTextModelPart
 
 		for (
 			let lineNumber = position.lineNumber;
-
 			lineNumber <= lineCount;
-
 			lineNumber++
 		) {
 			const lineTokens =
@@ -867,9 +863,7 @@ export class BracketPairsTextModelPart
 
 		for (
 			let lineNumber = position.lineNumber;
-
 			lineNumber >= 1;
-
 			lineNumber--
 		) {
 			const lineTokens =
@@ -1044,9 +1038,7 @@ export class BracketPairsTextModelPart
 
 		for (
 			let lineNumber = position.lineNumber;
-
 			lineNumber <= lineCount;
-
 			lineNumber++
 		) {
 			const lineTokens =
@@ -1241,9 +1233,7 @@ export class BracketPairsTextModelPart
 				for (
 					let i = 0,
 						len = modeBrackets ? modeBrackets.brackets.length : 0;
-
 					i < len;
-
 					i++
 				) {
 					tmp[i] = 0;
@@ -1320,9 +1310,7 @@ export class BracketPairsTextModelPart
 
 		for (
 			let lineNumber = position.lineNumber;
-
 			lineNumber <= lineCount;
-
 			lineNumber++
 		) {
 			const lineTokens =

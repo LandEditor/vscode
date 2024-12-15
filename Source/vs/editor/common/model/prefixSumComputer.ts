@@ -311,9 +311,7 @@ export class ConstantTimePrefixSumComputer {
 
 		for (
 			let i = this._validEndIndex + 1, len = this._values.length;
-
 			i < len;
-
 			i++
 		) {
 			const value = this._values[i];

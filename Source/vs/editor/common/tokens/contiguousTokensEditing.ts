@@ -99,9 +99,7 @@ export class ContiguousTokensEditing {
 
 		for (
 			let tokenIndex = fromTokenIndex + 1;
-
 			tokenIndex < tokensCount;
-
 			tokenIndex++
 		) {
 			const tokenEndOffset = tokens[tokenIndex << 1] - delta;
@@ -197,9 +195,7 @@ export class ContiguousTokensEditing {
 
 		for (
 			let tokenIndex = fromTokenIndex;
-
 			tokenIndex < tokensCount;
-
 			tokenIndex++
 		) {
 			tokens[tokenIndex << 1] += textLength;

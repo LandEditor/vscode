@@ -139,9 +139,7 @@ export class TrimWhitespaceParticipant implements ITextFileSaveParticipant {
 				if (snippetsRange) {
 					for (
 						let lineNumber = snippetsRange.startLineNumber;
-
 						lineNumber <= snippetsRange.endLineNumber;
-
 						lineNumber++
 					) {
 						cursors.push(
@@ -284,9 +282,7 @@ export class TrimFinalNewLinesParticipant implements ITextFileSaveParticipant {
 	private findLastNonEmptyLine(model: ITextModel): number {
 		for (
 			let lineNumber = model.getLineCount();
-
 			lineNumber >= 1;
-
 			lineNumber--
 		) {
 			const lineLength = model.getLineLength(lineNumber);

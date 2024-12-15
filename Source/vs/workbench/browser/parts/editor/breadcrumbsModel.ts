@@ -159,9 +159,7 @@ export class BreadcrumbsModel {
 				breadcrumbsElements.length > 0
 					? breadcrumbsElements.length - 1
 					: 0;
-
 			i < breadcrumbsElements.length;
-
 			i++
 		) {
 			result.push(

@@ -182,8 +182,16 @@ export abstract class AbstractKeybindingService
 		);
 	}
 
-	public lookupKeybinding(commandId: string, context?: IContextKeyService, enforceContextCheck = false): ResolvedKeybinding | undefined {
-		const result = this._getResolver().lookupPrimaryKeybinding(commandId, context || this._contextKeyService, enforceContextCheck);
+	public lookupKeybinding(
+		commandId: string,
+		context?: IContextKeyService,
+		enforceContextCheck = false,
+	): ResolvedKeybinding | undefined {
+		const result = this._getResolver().lookupPrimaryKeybinding(
+			commandId,
+			context || this._contextKeyService,
+			enforceContextCheck,
+		);
 		if (!result) {
 			return undefined;
 		}

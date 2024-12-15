@@ -1408,9 +1408,7 @@ export abstract class AbstractExtensionService
 
 		for (
 			let affinity = 0;
-
 			affinity <= this._runningLocations.maxLocalProcessAffinity;
-
 			affinity++
 		) {
 			locations.push(new LocalProcessRunningLocation(affinity));
@@ -1418,9 +1416,7 @@ export abstract class AbstractExtensionService
 
 		for (
 			let affinity = 0;
-
 			affinity <= this._runningLocations.maxLocalWebWorkerAffinity;
-
 			affinity++
 		) {
 			locations.push(new LocalWebWorkerRunningLocation(affinity));

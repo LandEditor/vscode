@@ -117,9 +117,7 @@ export const getFileResults = (
 						0,
 						startLine - options.surroundingContext,
 					);
-
 					contextLine < startLine;
-
 					contextLine++
 				) {
 					contextLinesNeeded.add(contextLine);
@@ -187,13 +185,11 @@ export const getFileResults = (
 			if (options.surroundingContext) {
 				for (
 					let contextLine = endLine + 1;
-
 					contextLine <=
 					Math.min(
 						endLine + options.surroundingContext,
 						lineRanges.length - 1,
 					);
-
 					contextLine++
 				) {
 					contextLinesNeeded.add(contextLine);

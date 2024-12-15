@@ -289,9 +289,7 @@ function* getParentsWithTagName<T extends HTMLElement>(
 ): Iterable<T> {
 	for (
 		let parent = element.parentElement;
-
 		parent;
-
 		parent = parent.parentElement
 	) {
 		if (parent.tagName === tagName) {

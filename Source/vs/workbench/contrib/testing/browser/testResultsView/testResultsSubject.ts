@@ -193,9 +193,7 @@ export const mapFindTestMessage = <T>(
 
 		for (
 			let messageIndex = 0;
-
 			messageIndex < task.messages.length;
-
 			messageIndex++
 		) {
 			const r = fn(

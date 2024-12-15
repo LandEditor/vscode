@@ -1,27 +1,30 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
-use super::socket_signal::{ClientMessageDecoder, ServerMessageSink};
-use crate::{
-	async_pipe::{get_socket_rw_stream, socket_stream_split, AsyncPipeWriteHalf},
-	util::errors::AnyError,
-};
+// ---------------------------------------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation. All rights reserved.
+//  Licensed under the MIT License. See License.txt in the project root for
+// license information.
+// --------------------------------------------------------------------------------------------
 use std::path::Path;
+
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
+use super::socket_signal::{ClientMessageDecoder, ServerMessageSink};
+use crate::{
+	async_pipe::{AsyncPipeWriteHalf, get_socket_rw_stream, socket_stream_split},
+	util::errors::AnyError,
+};
+
 pub struct ServerBridge {
-	write: AsyncPipeWriteHalf,
-	decoder: ClientMessageDecoder,
+	write:AsyncPipeWriteHalf,
+	decoder:ClientMessageDecoder,
 }
 
-const BUFFER_SIZE: usize = 65536;
+const BUFFER_SIZE:usize = 65536;
 
 impl ServerBridge {
 	pub async fn new(
-		path: &Path,
-		mut target: ServerMessageSink,
-		decoder: ClientMessageDecoder,
+		path:&Path,
+		mut target:ServerMessageSink,
+		decoder:ClientMessageDecoder,
 	) -> Result<Self, AnyError> {
 		let stream = get_socket_rw_stream(path).await?;
 
@@ -37,7 +40,7 @@ impl ServerBridge {
 						let _ = target.server_closed().await;
 
 						return; // EOF
-					}
+					},
 
 					Ok(s) => {
 						let send = target.server_message(&read_buf[..s]).await;
@@ -45,7 +48,7 @@ impl ServerBridge {
 						if send.is_err() {
 							return;
 						}
-					}
+					},
 				}
 			}
 		});
@@ -53,7 +56,7 @@ impl ServerBridge {
 		Ok(ServerBridge { write, decoder })
 	}
 
-	pub async fn write(&mut self, b: Vec<u8>) -> std::io::Result<()> {
+	pub async fn write(&mut self, b:Vec<u8>) -> std::io::Result<()> {
 		let dec = self.decoder.decode(&b)?;
 
 		if !dec.is_empty() {

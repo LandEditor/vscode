@@ -321,16 +321,12 @@ export function shorten(
 
 		for (
 			let subpathLength = 1;
-
 			match && subpathLength <= segments.length;
-
 			subpathLength++
 		) {
 			for (
 				let start = segments.length - subpathLength;
-
 				match && start >= 0;
-
 				start--
 			) {
 				match = false;
@@ -342,7 +338,6 @@ export function shorten(
 				for (
 					let otherPathIndex = 0;
 					!match && otherPathIndex < paths.length;
-
 					otherPathIndex++
 				) {
 					// suffix subpath treated specially as we consider no match 'x' and 'x/...'

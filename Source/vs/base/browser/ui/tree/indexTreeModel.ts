@@ -412,9 +412,7 @@ export class IndexTreeModel<
 		if (deletedVisibleChildrenCount !== 0) {
 			for (
 				let i = lastIndex + nodesToInsert.length;
-
 				i < parentNode.children.length;
-
 				i++
 			) {
 				const child = parentNode.children[i];

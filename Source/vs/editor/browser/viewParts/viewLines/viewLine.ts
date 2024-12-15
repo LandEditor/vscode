@@ -741,9 +741,7 @@ class RenderedViewLine implements IRenderedViewLine {
 
 			for (
 				let column = 0, len = this._characterMapping.length;
-
 				column <= len;
-
 				column++
 			) {
 				this._pixelOffsetCache[column] = -1;

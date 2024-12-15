@@ -380,7 +380,9 @@ export function detectUnicodeEncoding(buffer: Buffer): Encoding | null {
 }
 
 export function truncate(value: string, maxLength = 20): string {
-	return value.length <= maxLength ? value : `${value.substring(0, maxLength)}\u2026`;
+	return value.length <= maxLength
+		? value
+		: `${value.substring(0, maxLength)}\u2026`;
 }
 
 function normalizePath(path: string): string {

@@ -3,9 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter, Event } from '../../../../base/common/event.js';
-import { IHistory } from '../../../../base/common/history.js';
-import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+import { Emitter, Event } from "../../../../base/common/event.js";
+import { IHistory } from "../../../../base/common/history.js";
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from "../../../../platform/storage/common/storage.js";
 
 export class FindWidgetSearchHistory implements IHistory<string> {
 	public static readonly FIND_HISTORY_KEY = "workbench.find.history";
@@ -20,7 +24,9 @@ export class FindWidgetSearchHistory implements IHistory<string> {
 		storageService: IStorageService,
 	): FindWidgetSearchHistory {
 		if (!FindWidgetSearchHistory._instance) {
-			FindWidgetSearchHistory._instance = new FindWidgetSearchHistory(storageService);
+			FindWidgetSearchHistory._instance = new FindWidgetSearchHistory(
+				storageService,
+			);
 		}
 		return FindWidgetSearchHistory._instance;
 	}

@@ -678,10 +678,8 @@ export class ModelService extends Disposable implements IModelService {
 
 		for (
 			let i = 0;
-
 			i < maxResult &&
 			a.getLineContent(aDelta + i) === b.getLineContent(bDelta + i);
-
 			i++
 		) {
 			result++;
@@ -704,11 +702,9 @@ export class ModelService extends Disposable implements IModelService {
 
 		for (
 			let i = 0;
-
 			i < maxResult &&
 			a.getLineContent(aDelta + aLen - i) ===
 				b.getLineContent(bDelta + bLen - i);
-
 			i++
 		) {
 			result++;

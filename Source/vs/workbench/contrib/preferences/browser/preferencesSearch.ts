@@ -321,9 +321,7 @@ export class SettingMatches {
 				// Search the description lines.
 				for (
 					let lineIndex = 0;
-
 					lineIndex < setting.description.length;
-
 					lineIndex++
 				) {
 					const descriptionMatches = matchesContiguousSubString(

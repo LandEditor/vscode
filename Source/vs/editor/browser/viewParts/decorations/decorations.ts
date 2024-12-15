@@ -145,9 +145,7 @@ export class DecorationsOverlay extends DynamicViewOverlay {
 
 		for (
 			let lineNumber = visibleStartLineNumber;
-
 			lineNumber <= visibleEndLineNumber;
-
 			lineNumber++
 		) {
 			const lineIndex = lineNumber - visibleStartLineNumber;
@@ -347,9 +345,7 @@ export class DecorationsOverlay extends DynamicViewOverlay {
 
 			for (
 				let k = 0, lenK = lineVisibleRanges.ranges.length;
-
 				k < lenK;
-
 				k++
 			) {
 				const expandToLeft =

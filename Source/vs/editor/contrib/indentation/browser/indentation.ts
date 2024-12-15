@@ -798,9 +798,7 @@ export class AutoIndentOnPaste implements IEditorContribution {
 
 					for (
 						let i = startLineNumber + 1;
-
 						i <= range.endLineNumber;
-
 						i++
 					) {
 						const lineContent = model.getLineContent(i);
@@ -972,9 +970,7 @@ function getIndentationEditOperations(
 
 	for (
 		let lineNumber = 1, lineCount = model.getLineCount();
-
 		lineNumber <= lineCount;
-
 		lineNumber++
 	) {
 		let lastIndentationColumn =

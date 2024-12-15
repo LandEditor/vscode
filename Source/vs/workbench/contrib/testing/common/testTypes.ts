@@ -3,13 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IMarkdownString } from '../../../../base/common/htmlContent.js';
-import { MarshalledId } from '../../../../base/common/marshallingIds.js';
-import { URI, UriComponents } from '../../../../base/common/uri.js';
-import { IPosition, Position } from '../../../../editor/common/core/position.js';
-import { IRange, Range } from '../../../../editor/common/core/range.js';
-import { localize } from '../../../../nls.js';
-import { TestId } from './testId.js';
+import { IMarkdownString } from "../../../../base/common/htmlContent.js";
+import { MarshalledId } from "../../../../base/common/marshallingIds.js";
+import { URI, UriComponents } from "../../../../base/common/uri.js";
+import {
+	IPosition,
+	Position,
+} from "../../../../editor/common/core/position.js";
+import { IRange, Range } from "../../../../editor/common/core/range.js";
+import { localize } from "../../../../nls.js";
+import { TestId } from "./testId.js";
 
 export const enum TestResultState {
 	Unset = 0,
@@ -52,9 +55,15 @@ export const enum TestRunProfileBitset {
 }
 
 export const testProfileBitset = {
-	[TestRunProfileBitset.Run]: localize('testing.runProfileBitset.run', 'Run'),
-	[TestRunProfileBitset.Debug]: localize('testing.runProfileBitset.debug', 'Debug'),
-	[TestRunProfileBitset.Coverage]: localize('testing.runProfileBitset.coverage', 'Coverage'),
+	[TestRunProfileBitset.Run]: localize("testing.runProfileBitset.run", "Run"),
+	[TestRunProfileBitset.Debug]: localize(
+		"testing.runProfileBitset.debug",
+		"Debug",
+	),
+	[TestRunProfileBitset.Coverage]: localize(
+		"testing.runProfileBitset.coverage",
+		"Coverage",
+	),
 };
 
 /**

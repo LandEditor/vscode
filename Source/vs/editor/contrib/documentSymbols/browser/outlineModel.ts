@@ -226,10 +226,8 @@ export class OutlineGroup extends TreeElement {
 
 		for (
 			;
-
 			start < markers.length &&
 			Range.areIntersecting(item.symbol.range, markers[start]);
-
 			start++
 		) {
 			// remove markers intersecting with this outline element
@@ -673,7 +671,10 @@ export class OutlineModelService implements IOutlineModelService {
 	}
 
 	getCachedModels(): Iterable<OutlineModel> {
-		return Iterable.filter<OutlineModel | undefined, OutlineModel>(Iterable.map(this._cache.values(), entry => entry.model), model => model !== undefined);
+		return Iterable.filter<OutlineModel | undefined, OutlineModel>(
+			Iterable.map(this._cache.values(), (entry) => entry.model),
+			(model) => model !== undefined,
+		);
 	}
 }
 registerSingleton(

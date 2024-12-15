@@ -1105,9 +1105,7 @@ export class MainThreadTask extends Disposable implements MainThreadTaskShape {
 
 										for (
 											let i = 0;
-
 											i < partiallyResolvedVars.length;
-
 											i++
 										) {
 											const variableName = vars[

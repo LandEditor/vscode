@@ -1,12 +1,14 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+// ---------------------------------------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation. All rights reserved.
+//  Licensed under the MIT License. See License.txt in the project root for
+// license information.
+// --------------------------------------------------------------------------------------------
 
 use std::sync::Arc;
 
 use indicatif::ProgressBar;
 
+use super::{CommandContext, args::StandaloneUpdateArgs};
 use crate::{
 	constants::PRODUCT_NAME_LONG,
 	self_update::SelfUpdate,
@@ -14,9 +16,7 @@ use crate::{
 	util::{errors::AnyError, http::ReqwestSimpleHttp, input::ProgressBarReporter},
 };
 
-use super::{args::StandaloneUpdateArgs, CommandContext};
-
-pub async fn update(ctx: CommandContext, args: StandaloneUpdateArgs) -> Result<i32, AnyError> {
+pub async fn update(ctx:CommandContext, args:StandaloneUpdateArgs) -> Result<i32, AnyError> {
 	let update_service = UpdateService::new(
 		ctx.log.clone(),
 		Arc::new(ReqwestSimpleHttp::with_client(ctx.http.clone())),
@@ -38,8 +38,7 @@ pub async fn update(ctx: CommandContext, args: StandaloneUpdateArgs) -> Result<i
 	}
 
 	if args.check {
-		ctx.log
-			.result(format!("Update to {current_version} is available"));
+		ctx.log.result(format!("Update to {current_version} is available"));
 
 		return Ok(0);
 	}
@@ -52,8 +51,7 @@ pub async fn update(ctx: CommandContext, args: StandaloneUpdateArgs) -> Result<i
 		.do_update(&current_version, ProgressBarReporter::from(pb))
 		.await?;
 
-	ctx.log
-		.result(format!("Successfully updated to {current_version}"));
+	ctx.log.result(format!("Successfully updated to {current_version}"));
 
 	Ok(0)
 }

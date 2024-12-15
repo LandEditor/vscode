@@ -148,8 +148,7 @@ interface ITOCEntryTemplate {
 }
 
 export class TOCRenderer
-	implements
-		ITreeRenderer<SettingsTreeGroupElement, never, ITOCEntryTemplate>
+	implements ITreeRenderer<SettingsTreeGroupElement, never, ITOCEntryTemplate>
 {
 	templateId = TOC_ENTRY_TEMPLATE_ID;
 

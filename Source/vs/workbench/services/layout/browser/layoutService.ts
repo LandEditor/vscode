@@ -3,18 +3,31 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { refineServiceDecorator } from '../../../../platform/instantiation/common/instantiation.js';
-import { Event } from '../../../../base/common/event.js';
-import { ILayoutService } from '../../../../platform/layout/browser/layoutService.js';
-import { Part } from '../../../browser/part.js';
-import { IDimension } from '../../../../base/browser/dom.js';
-import { Direction, IViewSize } from '../../../../base/browser/ui/grid/grid.js';
-import { isMacintosh, isNative, isWeb } from '../../../../base/common/platform.js';
-import { isAuxiliaryWindow } from '../../../../base/browser/window.js';
-import { CustomTitleBarVisibility, TitleBarSetting, getMenuBarVisibility, hasCustomTitlebar, hasNativeTitlebar } from '../../../../platform/window/common/window.js';
-import { isFullscreen, isWCOEnabled } from '../../../../base/browser/browser.js';
-import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
-import { IDisposable } from '../../../../base/common/lifecycle.js';
+import {
+	isFullscreen,
+	isWCOEnabled,
+} from "../../../../base/browser/browser.js";
+import { IDimension } from "../../../../base/browser/dom.js";
+import { Direction, IViewSize } from "../../../../base/browser/ui/grid/grid.js";
+import { isAuxiliaryWindow } from "../../../../base/browser/window.js";
+import { Event } from "../../../../base/common/event.js";
+import { IDisposable } from "../../../../base/common/lifecycle.js";
+import {
+	isMacintosh,
+	isNative,
+	isWeb,
+} from "../../../../base/common/platform.js";
+import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
+import { refineServiceDecorator } from "../../../../platform/instantiation/common/instantiation.js";
+import { ILayoutService } from "../../../../platform/layout/browser/layoutService.js";
+import {
+	CustomTitleBarVisibility,
+	getMenuBarVisibility,
+	hasCustomTitlebar,
+	hasNativeTitlebar,
+	TitleBarSetting,
+} from "../../../../platform/window/common/window.js";
+import { Part } from "../../../browser/part.js";
 
 export const IWorkbenchLayoutService = refineServiceDecorator<
 	ILayoutService,

@@ -89,9 +89,7 @@ export class ReplacePattern {
 
 				for (
 					let idx: number = 0, len: number = match.length;
-
 					idx < len;
-
 					idx++
 				) {
 					if (opIdx >= lenOps) {

@@ -359,9 +359,7 @@ export class CodeApplication extends Disposable {
 		): boolean => {
 			for (
 				let frame: WebFrameMain | null | undefined = requestFrame;
-
 				frame;
-
 				frame = frame.parent
 			) {
 				if (frame.url.startsWith(`${Schemas.vscodeWebview}://`)) {

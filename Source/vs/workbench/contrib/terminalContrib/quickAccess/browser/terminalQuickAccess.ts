@@ -71,18 +71,14 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 
 		for (
 			let groupIndex = 0;
-
 			groupIndex < terminalGroups.length;
-
 			groupIndex++
 		) {
 			const terminalGroup = terminalGroups[groupIndex];
 
 			for (
 				let terminalIndex = 0;
-
 				terminalIndex < terminalGroup.terminalInstances.length;
-
 				terminalIndex++
 			) {
 				const terminal = terminalGroup.terminalInstances[terminalIndex];
@@ -106,9 +102,7 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 
 		for (
 			let editorIndex = 0;
-
 			editorIndex < terminalEditors.length;
-
 			editorIndex++
 		) {
 			const term = terminalEditors[editorIndex];

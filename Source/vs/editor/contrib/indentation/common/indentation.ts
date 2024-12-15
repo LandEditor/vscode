@@ -105,9 +105,7 @@ export function getReindentEditOperations(
 	// Calculate indentation adjustment for all following lines
 	for (
 		let lineNumber = startLineNumber;
-
 		lineNumber <= endLineNumber;
-
 		lineNumber++
 	) {
 		if (doesLineStartWithString(model, lineNumber)) {

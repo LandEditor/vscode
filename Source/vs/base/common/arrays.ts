@@ -395,9 +395,7 @@ export function topAsync<T>(
 
 			for (
 				let i = n, m = Math.min(n + batch, o);
-
 				i < o;
-
 				i = m, m = Math.min(m + batch, o)
 			) {
 				if (i > n) {
@@ -533,9 +531,7 @@ export function commonPrefixLength<T>(
 
 	for (
 		let i = 0, len = Math.min(one.length, other.length);
-
 		i < len && equals(one[i], other[i]);
-
 		i++
 	) {
 		result++;

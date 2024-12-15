@@ -3,27 +3,41 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from '../../../../base/common/event.js';
-import { IDisposable } from '../../../../base/common/lifecycle.js';
-import { URI } from '../../../../base/common/uri.js';
-import { ICodeEditor } from '../../../../editor/browser/editorBrowser.js';
-import { Selection } from '../../../../editor/common/core/selection.js';
-import { MenuId } from '../../../../platform/actions/common/actions.js';
-import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
-import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
-import { IViewDescriptorService, ViewContainerLocation } from '../../../common/views.js';
-import { IWorkbenchLayoutService, Parts } from '../../../services/layout/browser/layoutService.js';
-import { IViewsService } from '../../../services/views/common/viewsService.js';
-import { ChatAgentLocation, IChatAgentCommand, IChatAgentData } from '../common/chatAgents.js';
-import { IChatResponseModel } from '../common/chatModel.js';
-import { IParsedChatRequest } from '../common/chatParserTypes.js';
-import { CHAT_PROVIDER_ID } from '../common/chatParticipantContribTypes.js';
-import { IChatRequestViewModel, IChatResponseViewModel, IChatViewModel } from '../common/chatViewModel.js';
-import { ChatAttachmentModel } from './chatAttachmentModel.js';
-import { ChatInputPart } from './chatInputPart.js';
-import { ChatViewPane } from './chatViewPane.js';
-import { IChatViewState, IChatWidgetContrib } from './chatWidget.js';
-import { ICodeBlockActionContext } from './codeBlockPart.js';
+import { Event } from "../../../../base/common/event.js";
+import { IDisposable } from "../../../../base/common/lifecycle.js";
+import { URI } from "../../../../base/common/uri.js";
+import { ICodeEditor } from "../../../../editor/browser/editorBrowser.js";
+import { Selection } from "../../../../editor/common/core/selection.js";
+import { MenuId } from "../../../../platform/actions/common/actions.js";
+import { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
+import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
+import {
+	IViewDescriptorService,
+	ViewContainerLocation,
+} from "../../../common/views.js";
+import {
+	IWorkbenchLayoutService,
+	Parts,
+} from "../../../services/layout/browser/layoutService.js";
+import { IViewsService } from "../../../services/views/common/viewsService.js";
+import {
+	ChatAgentLocation,
+	IChatAgentCommand,
+	IChatAgentData,
+} from "../common/chatAgents.js";
+import { IChatResponseModel } from "../common/chatModel.js";
+import { IParsedChatRequest } from "../common/chatParserTypes.js";
+import { CHAT_PROVIDER_ID } from "../common/chatParticipantContribTypes.js";
+import {
+	IChatRequestViewModel,
+	IChatResponseViewModel,
+	IChatViewModel,
+} from "../common/chatViewModel.js";
+import { ChatAttachmentModel } from "./chatAttachmentModel.js";
+import { ChatInputPart } from "./chatInputPart.js";
+import { ChatViewPane } from "./chatViewPane.js";
+import { IChatViewState, IChatWidgetContrib } from "./chatWidget.js";
+import { ICodeBlockActionContext } from "./codeBlockPart.js";
 
 export const IChatWidgetService =
 	createDecorator<IChatWidgetService>("chatWidgetService");
@@ -59,20 +73,31 @@ export async function showEditsView(
 	return (await viewsService.openView<ChatViewPane>(EditsViewId))?.widget;
 }
 
-export function ensureSideBarChatViewSize(width: number, viewDescriptorService: IViewDescriptorService, layoutService: IWorkbenchLayoutService): void {
+export function ensureSideBarChatViewSize(
+	width: number,
+	viewDescriptorService: IViewDescriptorService,
+	layoutService: IWorkbenchLayoutService,
+): void {
 	const location = viewDescriptorService.getViewLocationById(ChatViewId);
 	if (location === ViewContainerLocation.Panel) {
 		return; // panel is typically very wide
 	}
 
-	const viewPart = location === ViewContainerLocation.Sidebar ? Parts.SIDEBAR_PART : Parts.AUXILIARYBAR_PART;
+	const viewPart =
+		location === ViewContainerLocation.Sidebar
+			? Parts.SIDEBAR_PART
+			: Parts.AUXILIARYBAR_PART;
 	const partSize = layoutService.getSize(viewPart);
 	if (partSize.width < width) {
-		layoutService.setSize(viewPart, { width: width, height: partSize.height });
+		layoutService.setSize(viewPart, {
+			width: width,
+			height: partSize.height,
+		});
 	}
 }
 
-export const IQuickChatService = createDecorator<IQuickChatService>('quickChatService');
+export const IQuickChatService =
+	createDecorator<IQuickChatService>("quickChatService");
 export interface IQuickChatService {
 	readonly _serviceBrand: undefined;
 
@@ -286,7 +311,10 @@ export interface IChatWidget {
 	refreshParsedInput(): void;
 
 	logInputHistory(): void;
-	acceptInput(query?: string, options?: IChatAcceptInputOptions): Promise<IChatResponseModel | undefined>;
+	acceptInput(
+		query?: string,
+		options?: IChatAcceptInputOptions,
+	): Promise<IChatResponseModel | undefined>;
 	rerunLastRequest(): Promise<void>;
 	acceptInputWithPrefix(prefix: string): void;
 

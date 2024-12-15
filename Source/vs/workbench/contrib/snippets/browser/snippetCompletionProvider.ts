@@ -331,9 +331,7 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
 
 			for (
 				;
-
 				to < suggestions.length && item.label === suggestions[to].label;
-
 				to++
 			) {
 				suggestions[to].label.label = localize(

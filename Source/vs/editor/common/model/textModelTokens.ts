@@ -274,9 +274,7 @@ export class TokenizerWithStateStoreAndTextModel<
 
 		for (
 			let lineNumber = startLineNumber;
-
 			lineNumber <= endLineNumber;
-
 			lineNumber++
 		) {
 			const text = this._textModel.getLineContent(lineNumber);

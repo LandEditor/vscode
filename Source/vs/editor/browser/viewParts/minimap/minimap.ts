@@ -1031,9 +1031,7 @@ class MinimapSamplingState {
 			if (minimapLineCount > 1) {
 				for (
 					let i = 0, lastIndex = minimapLineCount - 1;
-
 					i < lastIndex;
-
 					i++
 				) {
 					result[i] = Math.round(i * ratio + halfRatio);
@@ -1676,9 +1674,7 @@ export class Minimap extends ViewPart implements IMinimapModel {
 			for (
 				let lineIndex = 0,
 					lineCount = endLineNumber - startLineNumber + 1;
-
 				lineIndex < lineCount;
-
 				lineIndex++
 			) {
 				if (needed[lineIndex]) {
@@ -3190,9 +3186,7 @@ class InnerMinimap extends Disposable {
 
 		for (
 			let lineIndex = 0, lineCount = endLineNumber - startLineNumber + 1;
-
 			lineIndex < lineCount;
-
 			lineIndex++
 		) {
 			if (needed[lineIndex]) {
@@ -3254,9 +3248,7 @@ class InnerMinimap extends Disposable {
 		if (!lastRenderData) {
 			for (
 				let i = 0, len = endLineNumber - startLineNumber + 1;
-
 				i < len;
-
 				i++
 			) {
 				needed[i] = true;
@@ -3299,9 +3291,7 @@ class InnerMinimap extends Disposable {
 
 		for (
 			let lineNumber = startLineNumber;
-
 			lineNumber <= endLineNumber;
-
 			lineNumber++
 		) {
 			const lineIndex = lineNumber - startLineNumber;
@@ -3437,9 +3427,7 @@ class InnerMinimap extends Disposable {
 
 		for (
 			let tokenIndex = 0, tokensLen = tokens.getCount();
-
 			tokenIndex < tokensLen;
-
 			tokenIndex++
 		) {
 			const tokenEndIndex = tokens.getEndOffset(tokenIndex);
@@ -3537,9 +3525,7 @@ class ContiguousLineMap<T> {
 
 		for (
 			let i = 0, count = this._endLineNumber - this._startLineNumber + 1;
-
 			i < count;
-
 			i++
 		) {
 			this._values[i] = defaultValue;

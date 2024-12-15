@@ -687,9 +687,7 @@ export function computeContent(
 	const startIndex = visibleRange.start - 1; // -1 to account for cells hidden "under" sticky lines.
 	for (
 		let currentIndex = startIndex;
-
 		currentIndex < visibleRange.end;
-
 		currentIndex++
 	) {
 		// store data for current cell, and next cell

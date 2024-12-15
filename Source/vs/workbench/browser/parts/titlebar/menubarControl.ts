@@ -413,10 +413,8 @@ export abstract class MenubarControl extends Disposable {
 		if (workspaces.length > 0) {
 			for (
 				let i = 0;
-
 				i < MenubarControl.MAX_MENU_RECENT_ENTRIES &&
 				i < workspaces.length;
-
 				i++
 			) {
 				result.push(this.createOpenRecentMenuAction(workspaces[i]));
@@ -428,9 +426,7 @@ export abstract class MenubarControl extends Disposable {
 		if (files.length > 0) {
 			for (
 				let i = 0;
-
 				i < MenubarControl.MAX_MENU_RECENT_ENTRIES && i < files.length;
-
 				i++
 			) {
 				result.push(this.createOpenRecentMenuAction(files[i]));

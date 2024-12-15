@@ -77,10 +77,8 @@ export class SemanticTokensProviderStyling {
 
 				for (
 					let modifierIndex = 0;
-
 					modifierSet > 0 &&
 					modifierIndex < this._legend.tokenModifiers.length;
-
 					modifierIndex++
 				) {
 					if (modifierSet & 1) {

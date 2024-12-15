@@ -904,9 +904,7 @@ export class MenuBar extends Disposable {
 
 			for (
 				let idx = this.numMenusShown;
-
 				idx < showableMenus.length;
-
 				idx++
 			) {
 				this.overflowMenu.actions.push(

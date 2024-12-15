@@ -3,20 +3,31 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { binarySearch2, equals } from '../../../../base/common/arrays.js';
-import { Emitter, Event } from '../../../../base/common/event.js';
-import { DisposableStore, IDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
-import { LinkedList } from '../../../../base/common/linkedList.js';
-import { compare } from '../../../../base/common/strings.js';
-import { URI } from '../../../../base/common/uri.js';
-import { Position } from '../../../common/core/position.js';
-import { Range } from '../../../common/core/range.js';
-import { ITextModel } from '../../../common/model.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
-import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
-import { IMarker, IMarkerService, MarkerSeverity } from '../../../../platform/markers/common/markers.js';
-import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
-import { isEqual } from '../../../../base/common/resources.js';
+import { binarySearch2, equals } from "../../../../base/common/arrays.js";
+import { Emitter, Event } from "../../../../base/common/event.js";
+import {
+	DisposableStore,
+	IDisposable,
+	toDisposable,
+} from "../../../../base/common/lifecycle.js";
+import { LinkedList } from "../../../../base/common/linkedList.js";
+import { isEqual } from "../../../../base/common/resources.js";
+import { compare } from "../../../../base/common/strings.js";
+import { URI } from "../../../../base/common/uri.js";
+import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "../../../../platform/instantiation/common/extensions.js";
+import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
+import {
+	IMarker,
+	IMarkerService,
+	MarkerSeverity,
+} from "../../../../platform/markers/common/markers.js";
+import { Position } from "../../../common/core/position.js";
+import { Range } from "../../../common/core/range.js";
+import { ITextModel } from "../../../common/model.js";
 
 export class MarkerCoordinate {
 	constructor(
@@ -75,23 +86,35 @@ export class MarkerList {
 
 		const updateMarker = () => {
 			let newMarkers = this._markerService.read({
-				resource: URI.isUri(resourceFilter) ? resourceFilter : undefined,
-				severities: MarkerSeverity.Error | MarkerSeverity.Warning | MarkerSeverity.Info
+				resource: URI.isUri(resourceFilter)
+					? resourceFilter
+					: undefined,
+				severities:
+					MarkerSeverity.Error |
+					MarkerSeverity.Warning |
+					MarkerSeverity.Info,
 			});
-			if (typeof resourceFilter === 'function') {
-				newMarkers = newMarkers.filter(m => this._resourceFilter!(m.resource));
+			if (typeof resourceFilter === "function") {
+				newMarkers = newMarkers.filter((m) =>
+					this._resourceFilter!(m.resource),
+				);
 			}
 			newMarkers.sort(compareMarker);
 
-			if (equals(newMarkers, this._markers, (a, b) =>
-				a.resource.toString() === b.resource.toString()
-				&& a.startLineNumber === b.startLineNumber
-				&& a.startColumn === b.startColumn
-				&& a.endLineNumber === b.endLineNumber
-				&& a.endColumn === b.endColumn
-				&& a.severity === b.severity
-				&& a.message === b.message
-			)) {
+			if (
+				equals(
+					newMarkers,
+					this._markers,
+					(a, b) =>
+						a.resource.toString() === b.resource.toString() &&
+						a.startLineNumber === b.startLineNumber &&
+						a.startColumn === b.startColumn &&
+						a.endLineNumber === b.endLineNumber &&
+						a.endColumn === b.endColumn &&
+						a.severity === b.severity &&
+						a.message === b.message,
+				)
+			) {
 				return false;
 			}
 
@@ -101,14 +124,19 @@ export class MarkerList {
 
 		updateMarker();
 
-		this._dispoables.add(_markerService.onMarkerChanged(uris => {
-			if (!this._resourceFilter || uris.some(uri => this._resourceFilter!(uri))) {
-				if (updateMarker()) {
-					this._nextIdx = -1;
-					this._onDidChange.fire();
+		this._dispoables.add(
+			_markerService.onMarkerChanged((uris) => {
+				if (
+					!this._resourceFilter ||
+					uris.some((uri) => this._resourceFilter!(uri))
+				) {
+					if (updateMarker()) {
+						this._nextIdx = -1;
+						this._onDidChange.fire();
+					}
 				}
-			}
-		}));
+			}),
+		);
 	}
 
 	dispose(): void {
@@ -142,19 +170,30 @@ export class MarkerList {
 		);
 	}
 
-	private _initIdx(model: ITextModel, position: Position, fwd: boolean): void {
-
-		let idx = this._markers.findIndex(marker => isEqual(marker.resource, model.uri));
+	private _initIdx(
+		model: ITextModel,
+		position: Position,
+		fwd: boolean,
+	): void {
+		let idx = this._markers.findIndex((marker) =>
+			isEqual(marker.resource, model.uri),
+		);
 		if (idx < 0) {
 			// ignore model, position because this will be a different file
-			idx = binarySearch2(this._markers.length, idx => compare(this._markers[idx].resource.toString(), model.uri.toString()));
+			idx = binarySearch2(this._markers.length, (idx) =>
+				compare(
+					this._markers[idx].resource.toString(),
+					model.uri.toString(),
+				),
+			);
 			if (idx < 0) {
 				idx = ~idx;
 			}
 			if (fwd) {
 				this._nextIdx = idx;
 			} else {
-				this._nextIdx = (this._markers.length + idx - 1) % this._markers.length;
+				this._nextIdx =
+					(this._markers.length + idx - 1) % this._markers.length;
 			}
 		} else {
 			// find marker for file
@@ -164,20 +203,34 @@ export class MarkerList {
 				let range = Range.lift(this._markers[i]);
 
 				if (range.isEmpty()) {
-					const word = model.getWordAtPosition(range.getStartPosition());
+					const word = model.getWordAtPosition(
+						range.getStartPosition(),
+					);
 					if (word) {
-						range = new Range(range.startLineNumber, word.startColumn, range.startLineNumber, word.endColumn);
+						range = new Range(
+							range.startLineNumber,
+							word.startColumn,
+							range.startLineNumber,
+							word.endColumn,
+						);
 					}
 				}
 
-				if (position && (range.containsPosition(position) || position.isBeforeOrEqual(range.getStartPosition()))) {
+				if (
+					position &&
+					(range.containsPosition(position) ||
+						position.isBeforeOrEqual(range.getStartPosition()))
+				) {
 					this._nextIdx = i;
 					found = true;
 					wentPast = !range.containsPosition(position);
 					break;
 				}
 
-				if (this._markers[i].resource.toString() !== model.uri.toString()) {
+				if (
+					this._markers[i].resource.toString() !==
+					model.uri.toString()
+				) {
 					break;
 				}
 			}

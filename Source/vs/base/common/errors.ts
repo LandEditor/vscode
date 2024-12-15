@@ -147,7 +147,7 @@ export function transformErrorForSerialization(error: any): any {
 			message,
 			stack,
 			noTelemetry: ErrorNoTelemetry.isErrorNoTelemetry(error),
-			cause: cause ? transformErrorForSerialization(cause) : undefined
+			cause: cause ? transformErrorForSerialization(cause) : undefined,
 		};
 	}
 	// return as is

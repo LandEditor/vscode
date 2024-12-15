@@ -264,8 +264,16 @@ function onDidChangeNotebookCells(e: NotebookDocumentChangeEventEx) {
 			// Note: We will get another event for this, see below for the check.
 			// track the fact that we're expecting an update for this cell.
 			pendingCellUpdates.add(e.cell);
-		} else if ((!e.executionSummary || (!e.executionSummary?.executionOrder && !e.executionSummary?.success && !e.executionSummary?.timing))
-			&& !e.metadata && !e.outputs && currentMetadata.execution_count && pendingCellUpdates.has(e.cell)) {
+		} else if (
+			(!e.executionSummary ||
+				(!e.executionSummary?.executionOrder &&
+					!e.executionSummary?.success &&
+					!e.executionSummary?.timing)) &&
+			!e.metadata &&
+			!e.outputs &&
+			currentMetadata.execution_count &&
+			pendingCellUpdates.has(e.cell)
+		) {
 			// This is a result of the cell being cleared (i.e. we perfomed an update request and this is now the update event).
 			metadata.execution_count = null;
 

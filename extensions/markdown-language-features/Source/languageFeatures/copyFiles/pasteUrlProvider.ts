@@ -61,10 +61,15 @@ class PasteUrlEditProvider implements vscode.DocumentPasteEditProvider {
 			return;
 		}
 
-		const edit = createInsertUriListEdit(document, ranges, UriList.from(uriText), {
-			linkKindHint: context.only,
-			preserveAbsoluteUris: true
-		});
+		const edit = createInsertUriListEdit(
+			document,
+			ranges,
+			UriList.from(uriText),
+			{
+				linkKindHint: context.only,
+				preserveAbsoluteUris: true,
+			},
+		);
 
 		if (!edit) {
 			return;

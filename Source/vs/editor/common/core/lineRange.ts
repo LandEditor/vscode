@@ -257,9 +257,7 @@ export class LineRange {
 
 		for (
 			let lineNumber = this.startLineNumber;
-
 			lineNumber < this.endLineNumberExclusive;
-
 			lineNumber++
 		) {
 			result.push(f(lineNumber));
@@ -271,9 +269,7 @@ export class LineRange {
 	public forEach(f: (lineNumber: number) => void): void {
 		for (
 			let lineNumber = this.startLineNumber;
-
 			lineNumber < this.endLineNumberExclusive;
-
 			lineNumber++
 		) {
 			f(lineNumber);

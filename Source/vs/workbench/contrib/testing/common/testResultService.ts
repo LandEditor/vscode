@@ -102,10 +102,14 @@ export class TestResultService
 	implements ITestResultService
 {
 	declare _serviceBrand: undefined;
-	private changeResultEmitter = this._register(new Emitter<ResultChangeEvent>());
+	private changeResultEmitter = this._register(
+		new Emitter<ResultChangeEvent>(),
+	);
 	private _results: ITestResult[] = [];
 	private readonly _resultsDisposables: DisposableStore[] = [];
-	private testChangeEmitter = this._register(new Emitter<TestResultItemChange>());
+	private testChangeEmitter = this._register(
+		new Emitter<TestResultItemChange>(),
+	);
 	private insertOrderCounter = 0;
 
 	private changeResultEmitter = this._register(
@@ -196,7 +200,15 @@ export class TestResultService
 	) {
 		if ("targets" in req) {
 			const id = generateUuid();
-			return this.push(new LiveTestResult(id, true, req, this.insertOrderCounter++, this.telemetryService));
+			return this.push(
+				new LiveTestResult(
+					id,
+					true,
+					req,
+					this.insertOrderCounter++,
+					this.telemetryService,
+				),
+			);
 		}
 
 		let profile: ITestRunProfile | undefined;
@@ -225,7 +237,15 @@ export class TestResultService
 			});
 		}
 
-		return this.push(new LiveTestResult(req.id, req.persist, resolved, this.insertOrderCounter++, this.telemetryService));
+		return this.push(
+			new LiveTestResult(
+				req.id,
+				req.persist,
+				resolved,
+				this.insertOrderCounter++,
+				this.telemetryService,
+			),
+		);
 	}
 	/**
 	 * @inheritdoc

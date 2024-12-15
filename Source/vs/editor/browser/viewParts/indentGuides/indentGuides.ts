@@ -224,9 +224,7 @@ export class IndentGuidesOverlay extends DynamicViewOverlay {
 
 		for (
 			let lineNumber = visibleStartLineNumber;
-
 			lineNumber <= visibleEndLineNumber;
-
 			lineNumber++
 		) {
 			const lineIndex = lineNumber - visibleStartLineNumber;
@@ -348,9 +346,7 @@ export class IndentGuidesOverlay extends DynamicViewOverlay {
 
 		for (
 			let lineNumber = visibleStartLineNumber;
-
 			lineNumber <= visibleEndLineNumber;
-
 			lineNumber++
 		) {
 			const lineGuides = new Array<IndentGuide>();
@@ -371,9 +367,7 @@ export class IndentGuidesOverlay extends DynamicViewOverlay {
 
 			for (
 				let indentLvl = 1;
-
 				indentLvl <= indentGuidesInLine;
-
 				indentLvl++
 			) {
 				const indentGuide = (indentLvl - 1) * indentSize + 1;

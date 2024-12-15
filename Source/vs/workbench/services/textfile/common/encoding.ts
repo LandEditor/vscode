@@ -532,9 +532,7 @@ export function detectEncodingFromBuffer(
 		// that is using 4 bytes to encode a character).
 		for (
 			let i = 0;
-
 			i < bytesRead && i < ZERO_BYTE_DETECTION_BUFFER_MAX_LEN;
-
 			i++
 		) {
 			const isEndian = i % 2 === 1; // assume 2-byte sequences typical for UTF-16

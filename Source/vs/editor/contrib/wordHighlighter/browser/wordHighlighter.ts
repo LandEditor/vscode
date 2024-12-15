@@ -264,7 +264,6 @@ abstract class OccurenceAtPositionRequest
 		for (
 			let i = 0, len = decorations.length;
 			!requestIsValid && i < len;
-
 			i++
 		) {
 			const range = decorations.getRange(i);

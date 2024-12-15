@@ -944,30 +944,39 @@ function registerCommand<T extends Command>(command: T): T {
 	return command;
 }
 
-export const UndoCommand = registerCommand(new MultiCommand({
-	id: 'undo',
-	precondition: undefined,
-	kbOpts: {
-		weight: KeybindingWeight.EditorCore,
-		primary: KeyMod.CtrlCmd | KeyCode.KeyZ
-	},
-	menuOpts: [{
-		menuId: MenuId.MenubarEditMenu,
-		group: '1_do',
-		title: nls.localize({ key: 'miUndo', comment: ['&& denotes a mnemonic'] }, "&&Undo"),
-		order: 1
-	}, {
-		menuId: MenuId.CommandPalette,
-		group: '',
-		title: nls.localize('undo', "Undo"),
-		order: 1
-	}, {
-		menuId: MenuId.SimpleEditorContext,
-		group: '1_do',
-		title: nls.localize('undo', "Undo"),
-		order: 1
-	}]
-}));
+export const UndoCommand = registerCommand(
+	new MultiCommand({
+		id: "undo",
+		precondition: undefined,
+		kbOpts: {
+			weight: KeybindingWeight.EditorCore,
+			primary: KeyMod.CtrlCmd | KeyCode.KeyZ,
+		},
+		menuOpts: [
+			{
+				menuId: MenuId.MenubarEditMenu,
+				group: "1_do",
+				title: nls.localize(
+					{ key: "miUndo", comment: ["&& denotes a mnemonic"] },
+					"&&Undo",
+				),
+				order: 1,
+			},
+			{
+				menuId: MenuId.CommandPalette,
+				group: "",
+				title: nls.localize("undo", "Undo"),
+				order: 1,
+			},
+			{
+				menuId: MenuId.SimpleEditorContext,
+				group: "1_do",
+				title: nls.localize("undo", "Undo"),
+				order: 1,
+			},
+		],
+	}),
+);
 
 registerCommand(
 	new ProxyCommand(UndoCommand, {
@@ -976,32 +985,41 @@ registerCommand(
 	}),
 );
 
-export const RedoCommand = registerCommand(new MultiCommand({
-	id: 'redo',
-	precondition: undefined,
-	kbOpts: {
-		weight: KeybindingWeight.EditorCore,
-		primary: KeyMod.CtrlCmd | KeyCode.KeyY,
-		secondary: [KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyZ],
-		mac: { primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyZ }
-	},
-	menuOpts: [{
-		menuId: MenuId.MenubarEditMenu,
-		group: '1_do',
-		title: nls.localize({ key: 'miRedo', comment: ['&& denotes a mnemonic'] }, "&&Redo"),
-		order: 2
-	}, {
-		menuId: MenuId.CommandPalette,
-		group: '',
-		title: nls.localize('redo', "Redo"),
-		order: 1
-	}, {
-		menuId: MenuId.SimpleEditorContext,
-		group: '1_do',
-		title: nls.localize('redo', "Redo"),
-		order: 2
-	}]
-}));
+export const RedoCommand = registerCommand(
+	new MultiCommand({
+		id: "redo",
+		precondition: undefined,
+		kbOpts: {
+			weight: KeybindingWeight.EditorCore,
+			primary: KeyMod.CtrlCmd | KeyCode.KeyY,
+			secondary: [KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyZ],
+			mac: { primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyZ },
+		},
+		menuOpts: [
+			{
+				menuId: MenuId.MenubarEditMenu,
+				group: "1_do",
+				title: nls.localize(
+					{ key: "miRedo", comment: ["&& denotes a mnemonic"] },
+					"&&Redo",
+				),
+				order: 2,
+			},
+			{
+				menuId: MenuId.CommandPalette,
+				group: "",
+				title: nls.localize("redo", "Redo"),
+				order: 1,
+			},
+			{
+				menuId: MenuId.SimpleEditorContext,
+				group: "1_do",
+				title: nls.localize("redo", "Redo"),
+				order: 2,
+			},
+		],
+	}),
+);
 
 registerCommand(
 	new ProxyCommand(RedoCommand, {
@@ -1010,28 +1028,37 @@ registerCommand(
 	}),
 );
 
-export const SelectAllCommand = registerCommand(new MultiCommand({
-	id: 'editor.action.selectAll',
-	precondition: undefined,
-	kbOpts: {
-		weight: KeybindingWeight.EditorCore,
-		kbExpr: null,
-		primary: KeyMod.CtrlCmd | KeyCode.KeyA
-	},
-	menuOpts: [{
-		menuId: MenuId.MenubarSelectionMenu,
-		group: '1_basic',
-		title: nls.localize({ key: 'miSelectAll', comment: ['&& denotes a mnemonic'] }, "&&Select All"),
-		order: 1
-	}, {
-		menuId: MenuId.CommandPalette,
-		group: '',
-		title: nls.localize('selectAll', "Select All"),
-		order: 1
-	}, {
-		menuId: MenuId.SimpleEditorContext,
-		group: '9_select',
-		title: nls.localize('selectAll', "Select All"),
-		order: 1
-	}]
-}));
+export const SelectAllCommand = registerCommand(
+	new MultiCommand({
+		id: "editor.action.selectAll",
+		precondition: undefined,
+		kbOpts: {
+			weight: KeybindingWeight.EditorCore,
+			kbExpr: null,
+			primary: KeyMod.CtrlCmd | KeyCode.KeyA,
+		},
+		menuOpts: [
+			{
+				menuId: MenuId.MenubarSelectionMenu,
+				group: "1_basic",
+				title: nls.localize(
+					{ key: "miSelectAll", comment: ["&& denotes a mnemonic"] },
+					"&&Select All",
+				),
+				order: 1,
+			},
+			{
+				menuId: MenuId.CommandPalette,
+				group: "",
+				title: nls.localize("selectAll", "Select All"),
+				order: 1,
+			},
+			{
+				menuId: MenuId.SimpleEditorContext,
+				group: "9_select",
+				title: nls.localize("selectAll", "Select All"),
+				order: 1,
+			},
+		],
+	}),
+);

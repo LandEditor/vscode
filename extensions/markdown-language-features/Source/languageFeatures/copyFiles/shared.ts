@@ -226,7 +226,7 @@ interface UriListSnippetOptions {
 	 *
 	 * By default this is inferred from the uri. If you use `media`, we will insert the resource as an image, video, or audio.
 	 */
-	readonly linkKindHint?: vscode.DocumentDropOrPasteEditKind | 'media';
+	readonly linkKindHint?: vscode.DocumentDropOrPasteEditKind | "media";
 
 	readonly separator?: string;
 
@@ -294,9 +294,12 @@ export function createUriListSnippet(
 		if (desiredKind === DesiredLinkKind.Link) {
 			insertedLinkCount++;
 
-			snippet.appendText('[');
+			snippet.appendText("[");
 
-			snippet.appendPlaceholder(escapeBrackets(options?.placeholderText ?? 'text'), placeholderIndex);
+			snippet.appendPlaceholder(
+				escapeBrackets(options?.placeholderText ?? "text"),
+				placeholderIndex,
+			);
 
 			snippet.appendText(`](${escapeMarkdownLinkPath(mdPath)})`);
 		} else {
@@ -364,7 +367,10 @@ enum DesiredLinkKind {
 	Audio,
 }
 
-function getDesiredLinkKind(uri: vscode.Uri, options: UriListSnippetOptions | undefined): DesiredLinkKind {
+function getDesiredLinkKind(
+	uri: vscode.Uri,
+	options: UriListSnippetOptions | undefined,
+): DesiredLinkKind {
 	if (options?.linkKindHint instanceof vscode.DocumentDropOrPasteEditKind) {
 		if (linkEditKind.contains(options.linkKindHint)) {
 			return DesiredLinkKind.Link;
@@ -377,22 +383,31 @@ function getDesiredLinkKind(uri: vscode.Uri, options: UriListSnippetOptions | un
 		}
 	}
 
-	const normalizedExt = URI.Utils.extname(uri).toLowerCase().replace('.', '');
+	const normalizedExt = URI.Utils.extname(uri).toLowerCase().replace(".", "");
 
-	if (options?.linkKindHint === 'media' || mediaFileExtensions.has(normalizedExt)) {
+	if (
+		options?.linkKindHint === "media" ||
+		mediaFileExtensions.has(normalizedExt)
+	) {
 		switch (mediaFileExtensions.get(normalizedExt)) {
-			case MediaKind.Video: return DesiredLinkKind.Video;
+			case MediaKind.Video:
+				return DesiredLinkKind.Video;
 
-			case MediaKind.Audio: return DesiredLinkKind.Audio;
+			case MediaKind.Audio:
+				return DesiredLinkKind.Audio;
 
-			default: return DesiredLinkKind.Image;
+			default:
+				return DesiredLinkKind.Image;
 		}
 	}
 
 	return DesiredLinkKind.Link;
 }
 
-function getRelativeMdPath(dir: vscode.Uri | undefined, file: vscode.Uri): string | undefined {
+function getRelativeMdPath(
+	dir: vscode.Uri | undefined,
+	file: vscode.Uri,
+): string | undefined {
 	if (dir && dir.scheme === file.scheme && dir.authority === file.authority) {
 		if (file.scheme === Schemes.file) {
 			// On windows, we must use the native `path.relative` to generate the relative path

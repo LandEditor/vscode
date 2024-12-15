@@ -277,9 +277,7 @@ export class WalkThroughPart extends EditorPane {
 		this.content.addEventListener("click", (event) => {
 			for (
 				let node = event.target as HTMLElement;
-
 				node;
-
 				node = node.parentNode as HTMLElement
 			) {
 				if (isHTMLAnchorElement(node) && node.href) {

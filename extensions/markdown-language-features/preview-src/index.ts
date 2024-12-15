@@ -420,9 +420,7 @@ document.addEventListener("dblclick", (event) => {
 	// Ignore clicks on links
 	for (
 		let node = event.target as HTMLElement;
-
 		node;
-
 		node = node.parentNode as HTMLElement
 	) {
 		if (node.tagName === "A") {

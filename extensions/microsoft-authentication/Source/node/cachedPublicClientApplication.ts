@@ -63,9 +63,14 @@ export class CachedPublicClientApplication
 		system: {
 			loggerOptions: {
 				correlationId: `${this._clientId}] [${this._authority}`,
-				loggerCallback: (level, message, containsPii) => this._loggerOptions.loggerCallback(level, message, containsPii),
-				logLevel: LogLevel.Trace
-			}
+				loggerCallback: (level, message, containsPii) =>
+					this._loggerOptions.loggerCallback(
+						level,
+						message,
+						containsPii,
+					),
+				logLevel: LogLevel.Trace,
+			},
 		},
 		broker: {
 			nativeBrokerPlugin: new NativeBrokerPlugin(),
@@ -105,7 +110,10 @@ export class CachedPublicClientApplication
 		private readonly _logger: LogOutputChannel,
 	) {
 		// TODO:@TylerLeonhardt clean up old use of memento. Remove this in an iteration
-		this._globalMemento.update(`lastRemoval:${this._clientId}:${this._authority}`, undefined);
+		this._globalMemento.update(
+			`lastRemoval:${this._clientId}:${this._authority}`,
+			undefined,
+		);
 
 		this._pca = new PublicClientApplication(this._config);
 
@@ -139,29 +147,58 @@ export class CachedPublicClientApplication
 		this._disposable.dispose();
 	}
 
-	async acquireTokenSilent(request: SilentFlowRequest): Promise<AuthenticationResult> {
-		this._logger.debug(`[acquireTokenSilent] [${this._clientId}] [${this._authority}] [${request.scopes.join(' ')}] [${request.account.username}] starting...`);
-		let result = await this._sequencer.queue(() => this._pca.acquireTokenSilent(request));
-		this._logger.debug(`[acquireTokenSilent] [${this._clientId}] [${this._authority}] [${request.scopes.join(' ')}] [${request.account.username}] got result`);
+	async acquireTokenSilent(
+		request: SilentFlowRequest,
+	): Promise<AuthenticationResult> {
+		this._logger.debug(
+			`[acquireTokenSilent] [${this._clientId}] [${this._authority}] [${request.scopes.join(" ")}] [${request.account.username}] starting...`,
+		);
+		let result = await this._sequencer.queue(() =>
+			this._pca.acquireTokenSilent(request),
+		);
+		this._logger.debug(
+			`[acquireTokenSilent] [${this._clientId}] [${this._authority}] [${request.scopes.join(" ")}] [${request.account.username}] got result`,
+		);
 		// Check expiration of id token and if it's 5min before expiration, force a refresh.
 		// this is what MSAL does for access tokens already so we're just adding it for id tokens since we care about those.
-		const idTokenExpirationInSecs = (result.idTokenClaims as { exp?: number }).exp;
+		const idTokenExpirationInSecs = (
+			result.idTokenClaims as { exp?: number }
+		).exp;
 		if (idTokenExpirationInSecs) {
 			const fiveMinutesBefore = new Date(
-				(idTokenExpirationInSecs - 5 * 60) // subtract 5 minutes
-				* 1000 // convert to milliseconds
+				(idTokenExpirationInSecs - 5 * 60) * // subtract 5 minutes
+					1000, // convert to milliseconds
 			);
 			if (fiveMinutesBefore < new Date()) {
-				this._logger.debug(`[acquireTokenSilent] [${this._clientId}] [${this._authority}] [${request.scopes.join(' ')}] [${request.account.username}] id token is expired or about to expire. Forcing refresh...`);
-				result = await this._sequencer.queue(() => this._pca.acquireTokenSilent({ ...request, forceRefresh: true }));
-				this._logger.debug(`[acquireTokenSilent] [${this._clientId}] [${this._authority}] [${request.scopes.join(' ')}] [${request.account.username}] got refreshed result`);
+				this._logger.debug(
+					`[acquireTokenSilent] [${this._clientId}] [${this._authority}] [${request.scopes.join(" ")}] [${request.account.username}] id token is expired or about to expire. Forcing refresh...`,
+				);
+				result = await this._sequencer.queue(() =>
+					this._pca.acquireTokenSilent({
+						...request,
+						forceRefresh: true,
+					}),
+				);
+				this._logger.debug(
+					`[acquireTokenSilent] [${this._clientId}] [${this._authority}] [${request.scopes.join(" ")}] [${request.account.username}] got refreshed result`,
+				);
 			}
 		}
 
 		// this._setupRefresh(result);
-		if (result.account && !result.fromCache && this._verifyIfUsingBroker(result)) {
-			this._logger.debug(`[acquireTokenSilent] [${this._clientId}] [${this._authority}] [${request.scopes.join(' ')}] [${request.account.username}] firing event due to change`);
-			this._onDidAccountsChangeEmitter.fire({ added: [], changed: [result.account], deleted: [] });
+		if (
+			result.account &&
+			!result.fromCache &&
+			this._verifyIfUsingBroker(result)
+		) {
+			this._logger.debug(
+				`[acquireTokenSilent] [${this._clientId}] [${this._authority}] [${request.scopes.join(" ")}] [${request.account.username}] firing event due to change`,
+			);
+			this._onDidAccountsChangeEmitter.fire({
+				added: [],
+				changed: [result.account],
+				deleted: [],
+			});
 		}
 
 		return result;
@@ -180,11 +217,14 @@ export class CachedPublicClientApplication
 				cancellable: true,
 				title: l10n.t("Signing in to Microsoft..."),
 			},
-			(_process, token) => raceCancellationAndTimeoutError(
-				this._sequencer.queue(() => this._pca.acquireTokenInteractive(request)),
-				token,
-				1000 * 60 * 5
-			)
+			(_process, token) =>
+				raceCancellationAndTimeoutError(
+					this._sequencer.queue(() =>
+						this._pca.acquireTokenInteractive(request),
+					),
+					token,
+					1000 * 60 * 5,
+				),
 		);
 		// this._setupRefresh(result);
 		if (this._isBrokerAvailable) {
@@ -201,8 +241,12 @@ export class CachedPublicClientApplication
 	 * @returns an {@link AuthenticationResult} object that contains the result of the token acquisition operation.
 	 */
 	async acquireTokenByRefreshToken(request: RefreshTokenRequest) {
-		this._logger.debug(`[acquireTokenByRefreshToken] [${this._clientId}] [${this._authority}] [${request.scopes.join(' ')}]`);
-		const result = await this._sequencer.queue(() => this._pca.acquireTokenByRefreshToken(request));
+		this._logger.debug(
+			`[acquireTokenByRefreshToken] [${this._clientId}] [${this._authority}] [${request.scopes.join(" ")}]`,
+		);
+		const result = await this._sequencer.queue(() =>
+			this._pca.acquireTokenByRefreshToken(request),
+		);
 		if (result) {
 			// this._setupRefresh(result);
 			if (this._isBrokerAvailable && result.account) {
@@ -220,14 +264,20 @@ export class CachedPublicClientApplication
 		if (this._isBrokerAvailable) {
 			return this._accountAccess.setAllowedAccess(account, false);
 		}
-		return this._sequencer.queue(() => this._pca.getTokenCache().removeAccount(account));
+		return this._sequencer.queue(() =>
+			this._pca.getTokenCache().removeAccount(account),
+		);
 	}
 
 	private _registerOnSecretStorageChanged() {
 		if (this._isBrokerAvailable) {
-			return this._accountAccess.onDidAccountAccessChange(() => this._sequencer.queue(() => this._update()));
+			return this._accountAccess.onDidAccountAccessChange(() =>
+				this._sequencer.queue(() => this._update()),
+			);
 		}
-		return this._secretStorageCachePlugin.onDidChange(() => this._sequencer.queue(() => this._update()));
+		return this._secretStorageCachePlugin.onDidChange(() =>
+			this._sequencer.queue(() => this._update()),
+		);
 	}
 
 	private _lastSeen = new Map<string, number>();
@@ -263,7 +313,9 @@ export class CachedPublicClientApplication
 	private async _update() {
 		const before = this._accounts;
 
-		this._logger.debug(`[update] [${this._clientId}] [${this._authority}] CachedPublicClientApplication update before: ${before.length}`);
+		this._logger.debug(
+			`[update] [${this._clientId}] [${this._authority}] CachedPublicClientApplication update before: ${before.length}`,
+		);
 		// Clear in-memory cache so we know we're getting account data from the SecretStorage
 		this._pca.clearCache();
 

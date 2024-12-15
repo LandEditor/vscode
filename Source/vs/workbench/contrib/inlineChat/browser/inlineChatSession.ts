@@ -214,9 +214,21 @@ export class SessionWholeRange {
 		const newDeco: IModelDeltaDecoration[] = [];
 
 		for (const { modified } of changes) {
-			const modifiedRange = this._textModel.validateRange(modified.isEmpty
-				? new Range(modified.startLineNumber, 1, modified.startLineNumber, Number.MAX_SAFE_INTEGER)
-				: new Range(modified.startLineNumber, 1, modified.endLineNumberExclusive - 1, Number.MAX_SAFE_INTEGER));
+			const modifiedRange = this._textModel.validateRange(
+				modified.isEmpty
+					? new Range(
+							modified.startLineNumber,
+							1,
+							modified.startLineNumber,
+							Number.MAX_SAFE_INTEGER,
+						)
+					: new Range(
+							modified.startLineNumber,
+							1,
+							modified.endLineNumberExclusive - 1,
+							Number.MAX_SAFE_INTEGER,
+						),
+			);
 
 			newDeco.push({
 				range: modifiedRange,

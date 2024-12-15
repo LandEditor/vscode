@@ -162,7 +162,7 @@ export interface ICommandDetectionCapability {
 	readonly executingCommand: string | undefined;
 
 	readonly executingCommandObject: ITerminalCommand | undefined;
-	readonly executingCommandConfidence: 'low' | 'medium' | 'high' | undefined;
+	readonly executingCommandConfidence: "low" | "medium" | "high" | undefined;
 	/** The current cwd at the cursor's position. */
 	readonly cwd: string | undefined;
 

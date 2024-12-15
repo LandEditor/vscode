@@ -100,10 +100,7 @@ function compareSourceControlHistoryItemRef(
 	return ref1.name.localeCompare(ref2.name);
 }
 export class GitHistoryProvider
-	implements
-		SourceControlHistoryProvider,
-		FileDecorationProvider,
-		IDisposable
+	implements SourceControlHistoryProvider, FileDecorationProvider, IDisposable
 {
 	private readonly _onDidChangeDecorations = new EventEmitter<Uri[]>();
 

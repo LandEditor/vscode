@@ -102,7 +102,6 @@ export const colorizeTestMessageInEditor = (
 				for (
 					let i = 0;
 					!graphemes.eol();
-
 					i += graphemes.nextGraphemeLength()
 				) {
 					if (part.str[i] === "\n") {

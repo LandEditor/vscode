@@ -1474,7 +1474,7 @@ class InputWithButton implements IDisposable {
 	}
 
 	setStopButton() {
-		this._buttonState = 'stop';
+		this._buttonState = "stop";
 		this._stopIcon ??= renderIcon(Codicon.stopCircle);
 		dom.clearNode(this.button);
 

@@ -462,9 +462,7 @@ export class TokenizationTextModelPart
 
 		for (
 			let i = tokenIndex;
-
 			i >= 0 && lineTokens.getLanguageId(i) === languageId;
-
 			i--
 		) {
 			startOffset = lineTokens.getStartOffset(i);
@@ -475,9 +473,7 @@ export class TokenizationTextModelPart
 
 		for (
 			let i = tokenIndex, tokenCount = lineTokens.getCount();
-
 			i < tokenCount && lineTokens.getLanguageId(i) === languageId;
-
 			i++
 		) {
 			endOffset = lineTokens.getEndOffset(i);

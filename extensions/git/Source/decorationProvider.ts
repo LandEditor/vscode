@@ -409,7 +409,6 @@ class GitIncomingChangesFileDecorationProvider
 	}
 }
 export class GitDecorations {
-
 	private enabled = false;
 	private disposables: Disposable[] = [];
 
@@ -431,8 +430,8 @@ export class GitDecorations {
 	}
 
 	private update(): void {
-		const config = workspace.getConfiguration('git');
-		const enabled = config.get<boolean>('decorations.enabled') === true;
+		const config = workspace.getConfiguration("git");
+		const enabled = config.get<boolean>("decorations.enabled") === true;
 		if (this.enabled === enabled) {
 			return;
 		}

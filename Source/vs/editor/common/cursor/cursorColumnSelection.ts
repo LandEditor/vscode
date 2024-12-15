@@ -158,9 +158,7 @@ export class ColumnSelection {
 
 		for (
 			let lineNumber = minViewLineNumber;
-
 			lineNumber <= maxViewLineNumber;
-
 			lineNumber++
 		) {
 			const lineMaxViewColumn = model.getLineMaxColumn(lineNumber);

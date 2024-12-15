@@ -5,24 +5,48 @@
 
 /* eslint-disable local/code-no-native-private */
 
-import type * as vscode from 'vscode';
-import { asArray, coalesceInPlace, equals } from '../../../base/common/arrays.js';
-import { illegalArgument } from '../../../base/common/errors.js';
-import { IRelativePattern } from '../../../base/common/glob.js';
-import { MarkdownString as BaseMarkdownString, MarkdownStringTrustedOptions } from '../../../base/common/htmlContent.js';
-import { ResourceMap } from '../../../base/common/map.js';
-import { MarshalledId } from '../../../base/common/marshallingIds.js';
-import { Mimes, normalizeMimeType } from '../../../base/common/mime.js';
-import { nextCharLength } from '../../../base/common/strings.js';
-import { isNumber, isObject, isString, isStringArray } from '../../../base/common/types.js';
-import { URI } from '../../../base/common/uri.js';
-import { generateUuid } from '../../../base/common/uuid.js';
-import { ExtensionIdentifier, IExtensionDescription } from '../../../platform/extensions/common/extensions.js';
-import { FileSystemProviderErrorCode, markAsFileSystemProviderError } from '../../../platform/files/common/files.js';
-import { RemoteAuthorityResolverErrorCode } from '../../../platform/remote/common/remoteAuthorityResolver.js';
-import { CellEditType, ICellMetadataEdit, IDocumentMetadataEdit, isTextStreamMime } from '../../contrib/notebook/common/notebookCommon.js';
-import { IRelativePatternDto } from './extHost.protocol.js';
-import { TextEditorSelectionSource } from '../../../platform/editor/common/editor.js';
+import type * as vscode from "vscode";
+
+import {
+	asArray,
+	coalesceInPlace,
+	equals,
+} from "../../../base/common/arrays.js";
+import { illegalArgument } from "../../../base/common/errors.js";
+import { IRelativePattern } from "../../../base/common/glob.js";
+import {
+	MarkdownString as BaseMarkdownString,
+	MarkdownStringTrustedOptions,
+} from "../../../base/common/htmlContent.js";
+import { ResourceMap } from "../../../base/common/map.js";
+import { MarshalledId } from "../../../base/common/marshallingIds.js";
+import { Mimes, normalizeMimeType } from "../../../base/common/mime.js";
+import { nextCharLength } from "../../../base/common/strings.js";
+import {
+	isNumber,
+	isObject,
+	isString,
+	isStringArray,
+} from "../../../base/common/types.js";
+import { URI } from "../../../base/common/uri.js";
+import { generateUuid } from "../../../base/common/uuid.js";
+import { TextEditorSelectionSource } from "../../../platform/editor/common/editor.js";
+import {
+	ExtensionIdentifier,
+	IExtensionDescription,
+} from "../../../platform/extensions/common/extensions.js";
+import {
+	FileSystemProviderErrorCode,
+	markAsFileSystemProviderError,
+} from "../../../platform/files/common/files.js";
+import { RemoteAuthorityResolverErrorCode } from "../../../platform/remote/common/remoteAuthorityResolver.js";
+import {
+	CellEditType,
+	ICellMetadataEdit,
+	IDocumentMetadataEdit,
+	isTextStreamMime,
+} from "../../contrib/notebook/common/notebookCommon.js";
+import { IRelativePatternDto } from "./extHost.protocol.js";
 
 /**
  * @deprecated
@@ -2613,11 +2637,15 @@ export enum DecorationRangeBehavior {
 }
 
 export namespace TextEditorSelectionChangeKind {
-	export function fromValue(s: TextEditorSelectionSource | string | undefined) {
+	export function fromValue(
+		s: TextEditorSelectionSource | string | undefined,
+	) {
 		switch (s) {
-			case 'keyboard': return TextEditorSelectionChangeKind.Keyboard;
-			case 'mouse': return TextEditorSelectionChangeKind.Mouse;
-			case 'api':
+			case "keyboard":
+				return TextEditorSelectionChangeKind.Keyboard;
+			case "mouse":
+				return TextEditorSelectionChangeKind.Mouse;
+			case "api":
 			case TextEditorSelectionSource.PROGRAMMATIC:
 			case TextEditorSelectionSource.JUMP:
 			case TextEditorSelectionSource.NAVIGATION:
@@ -5630,7 +5658,7 @@ export class TestRunProfileBase {
 		public readonly controllerId: string,
 		public readonly profileId: number,
 		public readonly kind: vscode.TestRunProfileKind,
-	) { }
+	) {}
 }
 
 @es5ClassCompat
@@ -5771,8 +5799,7 @@ export class FileCoverage implements vscode.FileCoverage {
 		public branchCoverage?: vscode.TestCoverageCount,
 		public declarationCoverage?: vscode.TestCoverageCount,
 		public includesTests: vscode.TestItem[] = [],
-	) {
-	}
+	) {}
 }
 
 export class StatementCoverage implements vscode.StatementCoverage {

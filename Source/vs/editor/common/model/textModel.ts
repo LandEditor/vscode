@@ -2062,9 +2062,7 @@ export class TextModel
 
 					for (
 						let j = 0, lenJ = incomingEdits.length;
-
 						j < lenJ;
-
 						j++
 					) {
 						const editRange = incomingEdits[j].range;
@@ -2093,9 +2091,7 @@ export class TextModel
 			if (editsAreNearCursors) {
 				for (
 					let i = 0, len = this._trimAutoWhitespaceLines.length;
-
 					i < len;
-
 					i++
 				) {
 					const trimLineNumber = this._trimAutoWhitespaceLines[i];
@@ -2106,9 +2102,7 @@ export class TextModel
 
 					for (
 						let j = 0, lenJ = incomingEdits.length;
-
 						j < lenJ;
-
 						j++
 					) {
 						const editRange = incomingEdits[j].range;

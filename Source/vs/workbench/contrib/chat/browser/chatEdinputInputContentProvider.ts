@@ -3,24 +3,34 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from '../../../../base/common/lifecycle.js';
-import { URI } from '../../../../base/common/uri.js';
-import { ILanguageService } from '../../../../editor/common/languages/language.js';
-import { ITextModel } from '../../../../editor/common/model.js';
-import { IModelService } from '../../../../editor/common/services/model.js';
-import { ITextModelContentProvider, ITextModelService } from '../../../../editor/common/services/resolverService.js';
-import { ChatInputPart } from './chatInputPart.js';
+import { Disposable } from "../../../../base/common/lifecycle.js";
+import { URI } from "../../../../base/common/uri.js";
+import { ILanguageService } from "../../../../editor/common/languages/language.js";
+import { ITextModel } from "../../../../editor/common/model.js";
+import { IModelService } from "../../../../editor/common/services/model.js";
+import {
+	ITextModelContentProvider,
+	ITextModelService,
+} from "../../../../editor/common/services/resolverService.js";
+import { ChatInputPart } from "./chatInputPart.js";
 
-
-export class ChatInputBoxContentProvider extends Disposable implements ITextModelContentProvider {
+export class ChatInputBoxContentProvider
+	extends Disposable
+	implements ITextModelContentProvider
+{
 	constructor(
 		@ITextModelService textModelService: ITextModelService,
 		@IModelService private readonly modelService: IModelService,
-		@ILanguageService private readonly languageService: ILanguageService
+		@ILanguageService private readonly languageService: ILanguageService,
 	) {
 		super();
 
-		this._register(textModelService.registerTextModelContentProvider(ChatInputPart.INPUT_SCHEME, this));
+		this._register(
+			textModelService.registerTextModelContentProvider(
+				ChatInputPart.INPUT_SCHEME,
+				this,
+			),
+		);
 	}
 
 	async provideTextContent(resource: URI): Promise<ITextModel | null> {
@@ -30,6 +40,10 @@ export class ChatInputBoxContentProvider extends Disposable implements ITextMode
 			return existing;
 		}
 
-		return this.modelService.createModel('', this.languageService.createById('chatinput'), resource);
+		return this.modelService.createModel(
+			"",
+			this.languageService.createById("chatinput"),
+			resource,
+		);
 	}
 }

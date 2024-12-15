@@ -255,9 +255,7 @@ export class WindowsKeyboardMapper implements IKeyboardMapper {
 
 		for (
 			let scanCode = ScanCode.None;
-
 			scanCode < ScanCode.MAX_VALUE;
-
 			scanCode++
 		) {
 			const immutableKeyCode = IMMUTABLE_CODE_TO_KEY_CODE[scanCode];
@@ -491,9 +489,7 @@ export class WindowsKeyboardMapper implements IKeyboardMapper {
 
 		for (
 			let scanCode = ScanCode.None;
-
 			scanCode < ScanCode.MAX_VALUE;
-
 			scanCode++
 		) {
 			if (

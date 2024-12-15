@@ -367,9 +367,7 @@ export class LineTokens implements IViewLineTokens {
 
 		for (
 			let tokenIndex = startTokenIndex;
-
 			tokenIndex <= endTokenIndex;
-
 			tokenIndex++
 		) {
 			const tokenRange = new OffsetRange(
@@ -453,9 +451,7 @@ class SliceLineTokens implements IViewLineTokens {
 
 		for (
 			let i = this._firstTokenIndex, len = source.getCount();
-
 			i < len;
-
 			i++
 		) {
 			const tokenStartOffset = source.getStartOffset(i);

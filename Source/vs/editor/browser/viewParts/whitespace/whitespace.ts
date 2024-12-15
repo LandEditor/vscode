@@ -149,9 +149,7 @@ export class WhitespaceOverlay extends DynamicViewOverlay {
 
 		for (
 			let lineNumber = ctx.viewportData.startLineNumber;
-
 			lineNumber <= ctx.viewportData.endLineNumber;
-
 			lineNumber++
 		) {
 			const lineIndex = lineNumber - ctx.viewportData.startLineNumber;

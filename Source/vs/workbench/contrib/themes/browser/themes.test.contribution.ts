@@ -155,9 +155,7 @@ class Snapper {
 
 			for (
 				let j = 0, lenJ = tokenizationResult.tokens.length >>> 1;
-
 				j < lenJ;
-
 				j++
 			) {
 				const startOffset = tokenizationResult.tokens[j << 1];
@@ -236,9 +234,7 @@ class Snapper {
 
 			for (
 				let j = 0, lenJ = tokenizationResult.tokens.length;
-
 				j < lenJ;
-
 				j++
 			) {
 				const token = tokenizationResult.tokens[j];

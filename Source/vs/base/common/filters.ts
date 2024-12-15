@@ -927,9 +927,7 @@ export function fuzzyScore(
 	// There will be a match, fill in tables
 	for (
 		row = 1, patternPos = patternStart;
-
 		patternPos < patternLen;
-
 		row++, patternPos++
 	) {
 		// Reduce search space to possible matching word positions and to possible access from next row
@@ -944,9 +942,7 @@ export function fuzzyScore(
 
 		for (
 			column = minWordMatchPos - wordStart + 1, wordPos = minWordMatchPos;
-
 			wordPos < nextMaxWordMatchPos;
-
 			column++, wordPos++
 		) {
 			let score = Number.MIN_SAFE_INTEGER;
@@ -1286,9 +1282,7 @@ function fuzzyScoreWithPermutations(
 
 		for (
 			let movingPatternPos = patternPos + 1;
-
 			movingPatternPos < tries;
-
 			movingPatternPos++
 		) {
 			const newPattern = nextTypoPermutation(pattern, movingPatternPos);

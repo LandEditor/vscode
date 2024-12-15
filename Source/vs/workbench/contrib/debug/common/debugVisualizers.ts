@@ -148,7 +148,7 @@ const emptyRef: IReference<DebugVisualizer[]> = {
 };
 
 export class DebugVisualizerService implements IDebugVisualizerService {
-	public declare readonly _serviceBrand: undefined;
+	declare public readonly _serviceBrand: undefined;
 
 	private readonly handles = new Map<
 		/* extId + \0 + vizId */ string,
@@ -394,9 +394,7 @@ export class DebugVisualizerService implements IDebugVisualizerService {
 
 		for (
 			let p: IExpressionContainer = variable;
-
 			p instanceof Variable;
-
 			p = p.parent
 		) {
 			if (p.parent instanceof Scope) {

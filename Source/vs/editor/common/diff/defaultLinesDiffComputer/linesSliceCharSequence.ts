@@ -32,9 +32,7 @@ export class LinesSliceCharSequence implements ISequence {
 
 		for (
 			let lineNumber = this.range.startLineNumber;
-
 			lineNumber <= this.range.endLineNumber;
-
 			lineNumber++
 		) {
 			let line = lines[lineNumber - 1];

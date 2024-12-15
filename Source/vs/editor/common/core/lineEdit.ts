@@ -226,9 +226,7 @@ export class LineEdit {
 			for (const edit of edits) {
 				for (
 					let i = Math.max(1, lastLineNumber);
-
 					i < edit.lineRange.startLineNumber;
-
 					i++
 				) {
 					pushLine(
@@ -269,9 +267,7 @@ export class LineEdit {
 
 			for (
 				let i = lastLineNumber;
-
 				i <= Math.min(lastLineNumber + 2, originalLines.length);
-
 				i++
 			) {
 				pushLine(i, i + lineDelta, "unmodified", originalLines[i - 1]);

@@ -907,9 +907,7 @@ export class LinesLayout {
 		// Figure out how far the lines go
 		for (
 			let lineNumber = startLineNumber;
-
 			lineNumber <= endLineNumber;
-
 			lineNumber++
 		) {
 			if (centeredLineNumber === -1) {

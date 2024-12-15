@@ -17880,7 +17880,10 @@ declare module "vscode" {
 		/**
 		 * Provide a list of ranges which allow new comment threads creation or null for a given document
 		 */
-		provideCommentingRanges(document: TextDocument, token: CancellationToken): ProviderResult<Range[] | CommentingRanges>;
+		provideCommentingRanges(
+			document: TextDocument,
+			token: CancellationToken,
+		): ProviderResult<Range[] | CommentingRanges>;
 	}
 
 	/**

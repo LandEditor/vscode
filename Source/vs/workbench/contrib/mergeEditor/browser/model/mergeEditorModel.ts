@@ -297,9 +297,7 @@ export class MergeEditorModel extends EditorModel {
 		function appendLinesToResult(source: string[], lineRange: LineRange) {
 			for (
 				let i = lineRange.startLineNumber;
-
 				i < lineRange.endLineNumberExclusive;
-
 				i++
 			) {
 				resultLines.push(source[i - 1]);
@@ -912,9 +910,7 @@ export class MergeEditorModel extends EditorModel {
 		function appendLinesToResult(source: string[], lineRange: LineRange) {
 			for (
 				let i = lineRange.startLineNumber;
-
 				i < lineRange.endLineNumberExclusive;
-
 				i++
 			) {
 				outputLines.push(source[i - 1]);

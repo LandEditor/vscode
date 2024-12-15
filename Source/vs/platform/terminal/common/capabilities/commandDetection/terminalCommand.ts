@@ -291,9 +291,7 @@ export class TerminalCommand implements ITerminalCommand {
 		if (outputMatcher.anchor === "bottom") {
 			for (
 				let i = endLine - (outputMatcher.offset || 0);
-
 				i >= startLine;
-
 				i--
 			) {
 				let wrappedLineStart = i;
@@ -329,9 +327,7 @@ export class TerminalCommand implements ITerminalCommand {
 		} else {
 			for (
 				let i = startLine + (outputMatcher.offset || 0);
-
 				i < endLine;
-
 				i++
 			) {
 				const wrappedLineStart = i;
@@ -596,9 +592,7 @@ function extractCommandLine(
 
 	for (
 		let i = commandStartMarker.line;
-
 		i <= commandExecutedMarker.line;
-
 		i++
 	) {
 		const line = buffer.getLine(i);

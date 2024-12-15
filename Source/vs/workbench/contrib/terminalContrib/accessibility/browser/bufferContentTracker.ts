@@ -193,9 +193,7 @@ export class BufferContentTracker extends Disposable {
 
 		for (
 			let i = buffer.baseY;
-
 			i < buffer.baseY + this._xterm.raw.rows;
-
 			i++
 		) {
 			const line = buffer.getLine(i);

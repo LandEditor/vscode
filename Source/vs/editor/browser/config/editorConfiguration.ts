@@ -3,26 +3,42 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as browser from '../../../base/browser/browser.js';
-import * as arrays from '../../../base/common/arrays.js';
-import { Emitter, Event } from '../../../base/common/event.js';
-import { Disposable } from '../../../base/common/lifecycle.js';
-import * as objects from '../../../base/common/objects.js';
-import * as platform from '../../../base/common/platform.js';
-import { ElementSizeObserver } from './elementSizeObserver.js';
-import { FontMeasurements } from './fontMeasurements.js';
-import { migrateOptions } from './migrateOptions.js';
-import { TabFocus } from './tabFocus.js';
-import { ComputeOptionsMemory, ConfigurationChangedEvent, EditorOption, editorOptionsRegistry, FindComputedEditorOptionValueById, IComputedEditorOptions, IEditorOptions, IEnvironmentalOptions } from '../../common/config/editorOptions.js';
-import { EditorZoom } from '../../common/config/editorZoom.js';
-import { BareFontInfo, FontInfo, IValidatedEditorOptions } from '../../common/config/fontInfo.js';
-import { IDimension } from '../../common/core/dimension.js';
-import { IEditorConfiguration } from '../../common/config/editorConfiguration.js';
-import { AccessibilitySupport, IAccessibilityService } from '../../../platform/accessibility/common/accessibility.js';
-import { getWindow, getWindowById } from '../../../base/browser/dom.js';
-import { PixelRatio } from '../../../base/browser/pixelRatio.js';
-import { MenuId } from '../../../platform/actions/common/actions.js';
-import { InputMode } from '../../common/inputMode.js';
+import * as browser from "../../../base/browser/browser.js";
+import { getWindow, getWindowById } from "../../../base/browser/dom.js";
+import { PixelRatio } from "../../../base/browser/pixelRatio.js";
+import * as arrays from "../../../base/common/arrays.js";
+import { Emitter, Event } from "../../../base/common/event.js";
+import { Disposable } from "../../../base/common/lifecycle.js";
+import * as objects from "../../../base/common/objects.js";
+import * as platform from "../../../base/common/platform.js";
+import {
+	AccessibilitySupport,
+	IAccessibilityService,
+} from "../../../platform/accessibility/common/accessibility.js";
+import { MenuId } from "../../../platform/actions/common/actions.js";
+import { IEditorConfiguration } from "../../common/config/editorConfiguration.js";
+import {
+	ComputeOptionsMemory,
+	ConfigurationChangedEvent,
+	EditorOption,
+	editorOptionsRegistry,
+	FindComputedEditorOptionValueById,
+	IComputedEditorOptions,
+	IEditorOptions,
+	IEnvironmentalOptions,
+} from "../../common/config/editorOptions.js";
+import { EditorZoom } from "../../common/config/editorZoom.js";
+import {
+	BareFontInfo,
+	FontInfo,
+	IValidatedEditorOptions,
+} from "../../common/config/fontInfo.js";
+import { IDimension } from "../../common/core/dimension.js";
+import { InputMode } from "../../common/inputMode.js";
+import { ElementSizeObserver } from "./elementSizeObserver.js";
+import { FontMeasurements } from "./fontMeasurements.js";
+import { migrateOptions } from "./migrateOptions.js";
+import { TabFocus } from "./tabFocus.js";
 
 export interface IEditorConstructionOptions extends IEditorOptions {
 	/**
@@ -118,13 +134,31 @@ export class EditorConfiguration
 			this._containerObserver.startObserving();
 		}
 
-		this._register(EditorZoom.onDidChangeZoomLevel(() => this._recomputeOptions()));
-		this._register(TabFocus.onDidChangeTabFocus(() => this._recomputeOptions()));
-		this._register(this._containerObserver.onDidChange(() => this._recomputeOptions()));
-		this._register(FontMeasurements.onDidChange(() => this._recomputeOptions()));
-		this._register(PixelRatio.getInstance(getWindow(container)).onDidChange(() => this._recomputeOptions()));
-		this._register(this._accessibilityService.onDidChangeScreenReaderOptimized(() => this._recomputeOptions()));
-		this._register(InputMode.onDidChangeInputMode(() => this._recomputeOptions()));
+		this._register(
+			EditorZoom.onDidChangeZoomLevel(() => this._recomputeOptions()),
+		);
+		this._register(
+			TabFocus.onDidChangeTabFocus(() => this._recomputeOptions()),
+		);
+		this._register(
+			this._containerObserver.onDidChange(() => this._recomputeOptions()),
+		);
+		this._register(
+			FontMeasurements.onDidChange(() => this._recomputeOptions()),
+		);
+		this._register(
+			PixelRatio.getInstance(getWindow(container)).onDidChange(() =>
+				this._recomputeOptions(),
+			),
+		);
+		this._register(
+			this._accessibilityService.onDidChangeScreenReaderOptimized(() =>
+				this._recomputeOptions(),
+			),
+		);
+		this._register(
+			InputMode.onDidChangeInputMode(() => this._recomputeOptions()),
+		);
 	}
 
 	private _recomputeOptions(): void {

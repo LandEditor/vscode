@@ -55,9 +55,7 @@ export class LineRangeFragment {
 
 		for (
 			let i = range.startLineNumber - 1;
-
 			i < range.endLineNumberExclusive - 1;
-
 			i++
 		) {
 			const line = lines[i];

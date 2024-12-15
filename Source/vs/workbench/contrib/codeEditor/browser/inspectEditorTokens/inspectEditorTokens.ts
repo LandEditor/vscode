@@ -264,9 +264,7 @@ function renderTokenText(tokenText: string): string {
 
 	for (
 		let charIndex = 0, len = tokenText.length;
-
 		charIndex < len;
-
 		charIndex++
 	) {
 		const charCode = tokenText.charCodeAt(charIndex);
@@ -711,9 +709,7 @@ class InspectEditorTokensWidget extends Disposable implements IContentWidget {
 
 			for (
 				let i = textMateTokenInfo.token.scopes.length - 1;
-
 				i >= 0;
-
 				i--
 			) {
 				scopes.push(textMateTokenInfo.token.scopes[i]);
@@ -1216,10 +1212,8 @@ class InspectEditorTokensWidget extends Disposable implements IContentWidget {
 
 				for (
 					let modifierIndex = 0;
-
 					modifierSet > 0 &&
 					modifierIndex < semanticTokens.legend.tokenModifiers.length;
-
 					modifierIndex++
 				) {
 					if (modifierSet & 1) {

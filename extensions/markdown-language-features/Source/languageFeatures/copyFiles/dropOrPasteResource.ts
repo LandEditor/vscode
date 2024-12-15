@@ -43,9 +43,7 @@ enum CopyFilesSettings {
  * - Media data in the data transfer, such as `image/png`.
  */
 class ResourcePasteOrDropProvider
-	implements
-		vscode.DocumentPasteEditProvider,
-		vscode.DocumentDropEditProvider
+	implements vscode.DocumentPasteEditProvider, vscode.DocumentDropEditProvider
 {
 	public static readonly mimeTypes = [
 		Mime.textUriList,
@@ -262,7 +260,9 @@ class ResourcePasteOrDropProvider
 			}
 		}
 
-		const edit = createInsertUriListEdit(document, ranges, uriList, { linkKindHint: context?.only });
+		const edit = createInsertUriListEdit(document, ranges, uriList, {
+			linkKindHint: context?.only,
+		});
 
 		if (!edit) {
 			return;

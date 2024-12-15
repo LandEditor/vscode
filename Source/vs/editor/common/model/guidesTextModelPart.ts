@@ -89,9 +89,7 @@ export class GuidesTextModelPart
 				// must find previous line with content
 				for (
 					let lineIndex = lineNumber - 2;
-
 					lineIndex >= 0;
-
 					lineIndex--
 				) {
 					const indent = this._computeIndentLevel(lineIndex);
@@ -113,9 +111,7 @@ export class GuidesTextModelPart
 				// must find next line with content
 				for (
 					let lineIndex = lineNumber;
-
 					lineIndex < lineCount;
-
 					lineIndex++
 				) {
 					const indent = this._computeIndentLevel(lineIndex);
@@ -147,9 +143,7 @@ export class GuidesTextModelPart
 				// must find previous line with content
 				for (
 					let lineIndex = lineNumber - 2;
-
 					lineIndex >= 0;
-
 					lineIndex--
 				) {
 					const indent = this._computeIndentLevel(lineIndex);
@@ -175,9 +169,7 @@ export class GuidesTextModelPart
 				// must find next line with content
 				for (
 					let lineIndex = lineNumber;
-
 					lineIndex < lineCount;
-
 					lineIndex++
 				) {
 					const indent = this._computeIndentLevel(lineIndex);
@@ -373,9 +365,7 @@ export class GuidesTextModelPart
 
 		for (
 			let lineNumber = startLineNumber;
-
 			lineNumber <= endLineNumber;
-
 			lineNumber++
 		) {
 			result.push([]);
@@ -542,9 +532,7 @@ export class GuidesTextModelPart
 
 			for (
 				let l = visibleGuideStartLineNumber;
-
 				l < visibleGuideEndLineNumber + offset;
-
 				l++
 			) {
 				result[l - startLineNumber].push(
@@ -652,9 +640,7 @@ export class GuidesTextModelPart
 
 		for (
 			let lineNumber = startLineNumber;
-
 			lineNumber <= endLineNumber;
-
 			lineNumber++
 		) {
 			const resultIndex = lineNumber - startLineNumber;
@@ -682,9 +668,7 @@ export class GuidesTextModelPart
 				// must find previous line with content
 				for (
 					let lineIndex = lineNumber - 2;
-
 					lineIndex >= 0;
-
 					lineIndex--
 				) {
 					const indent = this._computeIndentLevel(lineIndex);
@@ -710,9 +694,7 @@ export class GuidesTextModelPart
 				// must find next line with content
 				for (
 					let lineIndex = lineNumber;
-
 					lineIndex < lineCount;
-
 					lineIndex++
 				) {
 					const indent = this._computeIndentLevel(lineIndex);

@@ -3,26 +3,78 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { asArray } from '../../../../base/common/arrays.js';
-import { DeferredPromise } from '../../../../base/common/async.js';
-import { Emitter, Event } from '../../../../base/common/event.js';
-import { IMarkdownString, MarkdownString, isMarkdownString } from '../../../../base/common/htmlContent.js';
-import { Disposable } from '../../../../base/common/lifecycle.js';
-import { revive } from '../../../../base/common/marshalling.js';
-import { equals } from '../../../../base/common/objects.js';
-import { basename, isEqual } from '../../../../base/common/resources.js';
-import { ThemeIcon } from '../../../../base/common/themables.js';
-import { URI, UriComponents, UriDto, isUriComponents } from '../../../../base/common/uri.js';
-import { generateUuid } from '../../../../base/common/uuid.js';
-import { IOffsetRange, OffsetRange } from '../../../../editor/common/core/offsetRange.js';
-import { IRange } from '../../../../editor/common/core/range.js';
-import { Location, SymbolKind, TextEdit } from '../../../../editor/common/languages.js';
-import { localize } from '../../../../nls.js';
-import { ILogService } from '../../../../platform/log/common/log.js';
-import { ChatAgentLocation, IChatAgentCommand, IChatAgentData, IChatAgentResult, IChatAgentService, IChatWelcomeMessageContent, reviveSerializedAgent } from './chatAgents.js';
-import { ChatRequestTextPart, IParsedChatRequest, reviveParsedChatRequest } from './chatParserTypes.js';
-import { ChatAgentVoteDirection, ChatAgentVoteDownReason, IChatAgentMarkdownContentWithVulnerability, IChatCodeCitation, IChatCommandButton, IChatConfirmation, IChatContentInlineReference, IChatContentReference, IChatFollowup, IChatLocationData, IChatMarkdownContent, IChatProgress, IChatProgressMessage, IChatResponseCodeblockUriPart, IChatResponseProgressFileTreeData, IChatTask, IChatTextEdit, IChatToolInvocation, IChatToolInvocationSerialized, IChatTreeData, IChatUsedContext, IChatWarningMessage, isIUsedContext } from './chatService.js';
-import { IChatRequestVariableValue } from './chatVariables.js';
+import { asArray } from "../../../../base/common/arrays.js";
+import { DeferredPromise } from "../../../../base/common/async.js";
+import { Emitter, Event } from "../../../../base/common/event.js";
+import {
+	IMarkdownString,
+	isMarkdownString,
+	MarkdownString,
+} from "../../../../base/common/htmlContent.js";
+import { Disposable } from "../../../../base/common/lifecycle.js";
+import { revive } from "../../../../base/common/marshalling.js";
+import { equals } from "../../../../base/common/objects.js";
+import { basename, isEqual } from "../../../../base/common/resources.js";
+import { ThemeIcon } from "../../../../base/common/themables.js";
+import {
+	isUriComponents,
+	URI,
+	UriComponents,
+	UriDto,
+} from "../../../../base/common/uri.js";
+import { generateUuid } from "../../../../base/common/uuid.js";
+import {
+	IOffsetRange,
+	OffsetRange,
+} from "../../../../editor/common/core/offsetRange.js";
+import { IRange } from "../../../../editor/common/core/range.js";
+import {
+	Location,
+	SymbolKind,
+	TextEdit,
+} from "../../../../editor/common/languages.js";
+import { localize } from "../../../../nls.js";
+import { ILogService } from "../../../../platform/log/common/log.js";
+import {
+	ChatAgentLocation,
+	IChatAgentCommand,
+	IChatAgentData,
+	IChatAgentResult,
+	IChatAgentService,
+	IChatWelcomeMessageContent,
+	reviveSerializedAgent,
+} from "./chatAgents.js";
+import {
+	ChatRequestTextPart,
+	IParsedChatRequest,
+	reviveParsedChatRequest,
+} from "./chatParserTypes.js";
+import {
+	ChatAgentVoteDirection,
+	ChatAgentVoteDownReason,
+	IChatAgentMarkdownContentWithVulnerability,
+	IChatCodeCitation,
+	IChatCommandButton,
+	IChatConfirmation,
+	IChatContentInlineReference,
+	IChatContentReference,
+	IChatFollowup,
+	IChatLocationData,
+	IChatMarkdownContent,
+	IChatProgress,
+	IChatProgressMessage,
+	IChatResponseCodeblockUriPart,
+	IChatResponseProgressFileTreeData,
+	IChatTask,
+	IChatTextEdit,
+	IChatToolInvocation,
+	IChatToolInvocationSerialized,
+	IChatTreeData,
+	IChatUsedContext,
+	IChatWarningMessage,
+	isIUsedContext,
+} from "./chatService.js";
+import { IChatRequestVariableValue } from "./chatVariables.js";
 
 export interface IBaseChatRequestVariableEntry {
 	id: string;
@@ -74,8 +126,9 @@ export interface IChatRequestImplicitVariableEntry
 	enabled: boolean;
 }
 
-export interface IChatRequestPasteVariableEntry extends Omit<IBaseChatRequestVariableEntry, 'kind'> {
-	readonly kind: 'paste';
+export interface IChatRequestPasteVariableEntry
+	extends Omit<IBaseChatRequestVariableEntry, "kind"> {
+	readonly kind: "paste";
 
 	code: string;
 
@@ -86,14 +139,17 @@ export interface IChatRequestPasteVariableEntry extends Omit<IBaseChatRequestVar
 	fileName: string;
 
 	// This is only undefined on old serialized data
-	copiedFrom: {
-		readonly uri: URI;
-		readonly range: IRange;
-	} | undefined;
+	copiedFrom:
+		| {
+				readonly uri: URI;
+				readonly range: IRange;
+		  }
+		| undefined;
 }
 
-export interface ISymbolVariableEntry extends Omit<IBaseChatRequestVariableEntry, 'kind'> {
-	readonly kind: 'symbol';
+export interface ISymbolVariableEntry
+	extends Omit<IBaseChatRequestVariableEntry, "kind"> {
+	readonly kind: "symbol";
 
 	readonly isDynamic: true;
 
@@ -108,7 +164,12 @@ export interface ICommandResultVariableEntry
 	readonly isDynamic: true;
 }
 
-export type IChatRequestVariableEntry = IChatRequestImplicitVariableEntry | IChatRequestPasteVariableEntry | ISymbolVariableEntry | ICommandResultVariableEntry | IBaseChatRequestVariableEntry;
+export type IChatRequestVariableEntry =
+	| IChatRequestImplicitVariableEntry
+	| IChatRequestPasteVariableEntry
+	| ISymbolVariableEntry
+	| ICommandResultVariableEntry
+	| IBaseChatRequestVariableEntry;
 
 export function isImplicitVariableEntry(
 	obj: IChatRequestVariableEntry,
@@ -116,11 +177,15 @@ export function isImplicitVariableEntry(
 	return obj.kind === "implicit";
 }
 
-export function isPasteVariableEntry(obj: IChatRequestVariableEntry): obj is IChatRequestPasteVariableEntry {
-	return obj.kind === 'paste';
+export function isPasteVariableEntry(
+	obj: IChatRequestVariableEntry,
+): obj is IChatRequestPasteVariableEntry {
+	return obj.kind === "paste";
 }
 
-export function isChatRequestVariableEntry(obj: unknown): obj is IChatRequestVariableEntry {
+export function isChatRequestVariableEntry(
+	obj: unknown,
+): obj is IChatRequestVariableEntry {
 	const entry = obj as IChatRequestVariableEntry;
 
 	return (
@@ -1563,9 +1628,44 @@ export class ChatModel extends Disposable implements IChatModel {
 		});
 	}
 
-	addRequest(message: IParsedChatRequest, variableData: IChatRequestVariableData, attempt: number, chatAgent?: IChatAgentData, slashCommand?: IChatAgentCommand, confirmation?: string, locationData?: IChatLocationData, attachments?: IChatRequestVariableEntry[], workingSet?: URI[], isCompleteAddedRequest?: boolean): ChatRequestModel {
-		const request = new ChatRequestModel(this, message, variableData, Date.now(), attempt, confirmation, locationData, attachments, workingSet, isCompleteAddedRequest);
-		request.response = new ChatResponseModel([], this, chatAgent, slashCommand, request.id, undefined, undefined, undefined, undefined, undefined, undefined, isCompleteAddedRequest);
+	addRequest(
+		message: IParsedChatRequest,
+		variableData: IChatRequestVariableData,
+		attempt: number,
+		chatAgent?: IChatAgentData,
+		slashCommand?: IChatAgentCommand,
+		confirmation?: string,
+		locationData?: IChatLocationData,
+		attachments?: IChatRequestVariableEntry[],
+		workingSet?: URI[],
+		isCompleteAddedRequest?: boolean,
+	): ChatRequestModel {
+		const request = new ChatRequestModel(
+			this,
+			message,
+			variableData,
+			Date.now(),
+			attempt,
+			confirmation,
+			locationData,
+			attachments,
+			workingSet,
+			isCompleteAddedRequest,
+		);
+		request.response = new ChatResponseModel(
+			[],
+			this,
+			chatAgent,
+			slashCommand,
+			request.id,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			isCompleteAddedRequest,
+		);
 
 		this._requests.push(request);
 

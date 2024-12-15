@@ -466,9 +466,7 @@ class ResourceEditStack {
 
 		for (
 			let i = 0, len = this._past.length;
-
 			i < len;
-
 			i++, snapshotIndex++
 		) {
 			const element = this._past[i];
@@ -696,9 +694,7 @@ export class UndoRedoService implements IUndoRedoService {
 			dispose: () => {
 				for (
 					let i = 0, len = this._uriComparisonKeyComputers.length;
-
 					i < len;
-
 					i++
 				) {
 					if (

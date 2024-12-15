@@ -338,9 +338,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 
 				for (
 					let y = rangeCandidate.start.y;
-
 					y <= rangeCandidate.end.y;
-
 					y++
 				) {
 					const line = this.xterm.buffer.active.getLine(y);

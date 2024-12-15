@@ -471,9 +471,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<ITextSearch
 
 			for (
 				let matchIndex = 0;
-
 				matchIndex < results.length;
-
 				matchIndex++
 			) {
 				const element = results[matchIndex];

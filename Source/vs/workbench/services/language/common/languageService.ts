@@ -394,9 +394,7 @@ export class WorkbenchLanguageService extends LanguageService {
 
 					for (
 						let j = 0, lenJ = extension.value.length;
-
 						j < lenJ;
-
 						j++
 					) {
 						const ext = extension.value[j];

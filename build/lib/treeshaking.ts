@@ -839,9 +839,7 @@ function markNodes(
 				) {
 					for (
 						let i = 0, len = symbol.declarations.length;
-
 						i < len;
-
 						i++
 					) {
 						const declaration = symbol.declarations[i];
@@ -867,9 +865,7 @@ function markNodes(
 
 							for (
 								let j = 0;
-
 								j < declaration.members.length;
-
 								j++
 							) {
 								const member = declaration.members[j];

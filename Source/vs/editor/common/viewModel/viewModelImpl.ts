@@ -540,9 +540,7 @@ export class ViewModel extends Disposable implements IViewModel {
 								.LinesInserted: {
 								for (
 									let lineIdx = 0;
-
 									lineIdx < change.detail.length;
-
 									lineIdx++
 								) {
 									const line = change.detail[lineIdx];
@@ -1767,9 +1765,7 @@ export class ViewModel extends Disposable implements IViewModel {
 
 		for (
 			let lineNumber = startLineNumber;
-
 			lineNumber <= endLineNumber;
-
 			lineNumber++
 		) {
 			const lineTokens =

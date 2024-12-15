@@ -1811,10 +1811,7 @@ class InstructionBreakpointsRenderer
 
 class FunctionBreakpointInputRenderer
 	implements
-		IListRenderer<
-			IFunctionBreakpoint,
-			IFunctionBreakpointInputTemplateData
-		>
+		IListRenderer<IFunctionBreakpoint, IFunctionBreakpointInputTemplateData>
 {
 	constructor(
 		private view: BreakpointsView,

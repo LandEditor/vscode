@@ -61,9 +61,7 @@ function getPrecedingValidLine(
 
 		for (
 			lastLineNumber = lineNumber - 1;
-
 			lastLineNumber >= 1;
-
 			lastLineNumber--
 		) {
 			if (
@@ -146,9 +144,7 @@ export function getInheritIndentForLine(
 	// Use no indent if this is the first non-blank line
 	for (
 		let priorLineNumber = lineNumber - 1;
-
 		priorLineNumber > 0;
-
 		priorLineNumber--
 	) {
 		if (model.getLineContent(priorLineNumber) !== "") {
@@ -372,9 +368,7 @@ export function getGoodIndentForLine(
 
 			for (
 				let inBetweenLine = inheritLine;
-
 				inBetweenLine < lineNumber - 1;
-
 				inBetweenLine++
 			) {
 				if (!/^\s*$/.test(virtualModel.getLineContent(inBetweenLine))) {

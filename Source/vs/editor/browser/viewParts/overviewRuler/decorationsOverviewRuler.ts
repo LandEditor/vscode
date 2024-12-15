@@ -609,9 +609,7 @@ export class DecorationsOverviewRuler extends ViewPart {
 
 			for (
 				let i = 0, len = decorationGroupData.length / 3;
-
 				i < len;
-
 				i++
 			) {
 				const lane = decorationGroupData[3 * i];

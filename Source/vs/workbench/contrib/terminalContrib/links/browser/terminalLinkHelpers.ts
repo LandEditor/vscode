@@ -66,9 +66,7 @@ export function convertLinkRangeToBuffer(
 
 		for (
 			let x = 0;
-
 			x < Math.min(bufferWidth, lineLength + lineOffset);
-
 			x++
 		) {
 			const cell = line.getCell(x);
@@ -100,9 +98,7 @@ export function convertLinkRangeToBuffer(
 
 	for (
 		let y = Math.max(0, startWrappedLineCount - 1);
-
 		y < endWrappedLineCount;
-
 		y++
 	) {
 		const start =
@@ -127,9 +123,7 @@ export function convertLinkRangeToBuffer(
 
 		for (
 			let x = start;
-
 			x < Math.min(bufferWidth, lineLength + lineOffset);
-
 			x++
 		) {
 			const cell = line.getCell(x);

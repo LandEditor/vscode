@@ -1257,9 +1257,7 @@ export class ViewContainerModel
 		| undefined {
 		for (
 			let i = 0, visibleIndex = 0;
-
 			i < this.viewDescriptorItems.length;
-
 			i++
 		) {
 			const viewDescriptorItem = this.viewDescriptorItems[i];

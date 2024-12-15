@@ -48,9 +48,7 @@ function getImageMimeType(uri: vscode.Uri): string | undefined {
 }
 
 class DropOrPasteEditProvider
-	implements
-		vscode.DocumentPasteEditProvider,
-		vscode.DocumentDropEditProvider
+	implements vscode.DocumentPasteEditProvider, vscode.DocumentDropEditProvider
 {
 	public static readonly kind =
 		vscode.DocumentDropOrPasteEditKind.Empty.append(
@@ -379,9 +377,7 @@ function buildAttachment(
 
 		for (
 			let appendValue = 2;
-
 			tempFilename in cellMetadata.attachments;
-
 			appendValue++
 		) {
 			const objEntries = Object.entries(

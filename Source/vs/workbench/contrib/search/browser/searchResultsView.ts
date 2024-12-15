@@ -458,11 +458,7 @@ export class FolderMatchRenderer
 export class FileMatchRenderer
 	extends Disposable
 	implements
-		ICompressibleTreeRenderer<
-			ISearchTreeFileMatch,
-			any,
-			IFileMatchTemplate
-		>
+		ICompressibleTreeRenderer<ISearchTreeFileMatch, any, IFileMatchTemplate>
 {
 	static readonly TEMPLATE_ID = "fileMatch";
 
@@ -648,8 +644,7 @@ export class FileMatchRenderer
 
 export class MatchRenderer
 	extends Disposable
-	implements
-		ICompressibleTreeRenderer<ISearchTreeMatch, void, IMatchTemplate>
+	implements ICompressibleTreeRenderer<ISearchTreeMatch, void, IMatchTemplate>
 {
 	static readonly TEMPLATE_ID = "match";
 

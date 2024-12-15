@@ -14,7 +14,7 @@ export interface IInlineMetaContext {
 	readonly productJsonFn: () => string;
 }
 
-const packageJsonMarkerId = 'BUILD_INSERT_PACKAGE_CONFIGURATION';
+const packageJsonMarkerId = "BUILD_INSERT_PACKAGE_CONFIGURATION";
 
 // TODO in order to inline `product.json`, more work is
 // needed to ensure that we cover all cases where modifications

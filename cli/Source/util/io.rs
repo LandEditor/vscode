@@ -1,7 +1,8 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+// ---------------------------------------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation. All rights reserved.
+//  Licensed under the MIT License. See License.txt in the project root for
+// license information.
+// --------------------------------------------------------------------------------------------
 use std::{
 	fs::File,
 	io::{self, BufRead, Seek},
@@ -18,29 +19,28 @@ use tokio::{
 use super::ring_buffer::RingBuffer;
 
 pub trait ReportCopyProgress {
-	fn report_progress(&mut self, bytes_so_far: u64, total_bytes: u64);
+	fn report_progress(&mut self, bytes_so_far:u64, total_bytes:u64);
 }
 
 /// Type that doesn't emit anything for download progress.
 pub struct SilentCopyProgress();
 
 impl ReportCopyProgress for SilentCopyProgress {
-	fn report_progress(&mut self, _bytes_so_far: u64, _total_bytes: u64) {}
+	fn report_progress(&mut self, _bytes_so_far:u64, _total_bytes:u64) {}
 }
 
 /// Copies from the reader to the writer, reporting progress to the provided
 /// reporter every so often.
 pub async fn copy_async_progress<T, R, W>(
-	mut reporter: T,
-	reader: &mut R,
-	writer: &mut W,
-	total_bytes: u64,
+	mut reporter:T,
+	reader:&mut R,
+	writer:&mut W,
+	total_bytes:u64,
 ) -> io::Result<u64>
 where
 	R: AsyncRead + Unpin,
 	W: AsyncWrite + Unpin,
-	T: ReportCopyProgress,
-{
+	T: ReportCopyProgress, {
 	let mut buf = vec![0; 8 * 1024];
 
 	let mut bytes_so_far = 0;
@@ -81,16 +81,14 @@ pub(crate) struct ReadBuffer(Option<(Vec<u8>, usize)>);
 
 impl ReadBuffer {
 	/// Removes any data stored in the read buffer
-	pub fn take_data(&mut self) -> Option<(Vec<u8>, usize)> {
-		self.0.take()
-	}
+	pub fn take_data(&mut self) -> Option<(Vec<u8>, usize)> { self.0.take() }
 
 	/// Writes as many bytes as possible to the readbuf, stashing any extra.
 	pub fn put_data(
 		&mut self,
-		target: &mut tokio::io::ReadBuf<'_>,
-		bytes: Vec<u8>,
-		start: usize,
+		target:&mut tokio::io::ReadBuf<'_>,
+		bytes:Vec<u8>,
+		start:usize,
 	) -> Poll<std::io::Result<()>> {
 		if bytes.is_empty() {
 			self.0 = None;
@@ -117,7 +115,8 @@ impl ReadBuffer {
 
 #[derive(Debug)]
 pub enum TailEvent {
-	/// A new line was read from the file. The line includes its trailing newline character.
+	/// A new line was read from the file. The line includes its trailing
+	/// newline character.
 	Line(String),
 	/// The file appears to have been rewritten (size shrunk)
 	Reset,
@@ -127,7 +126,7 @@ pub enum TailEvent {
 
 /// Simple, naive implementation of `tail -f -n <n> <path>`. Uses polling, so
 /// it's not the fastest, but simple and working for easy cases.
-pub fn tailf(file: File, n: usize) -> mpsc::UnboundedReceiver<TailEvent> {
+pub fn tailf(file:File, n:usize) -> mpsc::UnboundedReceiver<TailEvent> {
 	let (tx, rx) = mpsc::unbounded_channel();
 
 	let mut last_len = match file.metadata() {
@@ -136,7 +135,7 @@ pub fn tailf(file: File, n: usize) -> mpsc::UnboundedReceiver<TailEvent> {
 			tx.send(TailEvent::Err(e)).ok();
 
 			return rx;
-		}
+		},
 	};
 
 	let mut reader = io::BufReader::new(file);
@@ -157,7 +156,7 @@ pub fn tailf(file: File, n: usize) -> mpsc::UnboundedReceiver<TailEvent> {
 				tx.send(TailEvent::Err(e)).ok();
 
 				return rx;
-			}
+			},
 		};
 
 		if !line.ends_with('\n') {
@@ -189,7 +188,7 @@ pub fn tailf(file: File, n: usize) -> mpsc::UnboundedReceiver<TailEvent> {
 					tx.send(TailEvent::Err(e)).ok();
 
 					return;
-				}
+				},
 
 				Ok(m) => {
 					if m.len() == last_len {
@@ -203,7 +202,7 @@ pub fn tailf(file: File, n: usize) -> mpsc::UnboundedReceiver<TailEvent> {
 					}
 
 					last_len = m.len();
-				}
+				},
 			}
 
 			if let Err(e) = reader.seek(io::SeekFrom::Start(pos)) {
@@ -222,7 +221,7 @@ pub fn tailf(file: File, n: usize) -> mpsc::UnboundedReceiver<TailEvent> {
 						tx.send(TailEvent::Err(e)).ok();
 
 						return;
-					}
+					},
 				};
 
 				if n == 0 || !line.ends_with('\n') {
@@ -243,9 +242,9 @@ pub fn tailf(file: File, n: usize) -> mpsc::UnboundedReceiver<TailEvent> {
 
 #[cfg(test)]
 mod tests {
-	use rand::Rng;
-
 	use std::{fs::OpenOptions, io::Write};
+
+	use rand::Rng;
 
 	use super::*;
 
@@ -255,12 +254,8 @@ mod tests {
 
 		let file_path = dir.path().join("tmp");
 
-		let read_file = OpenOptions::new()
-			.write(true)
-			.read(true)
-			.create(true)
-			.open(&file_path)
-			.unwrap();
+		let read_file =
+			OpenOptions::new().write(true).read(true).create(true).open(&file_path).unwrap();
 
 		let mut rx = tailf(read_file, 32);
 
@@ -297,12 +292,8 @@ mod tests {
 
 		let file_path = dir.path().join("tmp");
 
-		let mut read_file = OpenOptions::new()
-			.write(true)
-			.read(true)
-			.create(true)
-			.open(&file_path)
-			.unwrap();
+		let mut read_file =
+			OpenOptions::new().write(true).read(true).create(true).open(&file_path).unwrap();
 
 		writeln!(&mut read_file, "some existing content").unwrap();
 
@@ -336,18 +327,20 @@ mod tests {
 
 		let file_path = dir.path().join("tmp");
 
-		let mut read_file = OpenOptions::new()
-			.write(true)
-			.read(true)
-			.create(true)
-			.open(&file_path)
-			.unwrap();
+		let mut read_file =
+			OpenOptions::new().write(true).read(true).create(true).open(&file_path).unwrap();
 
 		let mut rng = rand::thread_rng();
 
 		let mut written = vec![];
 
-		let base_line = "Elit ipsum cillum ex cillum. Adipisicing consequat cupidatat do proident ut in sunt Lorem ipsum tempor. Eiusmod ipsum Lorem labore exercitation sunt pariatur excepteur fugiat cillum velit cillum enim. Nisi Lorem cupidatat ad enim velit officia eiusmod esse tempor aliquip. Deserunt pariatur tempor in duis culpa esse sit nulla irure ullamco ipsum voluptate non laboris. Occaecat officia nulla officia mollit do aliquip reprehenderit ad incididunt.";
+		let base_line = "Elit ipsum cillum ex cillum. Adipisicing consequat cupidatat do proident \
+		                 ut in sunt Lorem ipsum tempor. Eiusmod ipsum Lorem labore exercitation \
+		                 sunt pariatur excepteur fugiat cillum velit cillum enim. Nisi Lorem \
+		                 cupidatat ad enim velit officia eiusmod esse tempor aliquip. Deserunt \
+		                 pariatur tempor in duis culpa esse sit nulla irure ullamco ipsum \
+		                 voluptate non laboris. Occaecat officia nulla officia mollit do aliquip \
+		                 reprehenderit ad incididunt.";
 
 		for i in 0..100 {
 			let line = format!("{}: {}", i, &base_line[..rng.gen_range(0..base_line.len())]);

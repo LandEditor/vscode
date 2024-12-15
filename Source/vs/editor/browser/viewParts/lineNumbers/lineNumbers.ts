@@ -253,9 +253,7 @@ export class LineNumbersOverlay extends DynamicViewOverlay {
 
 		for (
 			let lineNumber = visibleStartLineNumber;
-
 			lineNumber <= visibleEndLineNumber;
-
 			lineNumber++
 		) {
 			const lineIndex = lineNumber - visibleStartLineNumber;
@@ -274,9 +272,7 @@ export class LineNumbersOverlay extends DynamicViewOverlay {
 
 			for (
 				let i = decorationStartIndex;
-
 				i < lineNoDecorations.length;
-
 				i++
 			) {
 				const { range, options } = lineNoDecorations[i];

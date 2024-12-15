@@ -690,9 +690,7 @@ function transformAndRemoveOverflowing(
 
 	for (
 		let tokenIndex = 0, tokensLen = tokens.getCount();
-
 		tokenIndex < tokensLen;
-
 		tokenIndex++
 	) {
 		const endIndex = tokens.getEndOffset(tokenIndex);
@@ -1231,9 +1229,7 @@ function _applyInlineDecorations(
 
 	for (
 		let tokenIndex = 0, len = tokens.length;
-
 		tokenIndex < len;
-
 		tokenIndex++
 	) {
 		const token = tokens[tokenIndex];
@@ -1388,9 +1384,7 @@ function _renderLine(
 
 	for (
 		let partIndex = 0, tokensLen = parts.length;
-
 		partIndex < tokensLen;
-
 		partIndex++
 	) {
 		const part = parts[partIndex];
@@ -1537,9 +1531,7 @@ function _renderLine(
 
 						for (
 							let space = 1;
-
 							space <= producedCharacters;
-
 							space++
 						) {
 							sb.appendCharCode(0xa0); // &nbsp;

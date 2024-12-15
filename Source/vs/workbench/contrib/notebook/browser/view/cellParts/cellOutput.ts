@@ -933,13 +933,11 @@ export class CellOutputContainer extends CellContentPart {
 
 			for (
 				let index = 0;
-
 				index <
 				Math.min(
 					this.options.limit,
 					this.viewCell.outputsViewModels.length,
 				);
-
 				index++
 			) {
 				const currOutput = this.viewCell.outputsViewModels[index];
@@ -1140,9 +1138,7 @@ export class CellOutputContainer extends CellContentPart {
 				// render newly inserted outputs
 				for (
 					let i = firstGroupEntries.length;
-
 					i < this._outputEntries.length;
-
 					i++
 				) {
 					this._outputEntries[i].element.render(undefined);
@@ -1194,9 +1190,7 @@ export class CellOutputContainer extends CellContentPart {
 
 				for (
 					let i = firstGroupEntries.length;
-
 					i < reRenderRightBoundary;
-
 					i++
 				) {
 					const previousSibling =
@@ -1279,9 +1273,7 @@ export class CellOutputContainer extends CellContentPart {
 
 			for (
 				let i = firstGroupEntries.length;
-
 				i < reRenderRightBoundary;
-
 				i++
 			) {
 				const previousSibling =

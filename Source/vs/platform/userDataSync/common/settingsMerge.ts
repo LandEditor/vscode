@@ -977,9 +977,7 @@ function findLastMatchingTargetCommentNode(
 
 		for (
 			;
-
 			index < targetComments.length && index < sourceComments.length;
-
 			index++
 		) {
 			if (sourceComments[index].value !== targetComments[index].value) {

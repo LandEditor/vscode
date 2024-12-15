@@ -536,7 +536,6 @@ class RequestRouter {
 
 			for (
 				let serverIndex = 0;
-
 				serverIndex < this.servers.length;
 				++serverIndex
 			) {

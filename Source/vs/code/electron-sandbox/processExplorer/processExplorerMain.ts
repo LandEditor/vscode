@@ -165,8 +165,7 @@ class ProcessTreeDataSource
 }
 
 class ProcessHeaderTreeRenderer
-	implements
-		ITreeRenderer<ProcessInformation, void, IProcessItemTemplateData>
+	implements ITreeRenderer<ProcessInformation, void, IProcessItemTemplateData>
 {
 	templateId: string = "header";
 

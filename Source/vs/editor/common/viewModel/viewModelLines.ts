@@ -515,9 +515,7 @@ export class ViewModelLinesFromProjectedModel implements IViewModelLines {
 
 			for (
 				let i = 0, len = this.modelLineProjections.length;
-
 				i < len;
-
 				i++
 			) {
 				previousLineBreaks[i] =
@@ -925,9 +923,7 @@ export class ViewModelLinesFromProjectedModel implements IViewModelLines {
 
 		for (
 			let curModelLine = startViewLine.modelLineNumber;
-
 			curModelLine <= endViewLine.modelLineNumber;
-
 			curModelLine++
 		) {
 			const line = this.modelLineProjections[curModelLine - 1];
@@ -1172,9 +1168,7 @@ export class ViewModelLinesFromProjectedModel implements IViewModelLines {
 
 		for (
 			let modelLineIndex = modelStartLineIndex;
-
 			modelLineIndex <= modelEndLineIndex;
-
 			modelLineIndex++
 		) {
 			const line = this.modelLineProjections[modelLineIndex];
@@ -1367,9 +1361,7 @@ export class ViewModelLinesFromProjectedModel implements IViewModelLines {
 		for (
 			let modelLineIndex = startModelLineIndex,
 				len = this.model.getLineCount();
-
 			modelLineIndex < len;
-
 			modelLineIndex++
 		) {
 			const line = this.modelLineProjections[modelLineIndex];
@@ -1736,9 +1728,7 @@ export class ViewModelLinesFromProjectedModel implements IViewModelLines {
 
 		for (
 			let modelLineIndex = modelStartLineIndex;
-
 			modelLineIndex <= modelEndLineIndex;
-
 			modelLineIndex++
 		) {
 			const line = this.modelLineProjections[modelLineIndex];
@@ -2205,9 +2195,7 @@ export class ViewModelLinesFromModelAsIs implements IViewModelLines {
 
 		for (
 			let lineNumber = viewStartLineNumber;
-
 			lineNumber <= viewEndLineNumber;
-
 			lineNumber++
 		) {
 			const idx = lineNumber - viewStartLineNumber;

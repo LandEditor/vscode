@@ -86,7 +86,7 @@ export class EditsAttachmentModel extends ChatAttachmentModel {
 	readonly onFileLimitExceeded = this._onFileLimitExceeded.event;
 
 	get fileAttachments() {
-		return this.attachments.filter(attachment => attachment.isFile);
+		return this.attachments.filter((attachment) => attachment.isFile);
 	}
 
 	private readonly _excludedFileAttachments: IChatRequestVariableEntry[] = [];
@@ -110,22 +110,36 @@ export class EditsAttachmentModel extends ChatAttachmentModel {
 
 	override addContext(...attachments: IChatRequestVariableEntry[]) {
 		const currentAttachmentIds = this.getAttachmentIDs();
-		const fileAttachments = attachments.filter(attachment => attachment.isFile);
-		const otherAttachments = attachments.filter(attachment => !attachment.isFile);
+		const fileAttachments = attachments.filter(
+			(attachment) => attachment.isFile,
+		);
+		const otherAttachments = attachments.filter(
+			(attachment) => !attachment.isFile,
+		);
 
 		// deduplicate file attachments
 		const newFileAttachments = [];
 		const newFileAttachmentIds = new Set<string>();
 		for (const attachment of fileAttachments) {
-			if (newFileAttachmentIds.has(attachment.id) || currentAttachmentIds.has(attachment.id)) {
+			if (
+				newFileAttachmentIds.has(attachment.id) ||
+				currentAttachmentIds.has(attachment.id)
+			) {
 				continue;
 			}
 			newFileAttachmentIds.add(attachment.id);
 			newFileAttachments.push(attachment);
 		}
 
-		const availableFileCount = Math.max(0, this._chatEditingService.editingSessionFileLimit - this.fileAttachments.length);
-		const fileAttachmentsToBeAdded = newFileAttachments.slice(0, availableFileCount);
+		const availableFileCount = Math.max(
+			0,
+			this._chatEditingService.editingSessionFileLimit -
+				this.fileAttachments.length,
+		);
+		const fileAttachmentsToBeAdded = newFileAttachments.slice(
+			0,
+			availableFileCount,
+		);
 
 		if (newFileAttachments.length > availableFileCount) {
 			const attachmentsExceedingSize = newFileAttachments
@@ -156,7 +170,9 @@ export class EditsAttachmentModel extends ChatAttachmentModel {
 
 	override delete(...variableEntryIds: string[]) {
 		for (const variableEntryId of variableEntryIds) {
-			const excludedFileIndex = this._excludedFileAttachments.findIndex(attachment => attachment.id === variableEntryId);
+			const excludedFileIndex = this._excludedFileAttachments.findIndex(
+				(attachment) => attachment.id === variableEntryId,
+			);
 			if (excludedFileIndex !== -1) {
 				this._excludedFileAttachments.splice(excludedFileIndex, 1);
 			}

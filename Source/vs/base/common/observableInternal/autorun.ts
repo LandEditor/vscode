@@ -168,7 +168,7 @@ export function autorunDelta<T>(
 export function autorunIterableDelta<T>(
 	getValue: (reader: IReader) => Iterable<T>,
 	handler: (args: { addedValues: T[]; removedValues: T[] }) => void,
-	getUniqueIdentifier: (value: T) => unknown = v => v,
+	getUniqueIdentifier: (value: T) => unknown = (v) => v,
 ) {
 	const lastValues = new Map<unknown, T>();
 	return autorunOpts({ debugReferenceFn: getValue }, (reader) => {
@@ -188,12 +188,13 @@ export function autorunIterableDelta<T>(
 		}
 
 		if (newValues.size || removedValues.size) {
-			handler({ addedValues: [...newValues.values()], removedValues: [...removedValues.values()] });
+			handler({
+				addedValues: [...newValues.values()],
+				removedValues: [...removedValues.values()],
+			});
 		}
 	});
 }
-
-
 
 const enum AutorunState {
 	/**

@@ -94,9 +94,7 @@ class EditorTextRenderer {
 
 		for (
 			let lineNumber = startLineNumber;
-
 			lineNumber <= endLineNumber;
-
 			lineNumber++
 		) {
 			const lineTokens = model.tokenization.getLineTokens(lineNumber);

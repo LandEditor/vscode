@@ -3,26 +3,38 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IEditorHoverContext, IEditorHoverParticipant, IEditorHoverRenderContext, IHoverPart, IRenderedHoverParts, RenderedHoverParts } from './hoverTypes.js';
-import { Disposable, DisposableStore, IDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
-import { EditorHoverStatusBar } from './contentHoverStatusBar.js';
-import { HoverStartSource } from './hoverOperation.js';
-import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
-import { ModelDecorationOptions } from '../../../common/model/textModel.js';
-import { ICodeEditor } from '../../../browser/editorBrowser.js';
-import { Position } from '../../../common/core/position.js';
-import { Range } from '../../../common/core/range.js';
-import { ContentHoverResult } from './contentHoverTypes.js';
-import * as dom from '../../../../base/browser/dom.js';
-import { HoverVerbosityAction } from '../../../common/languages.js';
-import { MarkdownHoverParticipant } from './markdownHoverParticipant.js';
-import { HoverColorPickerParticipant } from '../../colorPicker/browser/hoverColorPicker/hoverColorPickerParticipant.js';
-import { localize } from '../../../../nls.js';
-import { InlayHintsHover } from '../../inlayHints/browser/inlayHintsHover.js';
-import { BugIndicatingError } from '../../../../base/common/errors.js';
-import { HoverAction } from '../../../../base/browser/ui/hover/hoverWidget.js';
-import { IHoverService } from '../../../../platform/hover/browser/hover.js';
-import { IOffsetRange } from '../../../common/core/offsetRange.js';
+import * as dom from "../../../../base/browser/dom.js";
+import { HoverAction } from "../../../../base/browser/ui/hover/hoverWidget.js";
+import { BugIndicatingError } from "../../../../base/common/errors.js";
+import {
+	Disposable,
+	DisposableStore,
+	IDisposable,
+	toDisposable,
+} from "../../../../base/common/lifecycle.js";
+import { localize } from "../../../../nls.js";
+import { IHoverService } from "../../../../platform/hover/browser/hover.js";
+import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
+import { ICodeEditor } from "../../../browser/editorBrowser.js";
+import { IOffsetRange } from "../../../common/core/offsetRange.js";
+import { Position } from "../../../common/core/position.js";
+import { Range } from "../../../common/core/range.js";
+import { HoverVerbosityAction } from "../../../common/languages.js";
+import { ModelDecorationOptions } from "../../../common/model/textModel.js";
+import { HoverColorPickerParticipant } from "../../colorPicker/browser/hoverColorPicker/hoverColorPickerParticipant.js";
+import { InlayHintsHover } from "../../inlayHints/browser/inlayHintsHover.js";
+import { EditorHoverStatusBar } from "./contentHoverStatusBar.js";
+import { ContentHoverResult } from "./contentHoverTypes.js";
+import { HoverStartSource } from "./hoverOperation.js";
+import {
+	IEditorHoverContext,
+	IEditorHoverParticipant,
+	IEditorHoverRenderContext,
+	IHoverPart,
+	IRenderedHoverParts,
+	RenderedHoverParts,
+} from "./hoverTypes.js";
+import { MarkdownHoverParticipant } from "./markdownHoverParticipant.js";
 
 export class RenderedContentHover extends Disposable {
 	public closestMouseDistance: number | undefined;
@@ -611,19 +623,33 @@ class RenderedContentHoverParts extends Disposable {
 		if (index >= 0) {
 			rangeOfIndicesToUpdate = { start: index, endExclusive: index + 1 };
 		} else {
-			rangeOfIndicesToUpdate = this._findRangeOfMarkdownHoverParts(this._markdownHoverParticipant);
+			rangeOfIndicesToUpdate = this._findRangeOfMarkdownHoverParts(
+				this._markdownHoverParticipant,
+			);
 		}
-		for (let i = rangeOfIndicesToUpdate.start; i < rangeOfIndicesToUpdate.endExclusive; i++) {
-			const normalizedMarkdownHoverIndex = this._normalizedIndexToMarkdownHoverIndexRange(this._markdownHoverParticipant, i);
+		for (
+			let i = rangeOfIndicesToUpdate.start;
+			i < rangeOfIndicesToUpdate.endExclusive;
+			i++
+		) {
+			const normalizedMarkdownHoverIndex =
+				this._normalizedIndexToMarkdownHoverIndexRange(
+					this._markdownHoverParticipant,
+					i,
+				);
 			if (normalizedMarkdownHoverIndex === undefined) {
 				continue;
 			}
-			const renderedPart = await this._markdownHoverParticipant.updateMarkdownHoverVerbosityLevel(action, normalizedMarkdownHoverIndex);
+			const renderedPart =
+				await this._markdownHoverParticipant.updateMarkdownHoverVerbosityLevel(
+					action,
+					normalizedMarkdownHoverIndex,
+				);
 			if (!renderedPart) {
 				continue;
 			}
 			this._renderedParts[i] = {
-				type: 'hoverPart',
+				type: "hoverPart",
 				participant: this._markdownHoverParticipant,
 				hoverPart: renderedPart.hoverPart,
 				hoverElement: renderedPart.hoverElement,
@@ -697,12 +723,30 @@ class RenderedContentHoverParts extends Disposable {
 		return index - firstIndexOfMarkdownHovers;
 	}
 
-	private _findRangeOfMarkdownHoverParts(markdownHoverParticipant: MarkdownHoverParticipant): IOffsetRange {
+	private _findRangeOfMarkdownHoverParts(
+		markdownHoverParticipant: MarkdownHoverParticipant,
+	): IOffsetRange {
 		const copiedRenderedParts = this._renderedParts.slice();
-		const firstIndexOfMarkdownHovers = copiedRenderedParts.findIndex(renderedPart => renderedPart.type === 'hoverPart' && renderedPart.participant === markdownHoverParticipant);
-		const inversedLastIndexOfMarkdownHovers = copiedRenderedParts.reverse().findIndex(renderedPart => renderedPart.type === 'hoverPart' && renderedPart.participant === markdownHoverParticipant);
-		const lastIndexOfMarkdownHovers = inversedLastIndexOfMarkdownHovers >= 0 ? copiedRenderedParts.length - inversedLastIndexOfMarkdownHovers : inversedLastIndexOfMarkdownHovers;
-		return { start: firstIndexOfMarkdownHovers, endExclusive: lastIndexOfMarkdownHovers + 1 };
+		const firstIndexOfMarkdownHovers = copiedRenderedParts.findIndex(
+			(renderedPart) =>
+				renderedPart.type === "hoverPart" &&
+				renderedPart.participant === markdownHoverParticipant,
+		);
+		const inversedLastIndexOfMarkdownHovers = copiedRenderedParts
+			.reverse()
+			.findIndex(
+				(renderedPart) =>
+					renderedPart.type === "hoverPart" &&
+					renderedPart.participant === markdownHoverParticipant,
+			);
+		const lastIndexOfMarkdownHovers =
+			inversedLastIndexOfMarkdownHovers >= 0
+				? copiedRenderedParts.length - inversedLastIndexOfMarkdownHovers
+				: inversedLastIndexOfMarkdownHovers;
+		return {
+			start: firstIndexOfMarkdownHovers,
+			endExclusive: lastIndexOfMarkdownHovers + 1,
+		};
 	}
 
 	public get domNode(): DocumentFragment {

@@ -354,7 +354,7 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 			if (schemaType) {
 				if (this.setting.allKeysAreBoolean) {
 					this.valueType = SettingValueType.BooleanObject;
-				} else if (schemaType === 'simple') {
+				} else if (schemaType === "simple") {
 					this.valueType = SettingValueType.Object;
 				} else {
 					this.valueType = SettingValueType.ComplexObject;
@@ -1140,16 +1140,30 @@ export function objectSettingSupportsRemoveDefaultValue(key: string): boolean {
 }
 
 function isSimpleType(type: string | undefined): boolean {
-	return type === 'string' || type === 'boolean' || type === 'integer' || type === 'number';
+	return (
+		type === "string" ||
+		type === "boolean" ||
+		type === "integer" ||
+		type === "number"
+	);
 }
 
-function getObjectRenderableSchemaType(schema: IJSONSchema, key: string): 'simple' | 'complex' | false {
+function getObjectRenderableSchemaType(
+	schema: IJSONSchema,
+	key: string,
+): "simple" | "complex" | false {
 	const { type } = schema;
 
 	if (Array.isArray(type)) {
 		if (objectSettingSupportsRemoveDefaultValue(key) && type.length === 2) {
-			if (type.includes('null') && (type.includes('string') || type.includes('boolean') || type.includes('integer') || type.includes('number'))) {
-				return 'simple';
+			if (
+				type.includes("null") &&
+				(type.includes("string") ||
+					type.includes("boolean") ||
+					type.includes("integer") ||
+					type.includes("number"))
+			) {
+				return "simple";
 			}
 		}
 
@@ -1158,16 +1172,18 @@ function getObjectRenderableSchemaType(schema: IJSONSchema, key: string): 'simpl
 				return false;
 			}
 		}
-		return 'complex';
+		return "complex";
 	}
 
 	if (isSimpleType(type)) {
-		return 'simple';
+		return "simple";
 	}
 
-	if (type === 'array') {
+	if (type === "array") {
 		if (schema.items) {
-			const itemSchemas = Array.isArray(schema.items) ? schema.items : [schema.items];
+			const itemSchemas = Array.isArray(schema.items)
+				? schema.items
+				: [schema.items];
 			for (const { type } of itemSchemas) {
 				if (Array.isArray(type)) {
 					for (const t of type) {
@@ -1175,12 +1191,12 @@ function getObjectRenderableSchemaType(schema: IJSONSchema, key: string): 'simpl
 							return false;
 						}
 					}
-					return 'complex';
+					return "complex";
 				}
 				if (!isSimpleType(type)) {
 					return false;
 				}
-				return 'complex';
+				return "complex";
 			}
 		}
 		return false;
@@ -1194,9 +1210,9 @@ function getObjectSettingSchemaType({
 	type,
 	objectProperties,
 	objectPatternProperties,
-	objectAdditionalProperties
-}: ISetting): 'simple' | 'complex' | false {
-	if (type !== 'object') {
+	objectAdditionalProperties,
+}: ISetting): "simple" | "complex" | false {
+	if (type !== "object") {
 		return false;
 	}
 	// object can have any shape
@@ -1231,15 +1247,17 @@ function getObjectSettingSchemaType({
 		schemas.push(objectAdditionalProperties);
 	}
 
-	let schemaType: 'simple' | 'complex' | false = 'simple';
+	let schemaType: "simple" | "complex" | false = "simple";
 	for (const schema of schemas) {
-		for (const subSchema of Array.isArray(schema.anyOf) ? schema.anyOf : [schema]) {
+		for (const subSchema of Array.isArray(schema.anyOf)
+			? schema.anyOf
+			: [schema]) {
 			const subSchemaType = getObjectRenderableSchemaType(subSchema, key);
 			if (subSchemaType === false) {
 				return false;
 			}
-			if (subSchemaType === 'complex') {
-				schemaType = 'complex';
+			if (subSchemaType === "complex") {
+				schemaType = "complex";
 			}
 		}
 	}

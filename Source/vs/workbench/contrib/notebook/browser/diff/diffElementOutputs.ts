@@ -494,9 +494,7 @@ export class OutputContainer extends Disposable {
 		// TODO, outputs to render (should have a limit)
 		for (
 			let index = 0;
-
 			index < this._nestedCellViewModel.outputsViewModels.length;
-
 			index++
 		) {
 			const currOutput =
@@ -509,9 +507,7 @@ export class OutputContainer extends Disposable {
 	showOutputs() {
 		for (
 			let index = 0;
-
 			index < this._nestedCellViewModel.outputsViewModels.length;
-
 			index++
 		) {
 			const currOutput =

@@ -917,9 +917,7 @@ export class LcsDiff {
 		//   is even and odd diagonals only when numDifferences is odd.
 		for (
 			let numDifferences = 1;
-
 			numDifferences <= maxDifferences / 2 + 1;
-
 			numDifferences++
 		) {
 			let furthestOriginalIndex = 0;
@@ -942,9 +940,7 @@ export class LcsDiff {
 
 			for (
 				let diagonal = diagonalForwardStart;
-
 				diagonal <= diagonalForwardEnd;
-
 				diagonal += 2
 			) {
 				// STEP 1: We extend the furthest reaching point in the present diagonal
@@ -1121,9 +1117,7 @@ export class LcsDiff {
 
 			for (
 				let diagonal = diagonalReverseStart;
-
 				diagonal <= diagonalReverseEnd;
-
 				diagonal += 2
 			) {
 				// STEP 1: We extend the furthest reaching point in the present diagonal

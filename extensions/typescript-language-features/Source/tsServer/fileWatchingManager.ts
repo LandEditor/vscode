@@ -101,9 +101,7 @@ export class FileWatcherManager implements IDisposable {
 			// We need to watch the parent directories too for when these are deleted / created
 			for (
 				let dirUri = Utils.dirname(uri);
-
 				dirUri.path.length > 1;
-
 				dirUri = Utils.dirname(dirUri)
 			) {
 				const disposables: IDisposable[] = [];

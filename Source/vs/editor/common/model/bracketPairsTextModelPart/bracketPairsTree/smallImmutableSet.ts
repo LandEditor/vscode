@@ -109,10 +109,8 @@ export class SmallImmutableSet<T> {
 
 		for (
 			let i = 0;
-
 			i <
 			Math.max(this.additionalItems.length, other.additionalItems.length);
-
 			i++
 		) {
 			const item1 = this.additionalItems[i] || 0;
@@ -132,10 +130,8 @@ export class SmallImmutableSet<T> {
 
 		for (
 			let i = 0;
-
 			i <
 			Math.min(this.additionalItems.length, other.additionalItems.length);
-
 			i++
 		) {
 			if ((this.additionalItems[i] & other.additionalItems[i]) !== 0) {

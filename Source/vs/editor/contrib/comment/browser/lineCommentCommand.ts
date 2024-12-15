@@ -133,9 +133,7 @@ export class LineCommentCommand implements ICommand {
 
 		for (
 			let i = 0, lineCount = endLineNumber - startLineNumber + 1;
-
 			i < lineCount;
-
 			i++
 		) {
 			lines[i] = {
@@ -698,9 +696,7 @@ export class LineCommentCommand implements ICommand {
 
 			for (
 				let j = 0, lenJ = lines[i].commentStrOffset;
-
 				currentVisibleColumn < minVisibleColumn && j < lenJ;
-
 				j++
 			) {
 				currentVisibleColumn = LineCommentCommand.nextVisibleColumn(
@@ -730,9 +726,7 @@ export class LineCommentCommand implements ICommand {
 
 			for (
 				j = 0, lenJ = lines[i].commentStrOffset;
-
 				currentVisibleColumn < minVisibleColumn && j < lenJ;
-
 				j++
 			) {
 				currentVisibleColumn = LineCommentCommand.nextVisibleColumn(

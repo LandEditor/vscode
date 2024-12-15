@@ -476,9 +476,7 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 		// Below cursor line
 		for (
 			let y = absoluteCursorY + 1;
-
 			y < buffer.baseY + this._xterm.rows;
-
 			y++
 		) {
 			line = buffer.getLine(y);

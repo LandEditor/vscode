@@ -353,9 +353,7 @@ export class ContiguousTokensStore {
 
 			for (
 				let lineNumber = element.startLineNumber;
-
 				lineNumber <= element.endLineNumber;
-
 				lineNumber++
 			) {
 				if (hasChange) {

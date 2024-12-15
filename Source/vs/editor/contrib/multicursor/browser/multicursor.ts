@@ -267,9 +267,7 @@ class InsertCursorAtEndOfEachLineSelected extends EditorAction {
 
 		for (
 			let i = selection.startLineNumber;
-
 			i < selection.endLineNumber;
-
 			i++
 		) {
 			const currentLineMaxColumn = model.getLineMaxColumn(i);
@@ -1594,7 +1592,6 @@ export class SelectionHighlighter
 
 		for (
 			let i = 0, j = 0, len = allMatches.length, lenJ = selections.length;
-
 			i < len;
 
 		) {

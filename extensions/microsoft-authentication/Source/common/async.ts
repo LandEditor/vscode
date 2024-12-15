@@ -3,7 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationError, CancellationToken, Disposable, Event } from 'vscode';
+import {
+	CancellationError,
+	CancellationToken,
+	Disposable,
+	Event,
+} from "vscode";
 
 /**
  * Can be passed into the Delayed to defer using a microtask
@@ -74,7 +79,10 @@ export function raceCancellationError<T>(
 	});
 }
 
-export function raceTimeoutError<T>(promise: Promise<T>, timeout: number): Promise<T> {
+export function raceTimeoutError<T>(
+	promise: Promise<T>,
+	timeout: number,
+): Promise<T> {
 	return new Promise((resolve, reject) => {
 		const ref = setTimeout(() => {
 			reject(new CancellationError());

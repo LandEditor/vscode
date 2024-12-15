@@ -270,9 +270,7 @@ export class ViewModelDecorations implements IDisposable {
 
 				for (
 					let j = intersectedStartLineNumber;
-
 					j <= intersectedEndLineNumber;
-
 					j++
 				) {
 					inlineDecorations[j - startLineNumber].push(
@@ -384,9 +382,7 @@ function testTokensInRange(
 ): boolean {
 	for (
 		let lineNumber = range.startLineNumber;
-
 		lineNumber <= range.endLineNumber;
-
 		lineNumber++
 	) {
 		const lineTokens = model.tokenization.getLineTokens(lineNumber);

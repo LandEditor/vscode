@@ -22,7 +22,9 @@ export class MsalLoggerOptions {
 		if (containsPii) {
 			// TODO: Should we still log the message if it contains PII? It's just going to
 			// an output channel that doesn't leave the machine.
-			this._output.debug('Skipped logging message because it may contain PII');
+			this._output.debug(
+				"Skipped logging message because it may contain PII",
+			);
 
 			return;
 		}

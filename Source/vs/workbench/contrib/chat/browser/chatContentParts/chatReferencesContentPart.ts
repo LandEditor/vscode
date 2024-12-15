@@ -492,8 +492,7 @@ interface ICollapsibleListTemplate {
 }
 
 class CollapsibleListRenderer
-	implements
-		IListRenderer<IChatCollapsibleListItem, ICollapsibleListTemplate>
+	implements IListRenderer<IChatCollapsibleListItem, ICollapsibleListTemplate>
 {
 	static TEMPLATE_ID = "chatCollapsibleListRenderer";
 

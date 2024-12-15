@@ -316,9 +316,7 @@ function getIndentationEditOperations(
 
 	for (
 		let lineNumber = 1, lineCount = model.getLineCount();
-
 		lineNumber <= lineCount;
-
 		lineNumber++
 	) {
 		let lastIndentationColumn =

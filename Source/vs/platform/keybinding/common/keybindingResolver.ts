@@ -264,9 +264,7 @@ export class KeybindingResolver {
 
 			for (
 				let i = 1;
-
 				i < conflict.chords.length && i < item.chords.length;
-
 				i++
 			) {
 				if (conflict.chords[i] !== item.chords[i]) {
@@ -381,7 +379,11 @@ export class KeybindingResolver {
 		return result;
 	}
 
-	public lookupPrimaryKeybinding(commandId: string, context: IContextKeyService, enforceContextCheck = false): ResolvedKeybindingItem | null {
+	public lookupPrimaryKeybinding(
+		commandId: string,
+		context: IContextKeyService,
+		enforceContextCheck = false,
+	): ResolvedKeybindingItem | null {
 		const items = this._lookupMap.get(commandId);
 
 		if (typeof items === "undefined" || items.length === 0) {

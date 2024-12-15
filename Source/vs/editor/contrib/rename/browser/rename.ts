@@ -100,9 +100,7 @@ class RenameSkeleton {
 
 		for (
 			this._providerRenameIdx = 0;
-
 			this._providerRenameIdx < this._providers.length;
-
 			this._providerRenameIdx++
 		) {
 			const provider = this._providers[this._providerRenameIdx];

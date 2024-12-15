@@ -935,9 +935,7 @@ export class XtermTerminal
 
 		for (
 			let i = this.raw.buffer.active.length - 1;
-
 			i >= this.raw.buffer.active.viewportY;
-
 			i--
 		) {
 			const lineInfo = this._getWrappedLineCount(

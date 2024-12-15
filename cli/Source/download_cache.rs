@@ -1,7 +1,8 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+// ---------------------------------------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation. All rights reserved.
+//  Licensed under the MIT License. See License.txt in the project root for
+// license information.
+// --------------------------------------------------------------------------------------------
 
 use std::{
 	fs::create_dir_all,
@@ -13,43 +14,36 @@ use tokio::fs::remove_dir_all;
 
 use crate::{
 	state::PersistedState,
-	util::errors::{wrap, AnyError, WrappedError},
+	util::errors::{AnyError, WrappedError, wrap},
 };
 
-const KEEP_LRU: usize = 5;
-const STAGING_SUFFIX: &str = ".staging";
-const RENAME_ATTEMPTS: u32 = 20;
-const RENAME_DELAY: std::time::Duration = std::time::Duration::from_millis(200);
-const PERSISTED_STATE_FILE_NAME: &str = "lru.json";
+const KEEP_LRU:usize = 5;
+const STAGING_SUFFIX:&str = ".staging";
+const RENAME_ATTEMPTS:u32 = 20;
+const RENAME_DELAY:std::time::Duration = std::time::Duration::from_millis(200);
+const PERSISTED_STATE_FILE_NAME:&str = "lru.json";
 
 #[derive(Clone)]
 pub struct DownloadCache {
-	path: PathBuf,
-	state: PersistedState<Vec<String>>,
+	path:PathBuf,
+	state:PersistedState<Vec<String>>,
 }
 
 impl DownloadCache {
-	pub fn new(path: PathBuf) -> DownloadCache {
-		DownloadCache {
-			state: PersistedState::new(path.join(PERSISTED_STATE_FILE_NAME)),
-			path,
-		}
+	pub fn new(path:PathBuf) -> DownloadCache {
+		DownloadCache { state:PersistedState::new(path.join(PERSISTED_STATE_FILE_NAME)), path }
 	}
 
 	/// Gets the value stored on the state
-	pub fn get(&self) -> Vec<String> {
-		self.state.load()
-	}
+	pub fn get(&self) -> Vec<String> { self.state.load() }
 
 	/// Gets the download cache path. Names of cache entries can be formed by
 	/// joining them to the path.
-	pub fn path(&self) -> &Path {
-		&self.path
-	}
+	pub fn path(&self) -> &Path { &self.path }
 
 	/// Gets whether a cache exists with the name already. Marks it as recently
 	/// used if it does exist.
-	pub fn exists(&self, name: &str) -> Option<PathBuf> {
+	pub fn exists(&self, name:&str) -> Option<PathBuf> {
 		let p = self.path.join(name);
 
 		if !p.exists() {
@@ -62,7 +56,7 @@ impl DownloadCache {
 	}
 
 	/// Removes the item from the cache, if it exists
-	pub fn delete(&self, name: &str) -> Result<(), WrappedError> {
+	pub fn delete(&self, name:&str) -> Result<(), WrappedError> {
 		let f = self.path.join(name);
 
 		if f.exists() {
@@ -80,13 +74,12 @@ impl DownloadCache {
 	/// final returned path.
 	pub async fn create<F, T>(
 		&self,
-		name: impl AsRef<str>,
-		do_create: F,
+		name:impl AsRef<str>,
+		do_create:F,
 	) -> Result<PathBuf, AnyError>
 	where
 		F: FnOnce(PathBuf) -> T,
-		T: Future<Output = Result<(), AnyError>> + Send,
-	{
+		T: Future<Output = Result<(), AnyError>> + Send, {
 		let name = name.as_ref();
 
 		let target_dir = self.path.join(name);
@@ -110,22 +103,22 @@ impl DownloadCache {
 			match std::fs::rename(&temp_dir, &target_dir) {
 				Ok(_) => {
 					break;
-				}
+				},
 
 				Err(e) if attempt_no == RENAME_ATTEMPTS => {
-					return Err(wrap(e, "error renaming downloaded server").into())
-				}
+					return Err(wrap(e, "error renaming downloaded server").into());
+				},
 
 				Err(_) => {
 					tokio::time::sleep(RENAME_DELAY).await;
-				}
+				},
 			}
 		}
 
 		Ok(target_dir)
 	}
 
-	fn touch(&self, name: String) -> Result<(), AnyError> {
+	fn touch(&self, name:String) -> Result<(), AnyError> {
 		self.state.update(|l| {
 			if let Some(index) = l.iter().position(|s| s == &name) {
 				l.remove(index);

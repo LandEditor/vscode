@@ -812,9 +812,7 @@ export class MultiEditorTabsControl extends EditorTabsControl {
 
 		for (
 			let i = tabsContainer.children.length;
-
 			i < this.tabsModel.count;
-
 			i++
 		) {
 			tabsContainer.appendChild(

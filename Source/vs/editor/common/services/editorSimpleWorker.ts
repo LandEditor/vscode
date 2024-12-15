@@ -527,9 +527,7 @@ export class BaseEditorSimpleWorker
 
 				for (
 					let i = range.startLineNumber;
-
 					i <= range.endLineNumber;
-
 					i++
 				) {
 					const line = lines[i - 1];
@@ -685,9 +683,7 @@ export class BaseEditorSimpleWorker
 
 		for (
 			let line = range.startLineNumber;
-
 			line < range.endLineNumber;
-
 			line++
 		) {
 			const words = model.getLineWords(line, wordDefRegExp);

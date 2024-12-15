@@ -104,9 +104,7 @@ export class ElectronExtensionHostDebugBroadcastChannel<
 
 				for (
 					let delimiter = buf.indexOf(0);
-
 					delimiter !== -1;
-
 					delimiter = buf.indexOf(0)
 				) {
 					let data: {

@@ -307,9 +307,7 @@ class ScanCodeKeyCodeMapper {
 
 				for (
 					let j = 0, len = encodedScanCodeCombos.length;
-
 					j < len;
-
 					j++
 				) {
 					const entry = encodedScanCodeCombos[j];
@@ -358,9 +356,7 @@ class ScanCodeKeyCodeMapper {
 			if (existingKeyCodeCombos) {
 				for (
 					let i = 0, len = existingKeyCodeCombos.length;
-
 					i < len;
-
 					i++
 				) {
 					if (existingKeyCodeCombos[i] === keyCodeComboEncoded) {
@@ -629,9 +625,7 @@ export class MacLinuxKeyboardMapper implements IKeyboardMapper {
 		// Initialize `_scanCodeToLabel`
 		for (
 			let scanCode = ScanCode.None;
-
 			scanCode < ScanCode.MAX_VALUE;
-
 			scanCode++
 		) {
 			this._scanCodeToLabel[scanCode] = null;
@@ -639,9 +633,7 @@ export class MacLinuxKeyboardMapper implements IKeyboardMapper {
 		// Initialize `_scanCodeToDispatch`
 		for (
 			let scanCode = ScanCode.None;
-
 			scanCode < ScanCode.MAX_VALUE;
-
 			scanCode++
 		) {
 			this._scanCodeToDispatch[scanCode] = null;
@@ -649,9 +641,7 @@ export class MacLinuxKeyboardMapper implements IKeyboardMapper {
 		// Handle immutable mappings
 		for (
 			let scanCode = ScanCode.None;
-
 			scanCode < ScanCode.MAX_VALUE;
-
 			scanCode++
 		) {
 			const keyCode = IMMUTABLE_CODE_TO_KEY_CODE[scanCode];
@@ -1038,9 +1028,7 @@ export class MacLinuxKeyboardMapper implements IKeyboardMapper {
 
 		for (
 			let scanCode = ScanCode.None;
-
 			scanCode < ScanCode.MAX_VALUE;
-
 			scanCode++
 		) {
 			if (

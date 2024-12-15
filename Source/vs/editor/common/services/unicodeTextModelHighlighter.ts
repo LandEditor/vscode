@@ -50,9 +50,7 @@ export class UnicodeTextModelHighlighter {
 
 		forLoop: for (
 			let lineNumber = startLine, lineCount = endLine;
-
 			lineNumber <= lineCount;
-
 			lineNumber++
 		) {
 			const lineContent = model.getLineContent(lineNumber);

@@ -3846,8 +3846,7 @@ class ChangeProfileAction extends Action {
 	}
 }
 class WorkspaceUriActionsColumnRenderer
-	implements
-		ITableRenderer<WorkspaceTableElement, IActionsColumnTemplateData>
+	implements ITableRenderer<WorkspaceTableElement, IActionsColumnTemplateData>
 {
 	static readonly TEMPLATE_ID = "actions";
 

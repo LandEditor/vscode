@@ -428,9 +428,7 @@ export class BreadcrumbsWidget {
 
 		for (
 			;
-
 			start < this._items.length && start < this._nodes.length;
-
 			start++
 		) {
 			const item = this._items[start];
@@ -515,9 +513,7 @@ export class BreadcrumbsWidget {
 
 		for (
 			let el: HTMLElement | null = event.target;
-
 			el;
-
 			el = el.parentElement
 		) {
 			const idx = this._nodes.indexOf(el as HTMLDivElement);

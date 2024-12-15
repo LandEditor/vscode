@@ -193,8 +193,7 @@ class FileReferencesTemplate extends Disposable {
 }
 
 export class FileReferencesRenderer
-	implements
-		ITreeRenderer<FileReferences, FuzzyScore, FileReferencesTemplate>
+	implements ITreeRenderer<FileReferences, FuzzyScore, FileReferencesTemplate>
 {
 	static readonly id = "FileReferencesRenderer";
 

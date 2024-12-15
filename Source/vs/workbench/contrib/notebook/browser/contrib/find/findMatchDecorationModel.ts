@@ -187,9 +187,7 @@ export class FindMatchDecorationModel extends Disposable {
 
 					for (
 						let i = 0;
-
 						i < cellFindMatch.contentMatches.length;
-
 						i++
 					) {
 						newFindMatchesDecorations[i] = {

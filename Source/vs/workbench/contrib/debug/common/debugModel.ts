@@ -2383,10 +2383,8 @@ export class DebugModel extends Disposable implements IDebugModel {
 
 										for (
 											let i = 1;
-
 											i < stale.length &&
 											!bottomOfCallStackChanged;
-
 											i++
 										) {
 											bottomOfCallStackChanged = !stale[

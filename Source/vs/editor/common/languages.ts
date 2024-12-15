@@ -849,7 +849,7 @@ export interface InlineCompletionContext {
 	/**
 	 * @experimental
 	 * @internal
-	*/
+	 */
 	readonly requestUuid?: string | undefined;
 
 	readonly includeInlineEdits: boolean;
@@ -1705,7 +1705,10 @@ export namespace SymbolKinds {
 	byCompletionKind.set(SymbolKind.Method, CompletionItemKind.Method);
 	byCompletionKind.set(SymbolKind.Property, CompletionItemKind.Property);
 	byCompletionKind.set(SymbolKind.Field, CompletionItemKind.Field);
-	byCompletionKind.set(SymbolKind.Constructor, CompletionItemKind.Constructor);
+	byCompletionKind.set(
+		SymbolKind.Constructor,
+		CompletionItemKind.Constructor,
+	);
 	byCompletionKind.set(SymbolKind.Enum, CompletionItemKind.Enum);
 	byCompletionKind.set(SymbolKind.Interface, CompletionItemKind.Interface);
 	byCompletionKind.set(SymbolKind.Function, CompletionItemKind.Function);
@@ -1722,14 +1725,17 @@ export namespace SymbolKinds {
 	byCompletionKind.set(SymbolKind.Struct, CompletionItemKind.Struct);
 	byCompletionKind.set(SymbolKind.Event, CompletionItemKind.Event);
 	byCompletionKind.set(SymbolKind.Operator, CompletionItemKind.Operator);
-	byCompletionKind.set(SymbolKind.TypeParameter, CompletionItemKind.TypeParameter);
+	byCompletionKind.set(
+		SymbolKind.TypeParameter,
+		CompletionItemKind.TypeParameter,
+	);
 	/**
 	 * @internal
 	 */
 	export function toCompletionKind(kind: SymbolKind): CompletionItemKind {
 		let completionKind = byCompletionKind.get(kind);
 		if (completionKind === undefined) {
-			console.info('No completion kind found for SymbolKind ' + kind);
+			console.info("No completion kind found for SymbolKind " + kind);
 			completionKind = CompletionItemKind.File;
 		}
 		return completionKind;

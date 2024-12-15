@@ -194,9 +194,7 @@ export class ShiftCommand implements ICommand {
 
 			for (
 				let lineNumber = startLine;
-
 				lineNumber <= endLine;
-
 				lineNumber++, previousLineExtraSpaces = extraSpaces
 			) {
 				extraSpaces = 0;
@@ -262,9 +260,7 @@ export class ShiftCommand implements ICommand {
 										let j = 0,
 											lenJ =
 												enterAction.appendText.length;
-
 										j < lenJ && extraSpaces < indentSize;
-
 										j++
 									) {
 										if (
@@ -361,9 +357,7 @@ export class ShiftCommand implements ICommand {
 
 			for (
 				let lineNumber = startLine;
-
 				lineNumber <= endLine;
-
 				lineNumber++
 			) {
 				const lineText = model.getLineContent(lineNumber);

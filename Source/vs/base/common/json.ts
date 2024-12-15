@@ -1328,9 +1328,7 @@ export function findNodeAtOffset(
 		if (Array.isArray(children)) {
 			for (
 				let i = 0;
-
 				i < children.length && children[i].offset <= offset;
-
 				i++
 			) {
 				const item = findNodeAtOffset(

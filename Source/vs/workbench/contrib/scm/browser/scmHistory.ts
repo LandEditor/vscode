@@ -525,9 +525,7 @@ export function toISCMHistoryItemViewModelArray(
 		// Add unprocessed parent(s) to the output
 		for (
 			let i = firstParentAdded ? 1 : 0;
-
 			i < historyItem.parentIds.length;
-
 			i++
 		) {
 			// Color index (label -> next color)
