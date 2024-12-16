@@ -17,10 +17,15 @@ import {
 	TestsDiff,
 } from "./testTypes.js";
 
-export class MainThreadTestCollection
-	extends AbstractIncrementalTestCollection<IncrementalTestCollectionItem>
-	implements IMainThreadTestCollection
-{
+import { Emitter } from '../../../../base/common/event.js';
+import { Iterable } from '../../../../base/common/iterator.js';
+import { LinkedList } from '../../../../base/common/linkedList.js';
+import { ResourceMap } from '../../../../base/common/map.js';
+import { URI } from '../../../../base/common/uri.js';
+import { IMainThreadTestCollection } from './testService.js';
+import { AbstractIncrementalTestCollection, ITestUriCanonicalizer, IncrementalChangeCollector, IncrementalTestCollectionItem, InternalTestItem, TestDiffOpType, TestsDiff } from './testTypes.js';
+
+export class MainThreadTestCollection extends AbstractIncrementalTestCollection<IncrementalTestCollectionItem> implements IMainThreadTestCollection {
 	private testsByUrl = new ResourceMap<Set<IncrementalTestCollectionItem>>();
 
 	private busyProvidersChangeEmitter = new Emitter<number>();
@@ -221,9 +226,10 @@ export class MainThreadTestCollection
 	}
 
 	private *getIterator() {
-		const queue = [this.rootIds];
+		const queue = new LinkedList<Iterable<string>>();
+		queue.push(this.rootIds);
 
-		while (queue.length) {
+		while (queue.size > 0) {
 			for (const id of queue.pop()!) {
 				const node = this.getNodeById(id)!;
 

@@ -49,8 +49,6 @@ export interface IBaseWindow extends IDisposable {
 
 	isDocumentEdited(): boolean;
 
-	handleTitleDoubleClick(): void;
-
 	readonly isFullScreen: boolean;
 
 	toggleFullScreen(): void;

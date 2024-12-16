@@ -39,7 +39,27 @@ import {
 	TestsDiff,
 } from "./testTypes.js";
 
-export const ITestService = createDecorator<ITestService>("testService");
+import { assert } from '../../../../base/common/assert.js';
+import { CancellationToken } from '../../../../base/common/cancellation.js';
+import { Event } from '../../../../base/common/event.js';
+import { Iterable } from '../../../../base/common/iterator.js';
+import { IDisposable } from '../../../../base/common/lifecycle.js';
+import { LinkedList } from '../../../../base/common/linkedList.js';
+import { MarshalledId } from '../../../../base/common/marshallingIds.js';
+import { IObservable } from '../../../../base/common/observable.js';
+import { IPrefixTreeNode, WellDefinedPrefixTree } from '../../../../base/common/prefixTree.js';
+import { URI } from '../../../../base/common/uri.js';
+import { Position } from '../../../../editor/common/core/position.js';
+import { Location } from '../../../../editor/common/languages.js';
+import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
+import { IUriIdentityService } from '../../../../platform/uriIdentity/common/uriIdentity.js';
+import { MutableObservableValue } from './observableValue.js';
+import { TestExclusions } from './testExclusions.js';
+import { TestId } from './testId.js';
+import { ITestResult } from './testResult.js';
+import { AbstractIncrementalTestCollection, ICallProfileRunHandler, IncrementalTestCollectionItem, InternalTestItem, IStartControllerTests, IStartControllerTestsResult, ITestItemContext, ResolvedTestRunRequest, TestControllerCapability, TestItemExpandState, TestMessageFollowupRequest, TestMessageFollowupResponse, TestRunProfileBitset, TestsDiff } from './testTypes.js';
+
+export const ITestService = createDecorator<ITestService>('testService');
 
 export interface IMainThreadTestController {
 	readonly id: string;
@@ -229,28 +249,41 @@ const waitForTestToBeIdle = (
  * Iterator that expands to and iterates through tests in the file. Iterates
  * in strictly descending order.
  */
-export const testsInFile = async function* (
-	testService: ITestService,
-	ident: IUriIdentityService,
-	uri: URI,
-	waitForIdle = true,
-): AsyncIterable<IncrementalTestCollectionItem> {
-	for (const test of testService.collection.all) {
-		if (!test.item.uri) {
-			continue;
-		}
+export const testsInFile = async function* (testService: ITestService, ident: IUriIdentityService, uri: URI, waitForIdle = true): AsyncIterable<IncrementalTestCollectionItem> {
+	const queue = new LinkedList<Iterable<string>>();
 
-		if (ident.extUri.isEqual(uri, test.item.uri)) {
-			yield test;
-		}
+	const existing = [...testService.collection.getNodeByUrl(uri)];
+	queue.push(existing.length ? existing.map(e => e.item.extId) : testService.collection.rootIds);
 
-		if (ident.extUri.isEqualOrParent(uri, test.item.uri)) {
-			if (test.expand === TestItemExpandState.Expandable) {
-				await testService.collection.expand(test.item.extId, 1);
+	let n = 0;
+	while (queue.size > 0) {
+		for (const id of queue.pop()!) {
+			n++;
+			const test = testService.collection.getNodeById(id);
+			if (!test) {
+				continue; // possible because we expand async and things could delete
 			}
 
-			if (waitForIdle) {
-				await waitForTestToBeIdle(testService, test);
+			if (!test.item.uri) {
+				queue.push(test.children);
+				continue;
+			}
+
+			if (ident.extUri.isEqual(uri, test.item.uri)) {
+				yield test;
+			}
+
+			if (ident.extUri.isEqualOrParent(uri, test.item.uri)) {
+				if (test.expand === TestItemExpandState.Expandable) {
+					await testService.collection.expand(test.item.extId, 1);
+				}
+				if (waitForIdle) {
+					await waitForTestToBeIdle(testService, test);
+				}
+
+				if (test.children.size) {
+					queue.push(test.children);
+				}
 			}
 		}
 	}

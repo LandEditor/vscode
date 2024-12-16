@@ -176,8 +176,6 @@ class GitDecorationProvider implements FileDecorationProvider {
 	private onDidRunGitStatus(): void {
 		const newDecorations = new Map<string, FileDecoration>();
 
-		this.collectSubmoduleDecorationData(newDecorations);
-
 		this.collectDecorationData(this.repository.indexGroup, newDecorations);
 
 		this.collectDecorationData(
@@ -191,6 +189,7 @@ class GitDecorationProvider implements FileDecorationProvider {
 		);
 
 		this.collectDecorationData(this.repository.mergeGroup, newDecorations);
+		this.collectSubmoduleDecorationData(newDecorations);
 
 		const uris = new Set(
 			[...this.decorations.keys()].concat([...newDecorations.keys()]),

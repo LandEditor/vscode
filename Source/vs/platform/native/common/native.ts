@@ -129,13 +129,7 @@ export interface ICommonNativeHostService {
 
 	toggleFullScreen(options?: INativeHostOptions): Promise<void>;
 
-	handleTitleDoubleClick(options?: INativeHostOptions): Promise<void>;
-
-	getCursorScreenPoint(): Promise<{
-		readonly point: IPoint;
-
-		readonly display: IRectangle;
-	}>;
+	getCursorScreenPoint(): Promise<{ readonly point: IPoint; readonly display: IRectangle }>;
 
 	isMaximized(options?: INativeHostOptions): Promise<boolean>;
 
