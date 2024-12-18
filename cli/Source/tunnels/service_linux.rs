@@ -194,8 +194,7 @@ fn write_systemd_service_file(
 		&mut f,
 		"[Unit]\nDescription={} \
 		 Tunnel\nAfter=network.target\nStartLimitIntervalSec=0\n\n[Service]\nType=simple\\
-		 nRestart=always\nRestartSec=10\nExecStart={} \
-		 \"{}\"\n\n[Install]\nWantedBy=default.target\n",
+		 nRestart=always\nRestartSec=10\nExecStart={} \"{}\"\n\n[Install]\nWantedBy=default.target\n",
 		PRODUCT_NAME_LONG,
 		exe.into_os_string().to_string_lossy(),
 		args.join("\" \"")

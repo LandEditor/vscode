@@ -14,7 +14,8 @@ use crate::{constants::QUALITYLESS_SERVER_NAME, update_service::Platform};
 
 lazy_static! {
 	static ref LDCONFIG_STDC_RE: Regex = Regex::new(r"libstdc\+\+.* => (.+)").unwrap();
-	static ref LDD_VERSION_RE: BinRegex = BinRegex::new(r"^ldd.*\s(\d+)\.(\d+)(?:\.(\d+))?\s").unwrap();
+	static ref LDD_VERSION_RE: BinRegex =
+		BinRegex::new(r"^ldd.*\s(\d+)\.(\d+)(?:\.(\d+))?\s").unwrap();
 	static ref GENERIC_VERSION_RE: Regex = Regex::new(r"^([0-9]+)\.([0-9]+)$").unwrap();
 	static ref LIBSTD_CXX_VERSION_RE: BinRegex =
 		BinRegex::new(r"GLIBCXX_([0-9]+)\.([0-9]+)(?:\.([0-9]+))?").unwrap();
@@ -385,10 +386,7 @@ mod tests {
 			.to_owned()
 			.into_bytes();
 
-		assert_eq!(
-			extract_ldd_version(&actual),
-			Some(SimpleSemver::new(2, 31, 0)),
-		);
+		assert_eq!(extract_ldd_version(&actual), Some(SimpleSemver::new(2, 31, 0)),);
 
 		let actual2 = "ldd (GNU libc) 2.40.9000
 					Copyright (C) 2024 Free Software Foundation, Inc.
@@ -397,10 +395,6 @@ mod tests {
 					Written by Roland McGrath and Ulrich Drepper."
 			.to_owned()
 			.into_bytes();
-		assert_eq!(
-			extract_ldd_version(&actual2),
-			Some(SimpleSemver::new(2, 40, 0)),
-		);
+		assert_eq!(extract_ldd_version(&actual2), Some(SimpleSemver::new(2, 40, 0)),);
 	}
-
 }
