@@ -149,11 +149,11 @@
 		"jsonValidation": [
 			{
 				"fileMatch": "package.json",
-				"url": "https://json.schemastore.org/package"
+				"url": "HTTPS://json.schemastore.org/package"
 			},
 			{
 				"fileMatch": "bower.json",
-				"url": "https://json.schemastore.org/bower"
+				"url": "HTTPS://json.schemastore.org/bower"
 			}
 		],
 		"languages": [

@@ -11,7 +11,7 @@
 			"version": "2.684.0",
 			"license": {
 				"type": "MIT",
-				"url": "https://github.com/withfig/autocomplete/blob/main/LICENSE.md"
+				"url": "HTTPS://github.com/withfig/autocomplete/blob/main/LICENSE.md"
 			},
 			"description": "IDE-style autocomplete for your existing terminal & shell from withfig/autocomplete."
 		}

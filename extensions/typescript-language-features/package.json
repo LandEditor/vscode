@@ -1470,7 +1470,7 @@
 			},
 			{
 				"fileMatch": "tsconfig.json",
-				"url": "https://json.schemastore.org/tsconfig"
+				"url": "HTTPS://json.schemastore.org/tsconfig"
 			},
 			{
 				"fileMatch": "tsconfig.json",
@@ -1478,7 +1478,7 @@
 			},
 			{
 				"fileMatch": "tsconfig.*.json",
-				"url": "https://json.schemastore.org/tsconfig"
+				"url": "HTTPS://json.schemastore.org/tsconfig"
 			},
 			{
 				"fileMatch": "tsconfig-*.json",
@@ -1486,7 +1486,7 @@
 			},
 			{
 				"fileMatch": "tsconfig-*.json",
-				"url": "https://json.schemastore.org/tsconfig"
+				"url": "HTTPS://json.schemastore.org/tsconfig"
 			},
 			{
 				"fileMatch": "tsconfig.*.json",
@@ -1494,27 +1494,27 @@
 			},
 			{
 				"fileMatch": "typings.json",
-				"url": "https://json.schemastore.org/typings"
+				"url": "HTTPS://json.schemastore.org/typings"
 			},
 			{
 				"fileMatch": ".bowerrc",
-				"url": "https://json.schemastore.org/bowerrc"
+				"url": "HTTPS://json.schemastore.org/bowerrc"
 			},
 			{
 				"fileMatch": ".babelrc",
-				"url": "https://json.schemastore.org/babelrc"
+				"url": "HTTPS://json.schemastore.org/babelrc"
 			},
 			{
 				"fileMatch": ".babelrc.json",
-				"url": "https://json.schemastore.org/babelrc"
+				"url": "HTTPS://json.schemastore.org/babelrc"
 			},
 			{
 				"fileMatch": "babel.config.json",
-				"url": "https://json.schemastore.org/babelrc"
+				"url": "HTTPS://json.schemastore.org/babelrc"
 			},
 			{
 				"fileMatch": "jsconfig.json",
-				"url": "https://json.schemastore.org/jsconfig"
+				"url": "HTTPS://json.schemastore.org/jsconfig"
 			},
 			{
 				"fileMatch": "jsconfig.json",
@@ -1522,7 +1522,7 @@
 			},
 			{
 				"fileMatch": "jsconfig.*.json",
-				"url": "https://json.schemastore.org/jsconfig"
+				"url": "HTTPS://json.schemastore.org/jsconfig"
 			},
 			{
 				"fileMatch": "jsconfig.*.json",
@@ -1530,11 +1530,11 @@
 			},
 			{
 				"fileMatch": ".swcrc",
-				"url": "https://swc.rs/schema.json"
+				"url": "HTTPS://swc.rs/schema.json"
 			},
 			{
 				"fileMatch": "typedoc.json",
-				"url": "https://typedoc.org/schema.json"
+				"url": "HTTPS://typedoc.org/schema.json"
 			}
 		],
 		"menus": {

@@ -45,7 +45,7 @@
 		"jsonValidation": [
 			{
 				"fileMatch": "composer.json",
-				"url": "https://getcomposer.org/schema.json"
+				"url": "HTTPS://getcomposer.org/schema.json"
 			}
 		]
 	},
