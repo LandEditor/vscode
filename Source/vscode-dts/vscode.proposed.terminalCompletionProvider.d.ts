@@ -3,12 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	// https://github.com/microsoft/vscode/issues/226562
 
-	export interface TerminalCompletionProvider<
-		T extends TerminalCompletionItem,
-	> {
+	export interface TerminalCompletionProvider<T extends TerminalCompletionItem> {
 		id: string;
 		/**
 		 * Provide completions for the given position and document.
@@ -17,11 +16,7 @@ declare module "vscode" {
 		 * @param token A cancellation token.
 		 * @return A list of completions.
 		 */
-		provideTerminalCompletions(
-			terminal: Terminal,
-			context: TerminalCompletionContext,
-			token: CancellationToken,
-		): ProviderResult<T[] | TerminalCompletionList<T>>;
+		provideTerminalCompletions(terminal: Terminal, context: TerminalCompletionContext, token: CancellationToken): ProviderResult<T[] | TerminalCompletionList<T>>;
 	}
 
 	export interface TerminalCompletionItem {
@@ -51,6 +46,7 @@ declare module "vscode" {
 		kind?: TerminalCompletionItemKind;
 	}
 
+
 	/**
 	 * Terminal item kinds.
 	 */
@@ -59,7 +55,7 @@ declare module "vscode" {
 		Folder = 1,
 		Flag = 2,
 		Method = 3,
-		Argument = 4,
+		Argument = 4
 	}
 
 	export interface TerminalCompletionContext {
@@ -81,21 +77,15 @@ declare module "vscode" {
 		 * @param provider The completion provider.
 		 * @returns A {@link Disposable} that unregisters this provider when being disposed.
 		 */
-		export function registerTerminalCompletionProvider<
-			T extends TerminalCompletionItem,
-		>(
-			provider: TerminalCompletionProvider<T>,
-			...triggerCharacters: string[]
-		): Disposable;
+		export function registerTerminalCompletionProvider<T extends TerminalCompletionItem>(provider: TerminalCompletionProvider<T>, ...triggerCharacters: string[]): Disposable;
 	}
 
 	/**
 	 * Represents a collection of {@link TerminalCompletionItem completion items} to be presented
 	 * in the terminal.
 	 */
-	export class TerminalCompletionList<
-		T extends TerminalCompletionItem = TerminalCompletionItem,
-	> {
+	export class TerminalCompletionList<T extends TerminalCompletionItem = TerminalCompletionItem> {
+
 		/**
 		 * Resources that should be shown in the completions list for the cwd of the terminal.
 		 */
@@ -112,10 +102,7 @@ declare module "vscode" {
 		 * @param items The completion items.
 		 * @param resourceRequestConfig Indicates which resources should be shown as completions for the cwd of the terminal.
 		 */
-		constructor(
-			items?: T[],
-			resourceRequestConfig?: TerminalResourceRequestConfig,
-		);
+		constructor(items?: T[], resourceRequestConfig?: TerminalResourceRequestConfig);
 	}
 
 	export interface TerminalResourceRequestConfig {

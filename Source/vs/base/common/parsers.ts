@@ -2,13 +2,15 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
 export const enum ValidationState {
 	OK = 0,
 	Info = 1,
 	Warning = 2,
 	Error = 3,
-	Fatal = 4,
+	Fatal = 4
 }
+
 export class ValidationStatus {
 	private _state: ValidationState;
 
@@ -34,18 +36,17 @@ export class ValidationStatus {
 		return this._state === ValidationState.Fatal;
 	}
 }
+
 export interface IProblemReporter {
 	info(message: string): void;
-
 	warn(message: string): void;
-
 	error(message: string): void;
-
 	fatal(message: string): void;
-
 	status: ValidationStatus;
 }
+
 export abstract class Parser {
+
 	private _problemReporter: IProblemReporter;
 
 	constructor(problemReporter: IProblemReporter) {

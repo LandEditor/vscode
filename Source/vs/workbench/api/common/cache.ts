@@ -2,22 +2,22 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
 export class Cache<T> {
+
 	private static readonly enableDebugLogging = false;
 
 	private readonly _data = new Map<number, readonly T[]>();
-
 	private _idPool = 1;
 
-	constructor(private readonly id: string) {}
+	constructor(
+		private readonly id: string
+	) { }
 
 	add(item: readonly T[]): number {
 		const id = this._idPool++;
-
 		this._data.set(id, item);
-
 		this.logDebugInfo();
-
 		return id;
 	}
 
@@ -27,7 +27,6 @@ export class Cache<T> {
 
 	delete(id: number) {
 		this._data.delete(id);
-
 		this.logDebugInfo();
 	}
 
@@ -35,7 +34,6 @@ export class Cache<T> {
 		if (!Cache.enableDebugLogging) {
 			return;
 		}
-
 		console.log(`${this.id} cache size - ${this._data.size}`);
 	}
 }

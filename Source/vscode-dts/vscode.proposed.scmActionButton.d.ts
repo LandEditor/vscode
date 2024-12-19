@@ -3,14 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
 	// https://github.com/microsoft/vscode/issues/133935
 
 	export interface SourceControlActionButton {
 		command: Command & { shortTitle?: string };
-
 		secondaryCommands?: Command[][];
-
 		enabled: boolean;
 	}
 

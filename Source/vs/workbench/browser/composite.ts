@@ -2,28 +2,22 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Dimension, IDomPosition, trackFocus } from "../../base/browser/dom.js";
-import { IActionViewItem } from "../../base/browser/ui/actionbar/actionbar.js";
-import { IBaseActionViewItemOptions } from "../../base/browser/ui/actionbar/actionViewItems.js";
-import { IBoundarySashes } from "../../base/browser/ui/sash/sash.js";
-import {
-	ActionRunner,
-	IAction,
-	IActionRunner,
-} from "../../base/common/actions.js";
-import { Emitter, Event } from "../../base/common/event.js";
-import { Disposable } from "../../base/common/lifecycle.js";
-import { assertIsDefined } from "../../base/common/types.js";
-import { MenuId } from "../../platform/actions/common/actions.js";
-import {
-	IConstructorSignature,
-	IInstantiationService,
-} from "../../platform/instantiation/common/instantiation.js";
-import { IStorageService } from "../../platform/storage/common/storage.js";
-import { ITelemetryService } from "../../platform/telemetry/common/telemetry.js";
-import { IThemeService } from "../../platform/theme/common/themeService.js";
-import { Component } from "../common/component.js";
-import { IComposite, ICompositeControl } from "../common/composite.js";
+
+import { IAction, IActionRunner, ActionRunner } from '../../base/common/actions.js';
+import { Component } from '../common/component.js';
+import { ITelemetryService } from '../../platform/telemetry/common/telemetry.js';
+import { IComposite, ICompositeControl } from '../common/composite.js';
+import { Event, Emitter } from '../../base/common/event.js';
+import { IThemeService } from '../../platform/theme/common/themeService.js';
+import { IConstructorSignature, IInstantiationService } from '../../platform/instantiation/common/instantiation.js';
+import { trackFocus, Dimension, IDomPosition } from '../../base/browser/dom.js';
+import { IStorageService } from '../../platform/storage/common/storage.js';
+import { Disposable } from '../../base/common/lifecycle.js';
+import { assertIsDefined } from '../../base/common/types.js';
+import { IActionViewItem } from '../../base/browser/ui/actionbar/actionbar.js';
+import { MenuId } from '../../platform/actions/common/actions.js';
+import { IBoundarySashes } from '../../base/browser/ui/sash/sash.js';
+import { IBaseActionViewItemOptions } from '../../base/browser/ui/actionbar/actionViewItems.js';
 
 /**
  * Composites are layed out in the sidebar and panel part of the workbench. At a time only one composite
@@ -38,12 +32,11 @@ import { IComposite, ICompositeControl } from "../common/composite.js";
  * layout and focus call, but only one create and dispose call.
  */
 export abstract class Composite extends Component implements IComposite {
-	private readonly _onTitleAreaUpdate = this._register(new Emitter<void>());
 
+	private readonly _onTitleAreaUpdate = this._register(new Emitter<void>());
 	readonly onTitleAreaUpdate = this._onTitleAreaUpdate.event;
 
 	protected _onDidFocus: Emitter<void> | undefined;
-
 	get onDidFocus(): Event<void> {
 		if (!this._onDidFocus) {
 			this._onDidFocus = this.registerFocusTrackEvents().onDidFocus;
@@ -53,7 +46,6 @@ export abstract class Composite extends Component implements IComposite {
 	}
 
 	private _onDidBlur: Emitter<void> | undefined;
-
 	get onDidBlur(): Event<void> {
 		if (!this._onDidBlur) {
 			this._onDidBlur = this.registerFocusTrackEvents().onDidBlur;
@@ -63,43 +55,27 @@ export abstract class Composite extends Component implements IComposite {
 	}
 
 	private _hasFocus = false;
-
 	hasFocus(): boolean {
 		return this._hasFocus;
 	}
 
-	private registerFocusTrackEvents(): {
-		onDidFocus: Emitter<void>;
-
-		onDidBlur: Emitter<void>;
-	} {
+	private registerFocusTrackEvents(): { onDidFocus: Emitter<void>; onDidBlur: Emitter<void> } {
 		const container = assertIsDefined(this.getContainer());
-
 		const focusTracker = this._register(trackFocus(container));
 
-		const onDidFocus = (this._onDidFocus = this._register(
-			new Emitter<void>(),
-		));
+		const onDidFocus = this._onDidFocus = this._register(new Emitter<void>());
+		this._register(focusTracker.onDidFocus(() => {
+			this._hasFocus = true;
 
-		this._register(
-			focusTracker.onDidFocus(() => {
-				this._hasFocus = true;
+			onDidFocus.fire();
+		}));
 
-				onDidFocus.fire();
-			}),
-		);
+		const onDidBlur = this._onDidBlur = this._register(new Emitter<void>());
+		this._register(focusTracker.onDidBlur(() => {
+			this._hasFocus = false;
 
-		const onDidBlur = (this._onDidBlur = this._register(
-			new Emitter<void>(),
-		));
-
-		this._register(
-			focusTracker.onDidBlur(() => {
-				this._hasFocus = false;
-
-				onDidBlur.fire();
-			}),
-		);
+			onDidBlur.fire();
+		}));
 
 		return { onDidFocus, onDidBlur };
 	}
@@ -107,14 +83,13 @@ export abstract class Composite extends Component implements IComposite {
 	protected actionRunner: IActionRunner | undefined;
 
 	private visible = false;
-
 	private parent: HTMLElement | undefined;
 
 	constructor(
 		id: string,
 		protected readonly telemetryService: ITelemetryService,
 		themeService: IThemeService,
-		storageService: IStorageService,
+		storageService: IStorageService
 	) {
 		super(id, themeService, storageService);
 	}
@@ -122,6 +97,7 @@ export abstract class Composite extends Component implements IComposite {
 	getTitle(): string | undefined {
 		return undefined;
 	}
+
 	/**
 	 * Note: Clients should not call this method, the workbench calls this
 	 * method. Calling it otherwise may result in unexpected behavior.
@@ -134,12 +110,14 @@ export abstract class Composite extends Component implements IComposite {
 	create(parent: HTMLElement): void {
 		this.parent = parent;
 	}
+
 	/**
 	 * Returns the container this composite is being build in.
 	 */
 	getContainer(): HTMLElement | undefined {
 		return this.parent;
 	}
+
 	/**
 	 * Note: Clients should not call this method, the workbench calls this
 	 * method. Calling it otherwise may result in unexpected behavior.
@@ -156,21 +134,25 @@ export abstract class Composite extends Component implements IComposite {
 			this.visible = visible;
 		}
 	}
+
 	/**
 	 * Called when this composite should receive keyboard focus.
 	 */
 	focus(): void {
 		// Subclasses can implement
 	}
+
 	/**
 	 * Layout the contents of this composite using the provided dimensions.
 	 */
 	abstract layout(dimension: Dimension, position?: IDomPosition): void;
+
 	/**
 	 * Set boundary sashes for this composite. These are used to create
 	 * draggable corner areas with inner sashes.
 	 */
 	abstract setBoundarySashes(sashes: IBoundarySashes): void;
+
 	/**
 	 *
 	 * @returns the action runner for this composite
@@ -178,12 +160,14 @@ export abstract class Composite extends Component implements IComposite {
 	getMenuIds(): readonly MenuId[] {
 		return [];
 	}
+
 	/**
 	 * Returns an array of actions to show in the action bar of the composite.
 	 */
 	getActions(): readonly IAction[] {
 		return [];
 	}
+
 	/**
 	 * Returns an array of actions to show in the action bar of the composite
 	 * in a less prominent way then action from getActions.
@@ -191,30 +175,31 @@ export abstract class Composite extends Component implements IComposite {
 	getSecondaryActions(): readonly IAction[] {
 		return [];
 	}
+
 	/**
 	 * Returns an array of actions to show in the context menu of the composite
 	 */
 	getContextMenuActions(): readonly IAction[] {
 		return [];
 	}
+
 	/**
 	 * For any of the actions returned by this composite, provide an IActionViewItem in
 	 * cases where the implementor of the composite wants to override the presentation
 	 * of an action. Returns undefined to indicate that the action is not rendered through
 	 * an action item.
 	 */
-	getActionViewItem(
-		action: IAction,
-		options: IBaseActionViewItemOptions,
-	): IActionViewItem | undefined {
+	getActionViewItem(action: IAction, options: IBaseActionViewItemOptions): IActionViewItem | undefined {
 		return undefined;
 	}
+
 	/**
 	 * Provide a context to be passed to the toolbar.
 	 */
 	getActionsContext(): unknown {
 		return null;
 	}
+
 	/**
 	 * Returns the instance of IActionRunner to use with this composite for the
 	 * composite tool bar.
@@ -226,6 +211,7 @@ export abstract class Composite extends Component implements IComposite {
 
 		return this.actionRunner;
 	}
+
 	/**
 	 * Method for composite implementors to indicate to the composite container that the title or the actions
 	 * of the composite have changed. Calling this method will cause the container to ask for title (getTitle())
@@ -235,12 +221,14 @@ export abstract class Composite extends Component implements IComposite {
 	protected updateTitleArea(): void {
 		this._onTitleAreaUpdate.fire();
 	}
+
 	/**
 	 * Returns true if this composite is currently visible and false otherwise.
 	 */
 	isVisible(): boolean {
 		return this.visible;
 	}
+
 	/**
 	 * Returns the underlying composite control or `undefined` if it is not accessible.
 	 */
@@ -248,10 +236,12 @@ export abstract class Composite extends Component implements IComposite {
 		return undefined;
 	}
 }
+
 /**
  * A composite descriptor is a lightweight descriptor of a composite in the workbench.
  */
 export abstract class CompositeDescriptor<T extends Composite> {
+
 	constructor(
 		private readonly ctor: IConstructorSignature<T>,
 		readonly id: string,
@@ -259,25 +249,19 @@ export abstract class CompositeDescriptor<T extends Composite> {
 		readonly cssClass?: string,
 		readonly order?: number,
 		readonly requestedIndex?: number,
-	) {}
+	) { }
 
 	instantiate(instantiationService: IInstantiationService): T {
 		return instantiationService.createInstance(this.ctor);
 	}
 }
-export abstract class CompositeRegistry<
-	T extends Composite,
-> extends Disposable {
-	private readonly _onDidRegister = this._register(
-		new Emitter<CompositeDescriptor<T>>(),
-	);
 
+export abstract class CompositeRegistry<T extends Composite> extends Disposable {
+
+	private readonly _onDidRegister = this._register(new Emitter<CompositeDescriptor<T>>());
 	readonly onDidRegister = this._onDidRegister.event;
 
-	private readonly _onDidDeregister = this._register(
-		new Emitter<CompositeDescriptor<T>>(),
-	);
-
+	private readonly _onDidDeregister = this._register(new Emitter<CompositeDescriptor<T>>());
 	readonly onDidDeregister = this._onDidDeregister.event;
 
 	private readonly composites: CompositeDescriptor<T>[] = [];
@@ -288,19 +272,16 @@ export abstract class CompositeRegistry<
 		}
 
 		this.composites.push(descriptor);
-
 		this._onDidRegister.fire(descriptor);
 	}
 
 	protected deregisterComposite(id: string): void {
 		const descriptor = this.compositeById(id);
-
 		if (!descriptor) {
 			return;
 		}
 
 		this.composites.splice(this.composites.indexOf(descriptor), 1);
-
 		this._onDidDeregister.fire(descriptor);
 	}
 
@@ -313,6 +294,6 @@ export abstract class CompositeRegistry<
 	}
 
 	private compositeById(id: string): CompositeDescriptor<T> | undefined {
-		return this.composites.find((composite) => composite.id === id);
+		return this.composites.find(composite => composite.id === id);
 	}
 }

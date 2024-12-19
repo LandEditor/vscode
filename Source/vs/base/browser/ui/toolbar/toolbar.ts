@@ -2,221 +2,147 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import {
-	Action,
-	IAction,
-	IActionRunner,
-	SubmenuAction,
-} from "../../../common/actions.js";
-import { Codicon } from "../../../common/codicons.js";
-import { EventMultiplexer } from "../../../common/event.js";
-import { ResolvedKeybinding } from "../../../common/keybindings.js";
-import { Disposable, DisposableStore } from "../../../common/lifecycle.js";
-import { ThemeIcon } from "../../../common/themables.js";
-import { IContextMenuProvider } from "../../contextmenu.js";
-import {
-	ActionBar,
-	ActionsOrientation,
-	IActionViewItemProvider,
-} from "../actionbar/actionbar.js";
-import { AnchorAlignment } from "../contextview/contextview.js";
-import { DropdownMenuActionViewItem } from "../dropdown/dropdownActionViewItem.js";
 
-import "./toolbar.css";
+import { IContextMenuProvider } from '../../contextmenu.js';
+import { ActionBar, ActionsOrientation, IActionViewItemProvider } from '../actionbar/actionbar.js';
+import { AnchorAlignment } from '../contextview/contextview.js';
+import { DropdownMenuActionViewItem } from '../dropdown/dropdownActionViewItem.js';
+import { Action, IAction, IActionRunner, SubmenuAction } from '../../../common/actions.js';
+import { Codicon } from '../../../common/codicons.js';
+import { ThemeIcon } from '../../../common/themables.js';
+import { EventMultiplexer } from '../../../common/event.js';
+import { ResolvedKeybinding } from '../../../common/keybindings.js';
+import { Disposable, DisposableStore } from '../../../common/lifecycle.js';
+import './toolbar.css';
+import * as nls from '../../../../nls.js';
+import { IHoverDelegate } from '../hover/hoverDelegate.js';
+import { createInstantHoverDelegate } from '../hover/hoverDelegateFactory.js';
 
-import * as nls from "../../../../nls.js";
-import { IHoverDelegate } from "../hover/hoverDelegate.js";
-import { createInstantHoverDelegate } from "../hover/hoverDelegateFactory.js";
+
 
 export interface IToolBarOptions {
 	orientation?: ActionsOrientation;
-
 	actionViewItemProvider?: IActionViewItemProvider;
-
 	ariaLabel?: string;
-
 	getKeyBinding?: (action: IAction) => ResolvedKeybinding | undefined;
-
 	actionRunner?: IActionRunner;
-
 	toggleMenuTitle?: string;
-
 	anchorAlignmentProvider?: () => AnchorAlignment;
-
 	renderDropdownAsChildElement?: boolean;
-
 	moreIcon?: ThemeIcon;
-
 	allowContextMenu?: boolean;
-
 	skipTelemetry?: boolean;
-
 	hoverDelegate?: IHoverDelegate;
+
 	/**
 	 * If true, toggled primary items are highlighted with a background color.
 	 */
 	highlightToggledItems?: boolean;
+
 	/**
 	 * Render action with icons (default: `true`)
 	 */
 	icon?: boolean;
+
 	/**
 	 * Render action with label (default: `false`)
 	 */
 	label?: boolean;
 }
+
 /**
  * A widget that combines an action bar for primary actions and a dropdown for secondary actions.
  */
 export class ToolBar extends Disposable {
 	private options: IToolBarOptions;
-
 	protected readonly actionBar: ActionBar;
-
 	private toggleMenuAction: ToggleMenuAction;
-
 	private toggleMenuActionViewItem: DropdownMenuActionViewItem | undefined;
-
 	private submenuActionViewItems: DropdownMenuActionViewItem[] = [];
-
 	private hasSecondaryActions: boolean = false;
-
 	private readonly element: HTMLElement;
 
-	private _onDidChangeDropdownVisibility = this._register(
-		new EventMultiplexer<boolean>(),
-	);
-
-	readonly onDidChangeDropdownVisibility =
-		this._onDidChangeDropdownVisibility.event;
-
+	private _onDidChangeDropdownVisibility = this._register(new EventMultiplexer<boolean>());
+	readonly onDidChangeDropdownVisibility = this._onDidChangeDropdownVisibility.event;
 	private readonly disposables = this._register(new DisposableStore());
 
-	constructor(
-		container: HTMLElement,
-		contextMenuProvider: IContextMenuProvider,
-		options: IToolBarOptions = {
-			orientation: ActionsOrientation.HORIZONTAL,
-		},
-	) {
+	constructor(container: HTMLElement, contextMenuProvider: IContextMenuProvider, options: IToolBarOptions = { orientation: ActionsOrientation.HORIZONTAL }) {
 		super();
 
-		options.hoverDelegate =
-			options.hoverDelegate ??
-			this._register(createInstantHoverDelegate());
-
+		options.hoverDelegate = options.hoverDelegate ?? this._register(createInstantHoverDelegate());
 		this.options = options;
 
-		this.toggleMenuAction = this._register(
-			new ToggleMenuAction(
-				() => this.toggleMenuActionViewItem?.show(),
-				options.toggleMenuTitle,
-			),
-		);
+		this.toggleMenuAction = this._register(new ToggleMenuAction(() => this.toggleMenuActionViewItem?.show(), options.toggleMenuTitle));
 
-		this.element = document.createElement("div");
-
-		this.element.className = "monaco-toolbar";
-
+		this.element = document.createElement('div');
+		this.element.className = 'monaco-toolbar';
 		container.appendChild(this.element);
 
-		this.actionBar = this._register(
-			new ActionBar(this.element, {
-				orientation: options.orientation,
-				ariaLabel: options.ariaLabel,
-				actionRunner: options.actionRunner,
-				allowContextMenu: options.allowContextMenu,
-				highlightToggledItems: options.highlightToggledItems,
-				hoverDelegate: options.hoverDelegate,
-				actionViewItemProvider: (action, viewItemOptions) => {
-					if (action.id === ToggleMenuAction.ID) {
-						this.toggleMenuActionViewItem =
-							new DropdownMenuActionViewItem(
-								action,
-								(<ToggleMenuAction>action).menuActions,
-								contextMenuProvider,
-								{
-									actionViewItemProvider:
-										this.options.actionViewItemProvider,
-									actionRunner: this.actionRunner,
-									keybindingProvider:
-										this.options.getKeyBinding,
-									classNames: ThemeIcon.asClassNameArray(
-										options.moreIcon ?? Codicon.toolBarMore,
-									),
-									anchorAlignmentProvider:
-										this.options.anchorAlignmentProvider,
-									menuAsChild:
-										!!this.options
-											.renderDropdownAsChildElement,
-									skipTelemetry: this.options.skipTelemetry,
-									isMenu: true,
-									hoverDelegate: this.options.hoverDelegate,
-								},
-							);
-
-						this.toggleMenuActionViewItem.setActionContext(
-							this.actionBar.context,
-						);
-
-						this.disposables.add(
-							this._onDidChangeDropdownVisibility.add(
-								this.toggleMenuActionViewItem
-									.onDidChangeVisibility,
-							),
-						);
-
-						return this.toggleMenuActionViewItem;
-					}
-
-					if (options.actionViewItemProvider) {
-						const result = options.actionViewItemProvider(
-							action,
-							viewItemOptions,
-						);
-
-						if (result) {
-							return result;
+		this.actionBar = this._register(new ActionBar(this.element, {
+			orientation: options.orientation,
+			ariaLabel: options.ariaLabel,
+			actionRunner: options.actionRunner,
+			allowContextMenu: options.allowContextMenu,
+			highlightToggledItems: options.highlightToggledItems,
+			hoverDelegate: options.hoverDelegate,
+			actionViewItemProvider: (action, viewItemOptions) => {
+				if (action.id === ToggleMenuAction.ID) {
+					this.toggleMenuActionViewItem = new DropdownMenuActionViewItem(
+						action,
+						(<ToggleMenuAction>action).menuActions,
+						contextMenuProvider,
+						{
+							actionViewItemProvider: this.options.actionViewItemProvider,
+							actionRunner: this.actionRunner,
+							keybindingProvider: this.options.getKeyBinding,
+							classNames: ThemeIcon.asClassNameArray(options.moreIcon ?? Codicon.toolBarMore),
+							anchorAlignmentProvider: this.options.anchorAlignmentProvider,
+							menuAsChild: !!this.options.renderDropdownAsChildElement,
+							skipTelemetry: this.options.skipTelemetry,
+							isMenu: true,
+							hoverDelegate: this.options.hoverDelegate
 						}
-					}
+					);
+					this.toggleMenuActionViewItem.setActionContext(this.actionBar.context);
+					this.disposables.add(this._onDidChangeDropdownVisibility.add(this.toggleMenuActionViewItem.onDidChangeVisibility));
 
-					if (action instanceof SubmenuAction) {
-						const result = new DropdownMenuActionViewItem(
-							action,
-							action.actions,
-							contextMenuProvider,
-							{
-								actionViewItemProvider:
-									this.options.actionViewItemProvider,
-								actionRunner: this.actionRunner,
-								keybindingProvider: this.options.getKeyBinding,
-								classNames: action.class,
-								anchorAlignmentProvider:
-									this.options.anchorAlignmentProvider,
-								menuAsChild:
-									!!this.options.renderDropdownAsChildElement,
-								skipTelemetry: this.options.skipTelemetry,
-								hoverDelegate: this.options.hoverDelegate,
-							},
-						);
+					return this.toggleMenuActionViewItem;
+				}
 
-						result.setActionContext(this.actionBar.context);
+				if (options.actionViewItemProvider) {
+					const result = options.actionViewItemProvider(action, viewItemOptions);
 
-						this.submenuActionViewItems.push(result);
-
-						this.disposables.add(
-							this._onDidChangeDropdownVisibility.add(
-								result.onDidChangeVisibility,
-							),
-						);
-
+					if (result) {
 						return result;
 					}
+				}
 
-					return undefined;
-				},
-			}),
-		);
+				if (action instanceof SubmenuAction) {
+					const result = new DropdownMenuActionViewItem(
+						action,
+						action.actions,
+						contextMenuProvider,
+						{
+							actionViewItemProvider: this.options.actionViewItemProvider,
+							actionRunner: this.actionRunner,
+							keybindingProvider: this.options.getKeyBinding,
+							classNames: action.class,
+							anchorAlignmentProvider: this.options.anchorAlignmentProvider,
+							menuAsChild: !!this.options.renderDropdownAsChildElement,
+							skipTelemetry: this.options.skipTelemetry,
+							hoverDelegate: this.options.hoverDelegate
+						}
+					);
+					result.setActionContext(this.actionBar.context);
+					this.submenuActionViewItems.push(result);
+					this.disposables.add(this._onDidChangeDropdownVisibility.add(result.onDidChangeVisibility));
+
+					return result;
+				}
+
+				return undefined;
+			}
+		}));
 	}
 
 	set actionRunner(actionRunner: IActionRunner) {
@@ -229,9 +155,7 @@ export class ToolBar extends Disposable {
 
 	set context(context: unknown) {
 		this.actionBar.context = context;
-
 		this.toggleMenuActionViewItem?.setActionContext(context);
-
 		for (const actionViewItem of this.submenuActionViewItems) {
 			actionViewItem.setActionContext(context);
 		}
@@ -247,11 +171,9 @@ export class ToolBar extends Disposable {
 
 	getItemsWidth(): number {
 		let itemsWidth = 0;
-
 		for (let i = 0; i < this.actionBar.length(); i++) {
 			itemsWidth += this.actionBar.getWidth(i);
 		}
-
 		return itemsWidth;
 	}
 
@@ -271,32 +193,20 @@ export class ToolBar extends Disposable {
 		this.actionBar.setAriaLabel(label);
 	}
 
-	setActions(
-		primaryActions: ReadonlyArray<IAction>,
-		secondaryActions?: ReadonlyArray<IAction>,
-	): void {
+	setActions(primaryActions: ReadonlyArray<IAction>, secondaryActions?: ReadonlyArray<IAction>): void {
 		this.clear();
 
-		const primaryActionsToSet = primaryActions
-			? primaryActions.slice(0)
-			: [];
-		// Inject additional action to open secondary actions if present
-		this.hasSecondaryActions = !!(
-			secondaryActions && secondaryActions.length > 0
-		);
+		const primaryActionsToSet = primaryActions ? primaryActions.slice(0) : [];
 
+		// Inject additional action to open secondary actions if present
+		this.hasSecondaryActions = !!(secondaryActions && secondaryActions.length > 0);
 		if (this.hasSecondaryActions && secondaryActions) {
 			this.toggleMenuAction.menuActions = secondaryActions.slice(0);
-
 			primaryActionsToSet.push(this.toggleMenuAction);
 		}
 
-		primaryActionsToSet.forEach((action) => {
-			this.actionBar.push(action, {
-				icon: this.options.icon ?? true,
-				label: this.options.label ?? false,
-				keybinding: this.getKeybindingLabel(action),
-			});
+		primaryActionsToSet.forEach(action => {
+			this.actionBar.push(action, { icon: this.options.icon ?? true, label: this.options.label ?? false, keybinding: this.getKeybindingLabel(action) });
 		});
 	}
 
@@ -312,34 +222,29 @@ export class ToolBar extends Disposable {
 
 	private clear(): void {
 		this.submenuActionViewItems = [];
-
 		this.disposables.clear();
-
 		this.actionBar.clear();
 	}
 
 	override dispose(): void {
 		this.clear();
-
 		this.disposables.dispose();
-
 		super.dispose();
 	}
 }
+
 export class ToggleMenuAction extends Action {
-	static readonly ID = "toolbar.toggle.more";
+
+	static readonly ID = 'toolbar.toggle.more';
 
 	private _menuActions: ReadonlyArray<IAction>;
-
 	private toggleDropdownMenu: () => void;
 
 	constructor(toggleDropdownMenu: () => void, title?: string) {
-		title = title || nls.localize("moreActions", "More Actions...");
-
+		title = title || nls.localize('moreActions', "More Actions...");
 		super(ToggleMenuAction.ID, title, undefined, true);
 
 		this._menuActions = [];
-
 		this.toggleDropdownMenu = toggleDropdownMenu;
 	}
 

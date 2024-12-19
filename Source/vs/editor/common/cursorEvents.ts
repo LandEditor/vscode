@@ -2,8 +2,9 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Position } from "./core/position.js";
-import { Selection } from "./core/selection.js";
+
+import { Position } from './core/position.js';
+import { Selection } from './core/selection.js';
 
 /**
  * Describes the reason the cursor has changed its position.

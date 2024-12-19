@@ -3,111 +3,49 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from "../../../../base/common/cancellation.js";
-import { URI } from "../../../../base/common/uri.js";
-import { IProgress } from "../../../../platform/progress/common/progress.js";
+import { CancellationToken } from '../../../../base/common/cancellation.js';
+import { URI } from '../../../../base/common/uri.js';
+import { IProgress } from '../../../../platform/progress/common/progress.js';
 
 export class Position {
-	constructor(
-		readonly line: number,
-		readonly character: number,
-	) {}
+	constructor(readonly line: number, readonly character: number) { }
 
-	isBefore(other: Position): boolean {
-		return false;
-	}
-
-	isBeforeOrEqual(other: Position): boolean {
-		return false;
-	}
-
-	isAfter(other: Position): boolean {
-		return false;
-	}
-
-	isAfterOrEqual(other: Position): boolean {
-		return false;
-	}
-
-	isEqual(other: Position): boolean {
-		return false;
-	}
-
-	compareTo(other: Position): number {
-		return 0;
-	}
-
+	isBefore(other: Position): boolean { return false; }
+	isBeforeOrEqual(other: Position): boolean { return false; }
+	isAfter(other: Position): boolean { return false; }
+	isAfterOrEqual(other: Position): boolean { return false; }
+	isEqual(other: Position): boolean { return false; }
+	compareTo(other: Position): number { return 0; }
 	translate(lineDelta?: number, characterDelta?: number): Position;
-
-	translate(change: {
-		lineDelta?: number;
-
-		characterDelta?: number;
-	}): Position;
-
-	translate(_?: any, _2?: any): Position {
-		return new Position(0, 0);
-	}
-
+	translate(change: { lineDelta?: number; characterDelta?: number }): Position;
+	translate(_?: any, _2?: any): Position { return new Position(0, 0); }
 	with(line?: number, character?: number): Position;
-
 	with(change: { line?: number; character?: number }): Position;
-
-	with(_: any): Position {
-		return new Position(0, 0);
-	}
+	with(_: any): Position { return new Position(0, 0); }
 }
 
 export class Range {
 	readonly start: Position;
-
 	readonly end: Position;
 
-	constructor(
-		startLine: number,
-		startCol: number,
-		endLine: number,
-		endCol: number,
-	) {
+	constructor(startLine: number, startCol: number, endLine: number, endCol: number) {
 		this.start = new Position(startLine, startCol);
-
 		this.end = new Position(endLine, endCol);
 	}
 
 	isEmpty = false;
-
 	isSingleLine = false;
-
-	contains(positionOrRange: Position | Range): boolean {
-		return false;
-	}
-
-	isEqual(other: Range): boolean {
-		return false;
-	}
-
-	intersection(range: Range): Range | undefined {
-		return undefined;
-	}
-
-	union(other: Range): Range {
-		return new Range(0, 0, 0, 0);
-	}
+	contains(positionOrRange: Position | Range): boolean { return false; }
+	isEqual(other: Range): boolean { return false; }
+	intersection(range: Range): Range | undefined { return undefined; }
+	union(other: Range): Range { return new Range(0, 0, 0, 0); }
 
 	with(start?: Position, end?: Position): Range;
-
 	with(change: { start?: Position; end?: Position }): Range;
-
-	with(_: any): Range {
-		return new Range(0, 0, 0, 0);
-	}
+	with(_: any): Range { return new Range(0, 0, 0, 0); }
 }
 
-export type ProviderResult<T> =
-	| T
-	| undefined
-	| null
-	| Thenable<T | undefined | null>;
+export type ProviderResult<T> = T | undefined | null | Thenable<T | undefined | null>;
 
 /**
  * A relative pattern is a helper to construct glob patterns that are matched
@@ -115,6 +53,7 @@ export type ProviderResult<T> =
  * or a [workspace folder](#WorkspaceFolder).
  */
 export interface RelativePattern {
+
 	/**
 	 * A base file path to which this pattern will be matched against relatively. The
 	 * file path must be absolute, should not have any trailing path separators and
@@ -181,6 +120,7 @@ export interface TextSearchQuery2 {
 	isWordMatch?: boolean;
 }
 
+
 export interface TextSearchProviderFolderOptions {
 	/**
 	 * The root folder to search within.
@@ -232,6 +172,7 @@ export interface TextSearchProviderFolderOptions {
  * Options that apply to text search.
  */
 export interface TextSearchProviderOptions {
+
 	folderOptions: TextSearchProviderFolderOptions[];
 
 	/**
@@ -262,11 +203,13 @@ export interface TextSearchProviderOptions {
 	 */
 	maxFileSize: number | undefined;
 
+
 	/**
 	 * Number of lines of context to include before and after each match.
 	 */
 	surroundingContext: number;
 }
+
 
 /**
  * Information collected when text search is complete.
@@ -353,8 +296,8 @@ export class TextSearchMatch2 {
 	constructor(
 		public uri: URI,
 		public ranges: { sourceRange: Range; previewRange: Range }[],
-		public previewText: string,
-	) {}
+		public previewText: string) { }
+
 }
 
 /**
@@ -369,14 +312,14 @@ export class TextSearchContext2 {
 	constructor(
 		public uri: URI,
 		public text: string,
-		public lineNumber: number,
-	) {}
+		public lineNumber: number) { }
 }
 
 /**
  * A result payload for a text search, pertaining to matches within a single file.
  */
 export type TextSearchResult2 = TextSearchMatch2 | TextSearchContext2;
+
 
 /**
  * A FileSearchProvider provides search results for files in the given folder that match a query string. It can be invoked by quickaccess or other extensions.
@@ -395,11 +338,7 @@ export interface FileSearchProvider2 {
 	 * @param progress A progress callback that must be invoked for all results.
 	 * @param token A cancellation token.
 	 */
-	provideFileSearchResults(
-		pattern: string,
-		options: FileSearchProviderOptions,
-		token: CancellationToken,
-	): ProviderResult<URI[]>;
+	provideFileSearchResults(pattern: string, options: FileSearchProviderOptions, token: CancellationToken): ProviderResult<URI[]>;
 }
 
 /**
@@ -413,12 +352,7 @@ export interface TextSearchProvider2 {
 	 * @param progress A progress callback that must be invoked for all results.
 	 * @param token A cancellation token.
 	 */
-	provideTextSearchResults(
-		query: TextSearchQuery2,
-		options: TextSearchProviderOptions,
-		progress: IProgress<TextSearchResult2>,
-		token: CancellationToken,
-	): ProviderResult<TextSearchComplete2>;
+	provideTextSearchResults(query: TextSearchQuery2, options: TextSearchProviderOptions, progress: IProgress<TextSearchResult2>, token: CancellationToken): ProviderResult<TextSearchComplete2>;
 }
 
 /**
@@ -465,6 +399,7 @@ export interface TextSearchCompleteMessage2 {
 	type: TextSearchCompleteMessageType;
 }
 
+
 /**
  * A FileSearchProvider provides search results for files in the given folder that match a query string. It can be invoked by quickaccess or other extensions.
  *
@@ -482,11 +417,7 @@ export interface FileSearchProvider2 {
 	 * @param progress A progress callback that must be invoked for all results.
 	 * @param token A cancellation token.
 	 */
-	provideFileSearchResults(
-		pattern: string,
-		options: FileSearchProviderOptions,
-		token: CancellationToken,
-	): ProviderResult<URI[]>;
+	provideFileSearchResults(pattern: string, options: FileSearchProviderOptions, token: CancellationToken): ProviderResult<URI[]>;
 }
 
 /**
@@ -500,12 +431,7 @@ export interface TextSearchProvider2 {
 	 * @param progress A progress callback that must be invoked for all results.
 	 * @param token A cancellation token.
 	 */
-	provideTextSearchResults(
-		query: TextSearchQuery2,
-		options: TextSearchProviderOptions,
-		progress: IProgress<TextSearchResult2>,
-		token: CancellationToken,
-	): ProviderResult<TextSearchComplete2>;
+	provideTextSearchResults(query: TextSearchQuery2, options: TextSearchProviderOptions, progress: IProgress<TextSearchResult2>, token: CancellationToken): ProviderResult<TextSearchComplete2>;
 }
 
 /**
@@ -570,13 +496,14 @@ export enum ExcludeSettingOptions {
 	 * - files.exclude setting
 	 * - search.exclude setting
 	 */
-	SearchAndFilesExclude = 3,
+	SearchAndFilesExclude = 3
 }
 
 export enum TextSearchCompleteMessageType {
 	Information = 1,
 	Warning = 2,
 }
+
 
 /**
  * A message regarding a completed search.
@@ -596,10 +523,12 @@ export interface TextSearchCompleteMessage {
 	type: TextSearchCompleteMessageType;
 }
 
+
 /**
  * An AITextSearchProvider provides additional AI text search results in the workspace.
  */
 export interface AITextSearchProvider {
+
 	/**
 	 * The name of the AI searcher. Will be displayed as `{name} Results` in the Search View.
 	 */
@@ -614,10 +543,5 @@ export interface AITextSearchProvider {
 	 * @param progress A progress callback that must be invoked for all results.
 	 * @param token A cancellation token.
 	 */
-	provideAITextSearchResults(
-		query: string,
-		options: TextSearchProviderOptions,
-		progress: IProgress<TextSearchResult2>,
-		token: CancellationToken,
-	): ProviderResult<TextSearchComplete2>;
+	provideAITextSearchResults(query: string, options: TextSearchProviderOptions, progress: IProgress<TextSearchResult2>, token: CancellationToken): ProviderResult<TextSearchComplete2>;
 }

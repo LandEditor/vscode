@@ -3,188 +3,164 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { IAction } from "../../../base/common/actions.js";
-import { Event } from "../../../base/common/event.js";
-import type { IDisposable } from "../../../base/common/lifecycle.js";
-import type * as performance from "../../../base/common/performance.js";
-import {
-	IProcessEnvironment,
-	OperatingSystem,
-} from "../../../base/common/platform.js";
-import { ThemeIcon } from "../../../base/common/themables.js";
-import { URI, UriComponents } from "../../../base/common/uri.js";
-import { RawContextKey } from "../../contextkey/common/contextkey.js";
-import { createDecorator } from "../../instantiation/common/instantiation.js";
-import { ILogService } from "../../log/common/log.js";
-import { Registry } from "../../registry/common/platform.js";
-import { IWorkspaceFolder } from "../../workspace/common/workspace.js";
-import {
-	IPtyHostProcessReplayEvent,
-	ISerializedCommandDetectionCapability,
-	ITerminalCapabilityStore,
-	type ITerminalCommand,
-} from "./capabilities/capabilities.js";
-import { ISerializableEnvironmentVariableCollections } from "./environmentVariable.js";
-import {
-	IGetTerminalLayoutInfoArgs,
-	IProcessDetails,
-	ISetTerminalLayoutInfoArgs,
-} from "./terminalProcess.js";
+import { Event } from '../../../base/common/event.js';
+import { IProcessEnvironment, OperatingSystem } from '../../../base/common/platform.js';
+import { URI, UriComponents } from '../../../base/common/uri.js';
+import { createDecorator } from '../../instantiation/common/instantiation.js';
+import { IPtyHostProcessReplayEvent, ISerializedCommandDetectionCapability, ITerminalCapabilityStore, type ITerminalCommand } from './capabilities/capabilities.js';
+import { IGetTerminalLayoutInfoArgs, IProcessDetails, ISetTerminalLayoutInfoArgs } from './terminalProcess.js';
+import { ThemeIcon } from '../../../base/common/themables.js';
+import { ISerializableEnvironmentVariableCollections } from './environmentVariable.js';
+import { RawContextKey } from '../../contextkey/common/contextkey.js';
+import { IWorkspaceFolder } from '../../workspace/common/workspace.js';
+import { Registry } from '../../registry/common/platform.js';
+import type * as performance from '../../../base/common/performance.js';
+import { ILogService } from '../../log/common/log.js';
+import type { IAction } from '../../../base/common/actions.js';
+import type { IDisposable } from '../../../base/common/lifecycle.js';
 
-export const terminalTabFocusModeContextKey = new RawContextKey<boolean>(
-	"terminalTabFocusMode",
-	false,
-	true,
-);
+export const terminalTabFocusModeContextKey = new RawContextKey<boolean>('terminalTabFocusMode', false, true);
 
 export const enum TerminalSettingPrefix {
-	AutomationProfile = "terminal.integrated.automationProfile.",
-	DefaultProfile = "terminal.integrated.defaultProfile.",
-	Profiles = "terminal.integrated.profiles.",
+	AutomationProfile = 'terminal.integrated.automationProfile.',
+	DefaultProfile = 'terminal.integrated.defaultProfile.',
+	Profiles = 'terminal.integrated.profiles.'
 }
 
 export const enum TerminalSettingId {
-	SendKeybindingsToShell = "terminal.integrated.sendKeybindingsToShell",
-	AutomationProfileLinux = "terminal.integrated.automationProfile.linux",
-	AutomationProfileMacOs = "terminal.integrated.automationProfile.osx",
-	AutomationProfileWindows = "terminal.integrated.automationProfile.windows",
-	ProfilesWindows = "terminal.integrated.profiles.windows",
-	ProfilesMacOs = "terminal.integrated.profiles.osx",
-	ProfilesLinux = "terminal.integrated.profiles.linux",
-	DefaultProfileLinux = "terminal.integrated.defaultProfile.linux",
-	DefaultProfileMacOs = "terminal.integrated.defaultProfile.osx",
-	DefaultProfileWindows = "terminal.integrated.defaultProfile.windows",
-	UseWslProfiles = "terminal.integrated.useWslProfiles",
-	TabsDefaultColor = "terminal.integrated.tabs.defaultColor",
-	TabsDefaultIcon = "terminal.integrated.tabs.defaultIcon",
-	TabsEnabled = "terminal.integrated.tabs.enabled",
-	TabsEnableAnimation = "terminal.integrated.tabs.enableAnimation",
-	TabsHideCondition = "terminal.integrated.tabs.hideCondition",
-	TabsShowActiveTerminal = "terminal.integrated.tabs.showActiveTerminal",
-	TabsShowActions = "terminal.integrated.tabs.showActions",
-	TabsLocation = "terminal.integrated.tabs.location",
-	TabsFocusMode = "terminal.integrated.tabs.focusMode",
-	MacOptionIsMeta = "terminal.integrated.macOptionIsMeta",
-	MacOptionClickForcesSelection = "terminal.integrated.macOptionClickForcesSelection",
-	AltClickMovesCursor = "terminal.integrated.altClickMovesCursor",
-	CopyOnSelection = "terminal.integrated.copyOnSelection",
-	EnableMultiLinePasteWarning = "terminal.integrated.enableMultiLinePasteWarning",
-	DrawBoldTextInBrightColors = "terminal.integrated.drawBoldTextInBrightColors",
-	FontFamily = "terminal.integrated.fontFamily",
-	FontSize = "terminal.integrated.fontSize",
-	LetterSpacing = "terminal.integrated.letterSpacing",
-	LineHeight = "terminal.integrated.lineHeight",
-	MinimumContrastRatio = "terminal.integrated.minimumContrastRatio",
-	TabStopWidth = "terminal.integrated.tabStopWidth",
-	FastScrollSensitivity = "terminal.integrated.fastScrollSensitivity",
-	MouseWheelScrollSensitivity = "terminal.integrated.mouseWheelScrollSensitivity",
-	BellDuration = "terminal.integrated.bellDuration",
-	FontWeight = "terminal.integrated.fontWeight",
-	FontWeightBold = "terminal.integrated.fontWeightBold",
-	CursorBlinking = "terminal.integrated.cursorBlinking",
-	CursorStyle = "terminal.integrated.cursorStyle",
-	CursorStyleInactive = "terminal.integrated.cursorStyleInactive",
-	CursorWidth = "terminal.integrated.cursorWidth",
-	Scrollback = "terminal.integrated.scrollback",
-	DetectLocale = "terminal.integrated.detectLocale",
-	DefaultLocation = "terminal.integrated.defaultLocation",
-	GpuAcceleration = "terminal.integrated.gpuAcceleration",
-	TerminalTitleSeparator = "terminal.integrated.tabs.separator",
-	TerminalTitle = "terminal.integrated.tabs.title",
-	TerminalDescription = "terminal.integrated.tabs.description",
-	RightClickBehavior = "terminal.integrated.rightClickBehavior",
-	MiddleClickBehavior = "terminal.integrated.middleClickBehavior",
-	Cwd = "terminal.integrated.cwd",
-	ConfirmOnExit = "terminal.integrated.confirmOnExit",
-	ConfirmOnKill = "terminal.integrated.confirmOnKill",
-	EnableBell = "terminal.integrated.enableBell",
-	EnableVisualBell = "terminal.integrated.enableVisualBell",
-	CommandsToSkipShell = "terminal.integrated.commandsToSkipShell",
-	AllowChords = "terminal.integrated.allowChords",
-	AllowMnemonics = "terminal.integrated.allowMnemonics",
-	TabFocusMode = "terminal.integrated.tabFocusMode",
-	EnvMacOs = "terminal.integrated.env.osx",
-	EnvLinux = "terminal.integrated.env.linux",
-	EnvWindows = "terminal.integrated.env.windows",
-	EnvironmentChangesIndicator = "terminal.integrated.environmentChangesIndicator",
-	EnvironmentChangesRelaunch = "terminal.integrated.environmentChangesRelaunch",
-	ExperimentalWindowsUseConptyDll = "terminal.integrated.experimental.windowsUseConptyDll",
-	ShowExitAlert = "terminal.integrated.showExitAlert",
-	SplitCwd = "terminal.integrated.splitCwd",
-	WindowsEnableConpty = "terminal.integrated.windowsEnableConpty",
-	WordSeparators = "terminal.integrated.wordSeparators",
-	EnableFileLinks = "terminal.integrated.enableFileLinks",
-	AllowedLinkSchemes = "terminal.integrated.allowedLinkSchemes",
-	UnicodeVersion = "terminal.integrated.unicodeVersion",
-	EnablePersistentSessions = "terminal.integrated.enablePersistentSessions",
-	PersistentSessionReviveProcess = "terminal.integrated.persistentSessionReviveProcess",
-	HideOnStartup = "terminal.integrated.hideOnStartup",
-	CustomGlyphs = "terminal.integrated.customGlyphs",
-	RescaleOverlappingGlyphs = "terminal.integrated.rescaleOverlappingGlyphs",
-	PersistentSessionScrollback = "terminal.integrated.persistentSessionScrollback",
-	InheritEnv = "terminal.integrated.inheritEnv",
-	ShowLinkHover = "terminal.integrated.showLinkHover",
-	IgnoreProcessNames = "terminal.integrated.ignoreProcessNames",
-	ShellIntegrationEnabled = "terminal.integrated.shellIntegration.enabled",
-	ShellIntegrationShowWelcome = "terminal.integrated.shellIntegration.showWelcome",
-	ShellIntegrationDecorationsEnabled = "terminal.integrated.shellIntegration.decorationsEnabled",
-	EnableImages = "terminal.integrated.enableImages",
-	SmoothScrolling = "terminal.integrated.smoothScrolling",
-	IgnoreBracketedPasteMode = "terminal.integrated.ignoreBracketedPasteMode",
-	FocusAfterRun = "terminal.integrated.focusAfterRun",
-	FontLigatures = "terminal.integrated.fontLigatures",
+	SendKeybindingsToShell = 'terminal.integrated.sendKeybindingsToShell',
+	AutomationProfileLinux = 'terminal.integrated.automationProfile.linux',
+	AutomationProfileMacOs = 'terminal.integrated.automationProfile.osx',
+	AutomationProfileWindows = 'terminal.integrated.automationProfile.windows',
+	ProfilesWindows = 'terminal.integrated.profiles.windows',
+	ProfilesMacOs = 'terminal.integrated.profiles.osx',
+	ProfilesLinux = 'terminal.integrated.profiles.linux',
+	DefaultProfileLinux = 'terminal.integrated.defaultProfile.linux',
+	DefaultProfileMacOs = 'terminal.integrated.defaultProfile.osx',
+	DefaultProfileWindows = 'terminal.integrated.defaultProfile.windows',
+	UseWslProfiles = 'terminal.integrated.useWslProfiles',
+	TabsDefaultColor = 'terminal.integrated.tabs.defaultColor',
+	TabsDefaultIcon = 'terminal.integrated.tabs.defaultIcon',
+	TabsEnabled = 'terminal.integrated.tabs.enabled',
+	TabsEnableAnimation = 'terminal.integrated.tabs.enableAnimation',
+	TabsHideCondition = 'terminal.integrated.tabs.hideCondition',
+	TabsShowActiveTerminal = 'terminal.integrated.tabs.showActiveTerminal',
+	TabsShowActions = 'terminal.integrated.tabs.showActions',
+	TabsLocation = 'terminal.integrated.tabs.location',
+	TabsFocusMode = 'terminal.integrated.tabs.focusMode',
+	MacOptionIsMeta = 'terminal.integrated.macOptionIsMeta',
+	MacOptionClickForcesSelection = 'terminal.integrated.macOptionClickForcesSelection',
+	AltClickMovesCursor = 'terminal.integrated.altClickMovesCursor',
+	CopyOnSelection = 'terminal.integrated.copyOnSelection',
+	EnableMultiLinePasteWarning = 'terminal.integrated.enableMultiLinePasteWarning',
+	DrawBoldTextInBrightColors = 'terminal.integrated.drawBoldTextInBrightColors',
+	FontFamily = 'terminal.integrated.fontFamily',
+	FontSize = 'terminal.integrated.fontSize',
+	LetterSpacing = 'terminal.integrated.letterSpacing',
+	LineHeight = 'terminal.integrated.lineHeight',
+	MinimumContrastRatio = 'terminal.integrated.minimumContrastRatio',
+	TabStopWidth = 'terminal.integrated.tabStopWidth',
+	FastScrollSensitivity = 'terminal.integrated.fastScrollSensitivity',
+	MouseWheelScrollSensitivity = 'terminal.integrated.mouseWheelScrollSensitivity',
+	BellDuration = 'terminal.integrated.bellDuration',
+	FontWeight = 'terminal.integrated.fontWeight',
+	FontWeightBold = 'terminal.integrated.fontWeightBold',
+	CursorBlinking = 'terminal.integrated.cursorBlinking',
+	CursorStyle = 'terminal.integrated.cursorStyle',
+	CursorStyleInactive = 'terminal.integrated.cursorStyleInactive',
+	CursorWidth = 'terminal.integrated.cursorWidth',
+	Scrollback = 'terminal.integrated.scrollback',
+	DetectLocale = 'terminal.integrated.detectLocale',
+	DefaultLocation = 'terminal.integrated.defaultLocation',
+	GpuAcceleration = 'terminal.integrated.gpuAcceleration',
+	TerminalTitleSeparator = 'terminal.integrated.tabs.separator',
+	TerminalTitle = 'terminal.integrated.tabs.title',
+	TerminalDescription = 'terminal.integrated.tabs.description',
+	RightClickBehavior = 'terminal.integrated.rightClickBehavior',
+	MiddleClickBehavior = 'terminal.integrated.middleClickBehavior',
+	Cwd = 'terminal.integrated.cwd',
+	ConfirmOnExit = 'terminal.integrated.confirmOnExit',
+	ConfirmOnKill = 'terminal.integrated.confirmOnKill',
+	EnableBell = 'terminal.integrated.enableBell',
+	EnableVisualBell = 'terminal.integrated.enableVisualBell',
+	CommandsToSkipShell = 'terminal.integrated.commandsToSkipShell',
+	AllowChords = 'terminal.integrated.allowChords',
+	AllowMnemonics = 'terminal.integrated.allowMnemonics',
+	TabFocusMode = 'terminal.integrated.tabFocusMode',
+	EnvMacOs = 'terminal.integrated.env.osx',
+	EnvLinux = 'terminal.integrated.env.linux',
+	EnvWindows = 'terminal.integrated.env.windows',
+	EnvironmentChangesIndicator = 'terminal.integrated.environmentChangesIndicator',
+	EnvironmentChangesRelaunch = 'terminal.integrated.environmentChangesRelaunch',
+	ExperimentalWindowsUseConptyDll = 'terminal.integrated.experimental.windowsUseConptyDll',
+	ShowExitAlert = 'terminal.integrated.showExitAlert',
+	SplitCwd = 'terminal.integrated.splitCwd',
+	WindowsEnableConpty = 'terminal.integrated.windowsEnableConpty',
+	WordSeparators = 'terminal.integrated.wordSeparators',
+	EnableFileLinks = 'terminal.integrated.enableFileLinks',
+	AllowedLinkSchemes = 'terminal.integrated.allowedLinkSchemes',
+	UnicodeVersion = 'terminal.integrated.unicodeVersion',
+	EnablePersistentSessions = 'terminal.integrated.enablePersistentSessions',
+	PersistentSessionReviveProcess = 'terminal.integrated.persistentSessionReviveProcess',
+	HideOnStartup = 'terminal.integrated.hideOnStartup',
+	CustomGlyphs = 'terminal.integrated.customGlyphs',
+	RescaleOverlappingGlyphs = 'terminal.integrated.rescaleOverlappingGlyphs',
+	PersistentSessionScrollback = 'terminal.integrated.persistentSessionScrollback',
+	InheritEnv = 'terminal.integrated.inheritEnv',
+	ShowLinkHover = 'terminal.integrated.showLinkHover',
+	IgnoreProcessNames = 'terminal.integrated.ignoreProcessNames',
+	ShellIntegrationEnabled = 'terminal.integrated.shellIntegration.enabled',
+	ShellIntegrationShowWelcome = 'terminal.integrated.shellIntegration.showWelcome',
+	ShellIntegrationDecorationsEnabled = 'terminal.integrated.shellIntegration.decorationsEnabled',
+	EnableImages = 'terminal.integrated.enableImages',
+	SmoothScrolling = 'terminal.integrated.smoothScrolling',
+	IgnoreBracketedPasteMode = 'terminal.integrated.ignoreBracketedPasteMode',
+	FocusAfterRun = 'terminal.integrated.focusAfterRun',
+	FontLigatures = 'terminal.integrated.fontLigatures',
 
 	// Debug settings that are hidden from user
 
 	/** Simulated latency applied to all calls made to the pty host */
-	DeveloperPtyHostLatency = "terminal.integrated.developer.ptyHost.latency",
+	DeveloperPtyHostLatency = 'terminal.integrated.developer.ptyHost.latency',
 	/** Simulated startup delay of the pty host process */
-	DeveloperPtyHostStartupDelay = "terminal.integrated.developer.ptyHost.startupDelay",
+	DeveloperPtyHostStartupDelay = 'terminal.integrated.developer.ptyHost.startupDelay',
 	/** Shows the textarea element */
-	DevMode = "terminal.integrated.developer.devMode",
+	DevMode = 'terminal.integrated.developer.devMode'
 }
 
 export const enum PosixShellType {
-	Bash = "bash",
-	Fish = "fish",
-	Sh = "sh",
-	Csh = "csh",
-	Ksh = "ksh",
-	Zsh = "zsh",
+	Bash = 'bash',
+	Fish = 'fish',
+	Sh = 'sh',
+	Csh = 'csh',
+	Ksh = 'ksh',
+	Zsh = 'zsh',
+
 }
 export const enum WindowsShellType {
-	CommandPrompt = "cmd",
-	Wsl = "wsl",
-	GitBash = "gitbash",
+	CommandPrompt = 'cmd',
+	Wsl = 'wsl',
+	GitBash = 'gitbash',
 }
 
 export const enum GeneralShellType {
-	PowerShell = "pwsh",
-	Python = "python",
-	Julia = "julia",
-	NuShell = "nu",
+	PowerShell = 'pwsh',
+	Python = 'python',
+	Julia = 'julia',
+	NuShell = 'nu'
 }
-export type TerminalShellType =
-	| PosixShellType
-	| WindowsShellType
-	| GeneralShellType;
+export type TerminalShellType = PosixShellType | WindowsShellType | GeneralShellType;
 
 export interface IRawTerminalInstanceLayoutInfo<T> {
 	relativeSize: number;
-
 	terminal: T;
 }
-export type ITerminalInstanceLayoutInfoById =
-	IRawTerminalInstanceLayoutInfo<number>;
-
-export type ITerminalInstanceLayoutInfo =
-	IRawTerminalInstanceLayoutInfo<IPtyHostAttachTarget>;
+export type ITerminalInstanceLayoutInfoById = IRawTerminalInstanceLayoutInfo<number>;
+export type ITerminalInstanceLayoutInfo = IRawTerminalInstanceLayoutInfo<IPtyHostAttachTarget>;
 
 export interface IRawTerminalTabLayoutInfo<T> {
 	isActive: boolean;
-
 	activePersistentProcessId: number | undefined;
-
 	terminals: IRawTerminalInstanceLayoutInfo<T>[];
 }
 
@@ -196,51 +172,31 @@ export interface IRawTerminalsLayoutInfo<T> {
 
 export interface IPtyHostAttachTarget {
 	id: number;
-
 	pid: number;
-
 	title: string;
-
 	titleSource: TitleEventSource;
-
 	cwd: string;
-
 	workspaceId: string;
-
 	workspaceName: string;
-
 	isOrphan: boolean;
-
 	icon: TerminalIcon | undefined;
-
 	fixedDimensions: IFixedTerminalDimensions | undefined;
-
-	environmentVariableCollections:
-		| ISerializableEnvironmentVariableCollections
-		| undefined;
-
+	environmentVariableCollections: ISerializableEnvironmentVariableCollections | undefined;
 	reconnectionProperties?: IReconnectionProperties;
-
 	waitOnExit?: WaitOnExitValue;
-
 	hideFromUser?: boolean;
-
 	isFeatureTerminal?: boolean;
-
 	type?: TerminalType;
-
 	hasChildProcesses: boolean;
-
 	shellIntegrationNonce: string;
 }
 
 export interface IReconnectionProperties {
 	ownerId: string;
-
 	data?: unknown;
 }
 
-export type TerminalType = "Task" | "Local" | undefined;
+export type TerminalType = 'Task' | 'Local' | undefined;
 
 export enum TitleEventSource {
 	/** From the API or the rename command that overrides any other type */
@@ -250,53 +206,50 @@ export enum TitleEventSource {
 	/** From the VT sequence */
 	Sequence,
 	/** Config changed */
-	Config,
+	Config
 }
 
-export type ITerminalsLayoutInfo =
-	IRawTerminalsLayoutInfo<IPtyHostAttachTarget | null>;
-
+export type ITerminalsLayoutInfo = IRawTerminalsLayoutInfo<IPtyHostAttachTarget | null>;
 export type ITerminalsLayoutInfoById = IRawTerminalsLayoutInfo<number>;
 
 export enum TerminalIpcChannels {
 	/**
 	 * Communicates between the renderer process and shared process.
 	 */
-	LocalPty = "localPty",
+	LocalPty = 'localPty',
 	/**
 	 * Communicates between the shared process and the pty host process.
 	 */
-	PtyHost = "ptyHost",
+	PtyHost = 'ptyHost',
 	/**
 	 * Communicates between the renderer process and the pty host process.
 	 */
-	PtyHostWindow = "ptyHostWindow",
+	PtyHostWindow = 'ptyHostWindow',
 	/**
 	 * Deals with logging from the pty host process.
 	 */
-	Logger = "logger",
+	Logger = 'logger',
 	/**
 	 * Enables the detection of unresponsive pty hosts.
 	 */
-	Heartbeat = "heartbeat",
+	Heartbeat = 'heartbeat'
 }
 
 export const enum ProcessPropertyType {
-	Cwd = "cwd",
-	InitialCwd = "initialCwd",
-	FixedDimensions = "fixedDimensions",
-	Title = "title",
-	ShellType = "shellType",
-	HasChildProcesses = "hasChildProcesses",
-	ResolvedShellLaunchConfig = "resolvedShellLaunchConfig",
-	OverrideDimensions = "overrideDimensions",
-	FailedShellIntegrationActivation = "failedShellIntegrationActivation",
-	UsedShellIntegrationInjection = "usedShellIntegrationInjection",
+	Cwd = 'cwd',
+	InitialCwd = 'initialCwd',
+	FixedDimensions = 'fixedDimensions',
+	Title = 'title',
+	ShellType = 'shellType',
+	HasChildProcesses = 'hasChildProcesses',
+	ResolvedShellLaunchConfig = 'resolvedShellLaunchConfig',
+	OverrideDimensions = 'overrideDimensions',
+	FailedShellIntegrationActivation = 'failedShellIntegrationActivation',
+	UsedShellIntegrationInjection = 'usedShellIntegrationInjection'
 }
 
 export interface IProcessProperty<T extends ProcessPropertyType> {
 	type: T;
-
 	value: IProcessPropertyMap[T];
 }
 
@@ -308,9 +261,7 @@ export interface IProcessPropertyMap {
 	[ProcessPropertyType.ShellType]: TerminalShellType | undefined;
 	[ProcessPropertyType.HasChildProcesses]: boolean;
 	[ProcessPropertyType.ResolvedShellLaunchConfig]: IShellLaunchConfig;
-	[ProcessPropertyType.OverrideDimensions]:
-		| ITerminalDimensionsOverride
-		| undefined;
+	[ProcessPropertyType.OverrideDimensions]: ITerminalDimensionsOverride | undefined;
 	[ProcessPropertyType.FailedShellIntegrationActivation]: boolean | undefined;
 	[ProcessPropertyType.UsedShellIntegrationInjection]: boolean | undefined;
 }
@@ -329,40 +280,16 @@ export interface IFixedTerminalDimensions {
 
 /**
  * A service that communicates with a pty host.
- */
+*/
 export interface IPtyService {
 	readonly _serviceBrand: undefined;
 
-	readonly onProcessData: Event<{
-		id: number;
-
-		event: IProcessDataEvent | string;
-	}>;
-
+	readonly onProcessData: Event<{ id: number; event: IProcessDataEvent | string }>;
 	readonly onProcessReady: Event<{ id: number; event: IProcessReadyEvent }>;
-
-	readonly onProcessReplay: Event<{
-		id: number;
-
-		event: IPtyHostProcessReplayEvent;
-	}>;
-
+	readonly onProcessReplay: Event<{ id: number; event: IPtyHostProcessReplayEvent }>;
 	readonly onProcessOrphanQuestion: Event<{ id: number }>;
-
-	readonly onDidRequestDetach: Event<{
-		requestId: number;
-
-		workspaceId: string;
-
-		instanceId: number;
-	}>;
-
-	readonly onDidChangeProperty: Event<{
-		id: number;
-
-		property: IProcessProperty<any>;
-	}>;
-
+	readonly onDidRequestDetach: Event<{ requestId: number; workspaceId: string; instanceId: number }>;
+	readonly onDidChangeProperty: Event<{ id: number; property: IProcessProperty<any> }>;
 	readonly onProcessExit: Event<{ id: number; event: number | undefined }>;
 
 	createProcess(
@@ -370,104 +297,53 @@ export interface IPtyService {
 		cwd: string,
 		cols: number,
 		rows: number,
-		unicodeVersion: "6" | "11",
+		unicodeVersion: '6' | '11',
 		env: IProcessEnvironment,
 		executableEnv: IProcessEnvironment,
 		options: ITerminalProcessOptions,
 		shouldPersist: boolean,
 		workspaceId: string,
-		workspaceName: string,
+		workspaceName: string
 	): Promise<number>;
-
 	attachToProcess(id: number): Promise<void>;
-
 	detachFromProcess(id: number, forcePersist?: boolean): Promise<void>;
-
 	shutdownAll(): Promise<void>;
 
 	/**
 	 * Lists all orphaned processes, ie. those without a connected frontend.
 	 */
 	listProcesses(): Promise<IProcessDetails[]>;
-
 	getPerformanceMarks(): Promise<performance.PerformanceMark[]>;
 	/**
 	 * Measures and returns the latency of the current and all other processes to the pty host.
 	 */
 	getLatency(): Promise<IPtyHostLatencyMeasurement[]>;
 
-	start(
-		id: number,
-	): Promise<ITerminalLaunchError | { injectedArgs: string[] } | undefined>;
-
+	start(id: number): Promise<ITerminalLaunchError | { injectedArgs: string[] } | undefined>;
 	shutdown(id: number, immediate: boolean): Promise<void>;
-
 	input(id: number, data: string): Promise<void>;
-
 	resize(id: number, cols: number, rows: number): Promise<void>;
-
 	clearBuffer(id: number): Promise<void>;
-
 	getInitialCwd(id: number): Promise<string>;
-
 	getCwd(id: number): Promise<string>;
-
 	acknowledgeDataEvent(id: number, charCount: number): Promise<void>;
-
-	setUnicodeVersion(id: number, version: "6" | "11"): Promise<void>;
-
+	setUnicodeVersion(id: number, version: '6' | '11'): Promise<void>;
 	processBinary(id: number, data: string): Promise<void>;
 	/** Confirm the process is _not_ an orphan. */
 	orphanQuestionReply(id: number): Promise<void>;
-
-	updateTitle(
-		id: number,
-		title: string,
-		titleSource: TitleEventSource,
-	): Promise<void>;
-
-	updateIcon(
-		id: number,
-		userInitiated: boolean,
-		icon: TerminalIcon,
-		color?: string,
-	): Promise<void>;
+	updateTitle(id: number, title: string, titleSource: TitleEventSource): Promise<void>;
+	updateIcon(id: number, userInitiated: boolean, icon: TerminalIcon, color?: string): Promise<void>;
 
 	getDefaultSystemShell(osOverride?: OperatingSystem): Promise<string>;
-
 	getEnvironment(): Promise<IProcessEnvironment>;
-
-	getWslPath(
-		original: string,
-		direction: "unix-to-win" | "win-to-unix",
-	): Promise<string>;
-
-	getRevivedPtyNewId(
-		workspaceId: string,
-		id: number,
-	): Promise<number | undefined>;
-
+	getWslPath(original: string, direction: 'unix-to-win' | 'win-to-unix'): Promise<string>;
+	getRevivedPtyNewId(workspaceId: string, id: number): Promise<number | undefined>;
 	setTerminalLayoutInfo(args: ISetTerminalLayoutInfoArgs): Promise<void>;
-
-	getTerminalLayoutInfo(
-		args: IGetTerminalLayoutInfoArgs,
-	): Promise<ITerminalsLayoutInfo | undefined>;
-
+	getTerminalLayoutInfo(args: IGetTerminalLayoutInfoArgs): Promise<ITerminalsLayoutInfo | undefined>;
 	reduceConnectionGraceTime(): Promise<void>;
-
-	requestDetachInstance(
-		workspaceId: string,
-		instanceId: number,
-	): Promise<IProcessDetails | undefined>;
-
-	acceptDetachInstanceReply(
-		requestId: number,
-		persistentProcessId?: number,
-	): Promise<void>;
-
-	freePortKillProcess(
-		port: string,
-	): Promise<{ port: string; processId: string }>;
+	requestDetachInstance(workspaceId: string, instanceId: number): Promise<IProcessDetails | undefined>;
+	acceptDetachInstanceReply(requestId: number, persistentProcessId?: number): Promise<void>;
+	freePortKillProcess(port: string): Promise<{ port: string; processId: string }>;
 	/**
 	 * Serializes and returns terminal state.
 	 * @param ids The persistent terminal IDs to serialize.
@@ -477,22 +353,9 @@ export interface IPtyService {
 	 * Revives a workspaces terminal processes, these can then be reconnected to using the normal
 	 * flow for restoring terminals after reloading.
 	 */
-	reviveTerminalProcesses(
-		workspaceId: string,
-		state: ISerializedTerminalState[],
-		dateTimeFormatLocate: string,
-	): Promise<void>;
-
-	refreshProperty<T extends ProcessPropertyType>(
-		id: number,
-		property: T,
-	): Promise<IProcessPropertyMap[T]>;
-
-	updateProperty<T extends ProcessPropertyType>(
-		id: number,
-		property: T,
-		value: IProcessPropertyMap[T],
-	): Promise<void>;
+	reviveTerminalProcesses(workspaceId: string, state: ISerializedTerminalState[], dateTimeFormatLocate: string): Promise<void>;
+	refreshProperty<T extends ProcessPropertyType>(id: number, property: T): Promise<IProcessPropertyMap[T]>;
+	updateProperty<T extends ProcessPropertyType>(id: number, property: T, value: IProcessPropertyMap[T]): Promise<void>;
 
 	// TODO: Make mandatory and remove impl from pty host service
 	refreshIgnoreProcessNames?(names: string[]): Promise<void>;
@@ -500,65 +363,40 @@ export interface IPtyService {
 	// #region Pty service contribution RPC calls
 
 	installAutoReply(match: string, reply: string): Promise<void>;
-
 	uninstallAllAutoReplies(): Promise<void>;
 
 	// #endregion
 }
-export const IPtyService = createDecorator<IPtyService>("ptyService");
+export const IPtyService = createDecorator<IPtyService>('ptyService');
 
 export interface IPtyServiceContribution {
-	handleProcessReady(
-		persistentProcessId: number,
-		process: ITerminalChildProcess,
-	): void;
-
+	handleProcessReady(persistentProcessId: number, process: ITerminalChildProcess): void;
 	handleProcessDispose(persistentProcessId: number): void;
-
 	handleProcessInput(persistentProcessId: number, data: string): void;
-
-	handleProcessResize(
-		persistentProcessId: number,
-		cols: number,
-		rows: number,
-	): void;
+	handleProcessResize(persistentProcessId: number, cols: number, rows: number): void;
 }
 
 export interface IPtyHostController {
 	readonly onPtyHostExit: Event<number>;
-
 	readonly onPtyHostStart: Event<void>;
-
 	readonly onPtyHostUnresponsive: Event<void>;
-
 	readonly onPtyHostResponsive: Event<void>;
-
 	readonly onPtyHostRequestResolveVariables: Event<IRequestResolveVariablesEvent>;
 
 	restartPtyHost(): Promise<void>;
-
-	acceptPtyHostResolvedVariables(
-		requestId: number,
-		resolved: string[],
-	): Promise<void>;
-
-	getProfiles(
-		workspaceId: string,
-		profiles: unknown,
-		defaultProfile: unknown,
-		includeDetectedProfiles?: boolean,
-	): Promise<ITerminalProfile[]>;
+	acceptPtyHostResolvedVariables(requestId: number, resolved: string[]): Promise<void>;
+	getProfiles(workspaceId: string, profiles: unknown, defaultProfile: unknown, includeDetectedProfiles?: boolean): Promise<ITerminalProfile[]>;
 }
 
 /**
  * A service that communicates with a pty host controller (eg. main or server
  * process) and is able to launch and forward requests to the pty host.
- */
-export interface IPtyHostService extends IPtyService, IPtyHostController {}
+*/
+export interface IPtyHostService extends IPtyService, IPtyHostController {
+}
 
 export interface IPtyHostLatencyMeasurement {
 	label: string;
-
 	latency: number;
 }
 
@@ -568,39 +406,28 @@ export interface IPtyHostLatencyMeasurement {
  */
 export interface ICrossVersionSerializedTerminalState {
 	version: number;
-
 	state: unknown;
 }
 
 export interface ISerializedTerminalState {
 	id: number;
-
 	shellLaunchConfig: IShellLaunchConfig;
-
 	processDetails: IProcessDetails;
-
 	processLaunchConfig: IPersistentTerminalProcessLaunchConfig;
-
-	unicodeVersion: "6" | "11";
-
+	unicodeVersion: '6' | '11';
 	replayEvent: IPtyHostProcessReplayEvent;
-
 	timestamp: number;
 }
 
 export interface IPersistentTerminalProcessLaunchConfig {
 	env: IProcessEnvironment;
-
 	executableEnv: IProcessEnvironment;
-
 	options: ITerminalProcessOptions;
 }
 
 export interface IRequestResolveVariablesEvent {
 	requestId: number;
-
 	workspaceId: string;
-
 	originalText: string[];
 }
 
@@ -631,12 +458,13 @@ export enum HeartbeatConstants {
 	 * process. This short circuits the standard wait timeouts to tell the user sooner and only
 	 * create process is handled to avoid additional perf overhead.
 	 */
-	CreateProcessTimeout = 5000,
+	CreateProcessTimeout = 5000
 }
 
 export interface IHeartbeatService {
 	readonly onBeat: Event<void>;
 }
+
 
 export interface IShellLaunchConfig {
 	/**
@@ -647,7 +475,7 @@ export interface IShellLaunchConfig {
 	/**
 	 * A string to follow the name of the terminal with, indicating the type of terminal
 	 */
-	type?: "Task" | "Local";
+	type?: 'Task' | 'Local';
 
 	/**
 	 * The shell executable (bash, cmd, etc.).
@@ -698,11 +526,7 @@ export interface IShellLaunchConfig {
 	/**
 	 * Custom PTY/pseudoterminal process to use.
 	 */
-	customPtyImplementation?: (
-		terminalId: number,
-		cols: number,
-		rows: number,
-	) => ITerminalChildProcess;
+	customPtyImplementation?: (terminalId: number, cols: number, rows: number) => ITerminalChildProcess;
 
 	/**
 	 * A UUID generated by the extension host process for terminals created on the extension host process.
@@ -714,37 +538,21 @@ export interface IShellLaunchConfig {
 	 */
 	attachPersistentProcess?: {
 		id: number;
-
 		findRevivedId?: boolean;
-
 		pid: number;
-
 		title: string;
-
 		titleSource: TitleEventSource;
-
 		cwd: string;
-
 		icon?: TerminalIcon;
-
 		color?: string;
-
 		hasChildProcesses?: boolean;
-
 		fixedDimensions?: IFixedTerminalDimensions;
-
 		environmentVariableCollections?: ISerializableEnvironmentVariableCollections;
-
 		reconnectionProperties?: IReconnectionProperties;
-
 		type?: TerminalType;
-
 		waitOnExit?: WaitOnExitValue;
-
 		hideFromUser?: boolean;
-
 		isFeatureTerminal?: boolean;
-
 		shellIntegrationNonce: string;
 	};
 
@@ -829,48 +637,33 @@ export type WaitOnExitValue = boolean | string | ((exitCode: number) => string);
 
 export interface ICreateContributedTerminalProfileOptions {
 	icon?: URI | string | { light: URI; dark: URI };
-
 	color?: string;
-
-	location?:
-		| TerminalLocation
-		| { viewColumn: number; preserveState?: boolean }
-		| { splitActiveTerminal: boolean };
-
+	location?: TerminalLocation | { viewColumn: number; preserveState?: boolean } | { splitActiveTerminal: boolean };
 	cwd?: string | URI;
 }
 
 export enum TerminalLocation {
 	Panel = 1,
-	Editor = 2,
+	Editor = 2
 }
 
 export const enum TerminalLocationString {
-	TerminalView = "view",
-	Editor = "editor",
+	TerminalView = 'view',
+	Editor = 'editor'
 }
 
 export type TerminalIcon = ThemeIcon | URI | { light: URI; dark: URI };
 
 export interface IShellLaunchConfigDto {
 	name?: string;
-
 	executable?: string;
-
 	args?: string[] | string;
-
 	cwd?: string | UriComponents;
-
 	env?: ITerminalEnvironment;
-
 	useShellEnvironment?: boolean;
-
 	hideFromUser?: boolean;
-
 	reconnectionProperties?: IReconnectionProperties;
-
-	type?: "Task" | "Local";
-
+	type?: 'Task' | 'Local';
 	isFeatureTerminal?: boolean;
 }
 
@@ -881,20 +674,12 @@ export interface IShellLaunchConfigDto {
 export interface ITerminalProcessOptions {
 	shellIntegration: {
 		enabled: boolean;
-
 		suggestEnabled: boolean;
-
 		nonce: string;
 	};
-
 	windowsEnableConpty: boolean;
-
 	windowsUseConptyDll: boolean;
-
-	environmentVariableCollections:
-		| ISerializableEnvironmentVariableCollections
-		| undefined;
-
+	environmentVariableCollections: ISerializableEnvironmentVariableCollections | undefined;
 	workspaceFolder: IWorkspaceFolder | undefined;
 }
 
@@ -904,15 +689,12 @@ export interface ITerminalEnvironment {
 
 export interface ITerminalLaunchError {
 	message: string;
-
 	code?: number;
 }
 
 export interface IProcessReadyEvent {
 	pid: number;
-
 	cwd: string;
-
 	windowsPty: IProcessReadyWindowsPty | undefined;
 }
 
@@ -920,7 +702,7 @@ export interface IProcessReadyWindowsPty {
 	/**
 	 * What pty emulation backend is being used.
 	 */
-	backend: "conpty" | "winpty";
+	backend: 'conpty' | 'winpty';
 	/**
 	 * The Windows build version (eg. 19045)
 	 */
@@ -945,15 +727,10 @@ export interface ITerminalChildProcess {
 	shouldPersist: boolean;
 
 	onProcessData: Event<IProcessDataEvent | string>;
-
 	onProcessReady: Event<IProcessReadyEvent>;
-
 	onProcessReplayComplete?: Event<void>;
-
 	onDidChangeProperty: Event<IProcessProperty<any>>;
-
 	onProcessExit: Event<number | undefined>;
-
 	onRestoreCommands?: Event<ISerializedCommandDetectionCapability>;
 
 	/**
@@ -962,9 +739,7 @@ export interface ITerminalChildProcess {
 	 * @returns undefined when the process was successfully started, otherwise an object containing
 	 * information on what went wrong.
 	 */
-	start(): Promise<
-		ITerminalLaunchError | { injectedArgs: string[] } | undefined
-	>;
+	start(): Promise<ITerminalLaunchError | { injectedArgs: string[] } | undefined>;
 
 	/**
 	 * Detach the process from the UI and await reconnect.
@@ -975,9 +750,7 @@ export interface ITerminalChildProcess {
 	/**
 	 * Frees the port and kills the process
 	 */
-	freePortKillProcess?(
-		port: string,
-	): Promise<{ port: string; processId: string }>;
+	freePortKillProcess?(port: string): Promise<{ port: string; processId: string }>;
 
 	/**
 	 * Shutdown the terminal process.
@@ -986,13 +759,9 @@ export interface ITerminalChildProcess {
 	 * be given some time to make sure no additional data comes through.
 	 */
 	shutdown(immediate: boolean): void;
-
 	input(data: string): void;
-
 	processBinary(data: string): Promise<void>;
-
 	resize(cols: number, rows: number): void;
-
 	clearBuffer(): void | Promise<void>;
 
 	/**
@@ -1007,38 +776,28 @@ export interface ITerminalChildProcess {
 	 * Sets the unicode version for the process, this drives the size of some characters in the
 	 * xterm-headless instance.
 	 */
-	setUnicodeVersion(version: "6" | "11"): Promise<void>;
+	setUnicodeVersion(version: '6' | '11'): Promise<void>;
 
 	getInitialCwd(): Promise<string>;
-
 	getCwd(): Promise<string>;
-
-	refreshProperty<T extends ProcessPropertyType>(
-		property: T,
-	): Promise<IProcessPropertyMap[T]>;
-
-	updateProperty<T extends ProcessPropertyType>(
-		property: T,
-		value: IProcessPropertyMap[T],
-	): Promise<void>;
+	refreshProperty<T extends ProcessPropertyType>(property: T): Promise<IProcessPropertyMap[T]>;
+	updateProperty<T extends ProcessPropertyType>(property: T, value: IProcessPropertyMap[T]): Promise<void>;
 }
 
 export interface IReconnectConstants {
 	graceTime: number;
-
 	shortGraceTime: number;
-
 	scrollback: number;
 }
 
 export const enum LocalReconnectConstants {
 	/**
 	 * If there is no reconnection within this time-frame, consider the connection permanently closed...
-	 */
+	*/
 	GraceTime = 60000, // 60 seconds
 	/**
 	 * Maximal grace time between the first and the last reconnection...
-	 */
+	*/
 	ShortGraceTime = 6000, // 6 seconds
 }
 
@@ -1062,12 +821,11 @@ export const enum FlowControlConstants {
 	 * The number characters that are accumulated on the client side before sending an ack event.
 	 * This must be less than or equal to LowWatermarkChars or the terminal max never unpause.
 	 */
-	CharCountAckSize = 5000,
+	CharCountAckSize = 5000
 }
 
 export interface IProcessDataEvent {
 	data: string;
-
 	trackCommit: boolean;
 	/**
 	 * When trackCommit is set, this will be set to a promise that resolves when the data is parsed.
@@ -1089,9 +847,7 @@ export interface ITerminalDimensions {
 
 export interface ITerminalProfile {
 	profileName: string;
-
 	path: string;
-
 	isDefault: boolean;
 	/**
 	 * Whether the terminal profile contains a potentially unsafe {@link path}. For example, the path
@@ -1104,27 +860,20 @@ export interface ITerminalProfile {
 	 * An additional unsafe path that must exist, for example a script that appears in {@link args}.
 	 */
 	requiresUnsafePath?: string;
-
 	isAutoDetected?: boolean;
 	/**
 	 * Whether the profile path was found on the `$PATH` environment variable, if so it will be
 	 * cleaner to display this profile in the UI using only `basename(path)`.
 	 */
 	isFromPath?: boolean;
-
 	args?: string | string[] | undefined;
-
 	env?: ITerminalEnvironment;
-
 	overrideName?: boolean;
-
 	color?: string;
-
 	icon?: ThemeIcon | URI | { light: URI; dark: URI };
 }
 
-export interface ITerminalDimensionsOverride
-	extends Readonly<ITerminalDimensions> {
+export interface ITerminalDimensionsOverride extends Readonly<ITerminalDimensions> {
 	/**
 	 * indicate that xterm must receive these exact dimensions, even if they overflow the ui!
 	 */
@@ -1132,23 +881,17 @@ export interface ITerminalDimensionsOverride
 }
 
 export const enum ProfileSource {
-	GitBash = "Git Bash",
-	Pwsh = "PowerShell",
+	GitBash = 'Git Bash',
+	Pwsh = 'PowerShell'
 }
 
 export interface IBaseUnresolvedTerminalProfile {
 	args?: string | string[] | undefined;
-
 	isAutoDetected?: boolean;
-
 	overrideName?: boolean;
-
 	icon?: string | ThemeIcon | URI | { light: URI; dark: URI };
-
 	color?: string;
-
 	env?: ITerminalEnvironment;
-
 	requiresPath?: string | ITerminalUnsafePath;
 }
 
@@ -1156,7 +899,6 @@ type OneOrN<T> = T | T[];
 
 export interface ITerminalUnsafePath {
 	path: string;
-
 	isUnsafe: true;
 }
 
@@ -1170,28 +912,19 @@ export interface ITerminalProfileSource extends IBaseUnresolvedTerminalProfile {
 
 export interface ITerminalProfileContribution {
 	title: string;
-
 	id: string;
-
 	icon?: URI | { light: URI; dark: URI } | string;
-
 	color?: string;
 }
 
-export interface IExtensionTerminalProfile
-	extends ITerminalProfileContribution {
+export interface IExtensionTerminalProfile extends ITerminalProfileContribution {
 	extensionIdentifier: string;
 }
 
-export type ITerminalProfileObject =
-	| ITerminalExecutable
-	| ITerminalProfileSource
-	| IExtensionTerminalProfile
-	| null;
+export type ITerminalProfileObject = ITerminalExecutable | ITerminalProfileSource | IExtensionTerminalProfile | null;
 
 export interface IShellIntegration {
 	readonly capabilities: ITerminalCapabilityStore;
-
 	readonly status: ShellIntegrationStatus;
 
 	readonly onDidChangeStatus: Event<ShellIntegrationStatus>;
@@ -1213,7 +946,7 @@ export const enum ShellIntegrationStatus {
 	/** Final term shell integration sequences have been encountered. */
 	FinalTerm,
 	/** VS Code shell integration sequences have been encountered. Supercedes FinalTerm. */
-	VSCode,
+	VSCode
 }
 
 export enum TerminalExitReason {
@@ -1226,7 +959,6 @@ export enum TerminalExitReason {
 
 export interface ITerminalOutputMatch {
 	regexMatch: RegExpMatchArray;
-
 	outputLines: string[];
 }
 
@@ -1242,7 +974,7 @@ export interface ITerminalOutputMatcher {
 	/**
 	 * Which side of the output to anchor the {@link offset} and {@link length} against.
 	 */
-	anchor: "top" | "bottom";
+	anchor: 'top' | 'bottom';
 	/**
 	 * The number of rows above or below the {@link anchor} to start matching against.
 	 */
@@ -1262,20 +994,14 @@ export interface ITerminalOutputMatcher {
 
 export interface ITerminalCommandSelector {
 	id: string;
-
 	commandLineMatcher: string | RegExp;
-
 	outputMatcher?: ITerminalOutputMatcher;
-
 	exitStatus: boolean;
-
-	commandExitResult: "success" | "error";
-
-	kind?: "fix" | "explain";
+	commandExitResult: 'success' | 'error';
+	kind?: 'fix' | 'explain';
 }
 
-export interface ITerminalBackend
-	extends ITerminalBackendPtyServiceContributions {
+export interface ITerminalBackend extends ITerminalBackendPtyServiceContributions {
 	readonly remoteAuthority: string | undefined;
 
 	readonly isResponsive: boolean;
@@ -1307,72 +1033,25 @@ export interface ITerminalBackend
 	 */
 	onPtyHostRestart: Event<void>;
 
-	onDidRequestDetach: Event<{
-		requestId: number;
-
-		workspaceId: string;
-
-		instanceId: number;
-	}>;
+	onDidRequestDetach: Event<{ requestId: number; workspaceId: string; instanceId: number }>;
 
 	attachToProcess(id: number): Promise<ITerminalChildProcess | undefined>;
-
-	attachToRevivedProcess(
-		id: number,
-	): Promise<ITerminalChildProcess | undefined>;
-
+	attachToRevivedProcess(id: number): Promise<ITerminalChildProcess | undefined>;
 	listProcesses(): Promise<IProcessDetails[]>;
-
 	getLatency(): Promise<IPtyHostLatencyMeasurement[]>;
-
 	getDefaultSystemShell(osOverride?: OperatingSystem): Promise<string>;
-
-	getProfiles(
-		profiles: unknown,
-		defaultProfile: unknown,
-		includeDetectedProfiles?: boolean,
-	): Promise<ITerminalProfile[]>;
-
-	getWslPath(
-		original: string,
-		direction: "unix-to-win" | "win-to-unix",
-	): Promise<string>;
-
+	getProfiles(profiles: unknown, defaultProfile: unknown, includeDetectedProfiles?: boolean): Promise<ITerminalProfile[]>;
+	getWslPath(original: string, direction: 'unix-to-win' | 'win-to-unix'): Promise<string>;
 	getEnvironment(): Promise<IProcessEnvironment>;
-
 	getShellEnvironment(): Promise<IProcessEnvironment | undefined>;
-
 	setTerminalLayoutInfo(layoutInfo?: ITerminalsLayoutInfoById): Promise<void>;
-
-	updateTitle(
-		id: number,
-		title: string,
-		titleSource: TitleEventSource,
-	): Promise<void>;
-
-	updateIcon(
-		id: number,
-		userInitiated: boolean,
-		icon: TerminalIcon,
-		color?: string,
-	): Promise<void>;
-
+	updateTitle(id: number, title: string, titleSource: TitleEventSource): Promise<void>;
+	updateIcon(id: number, userInitiated: boolean, icon: TerminalIcon, color?: string): Promise<void>;
 	getTerminalLayoutInfo(): Promise<ITerminalsLayoutInfo | undefined>;
-
 	getPerformanceMarks(): Promise<performance.PerformanceMark[]>;
-
 	reduceConnectionGraceTime(): Promise<void>;
-
-	requestDetachInstance(
-		workspaceId: string,
-		instanceId: number,
-	): Promise<IProcessDetails | undefined>;
-
-	acceptDetachInstanceReply(
-		requestId: number,
-		persistentProcessId?: number,
-	): Promise<void>;
-
+	requestDetachInstance(workspaceId: string, instanceId: number): Promise<IProcessDetails | undefined>;
+	acceptDetachInstanceReply(requestId: number, persistentProcessId?: number): Promise<void>;
 	persistTerminalState(): Promise<void>;
 
 	createProcess(
@@ -1380,10 +1059,10 @@ export interface ITerminalBackend
 		cwd: string,
 		cols: number,
 		rows: number,
-		unicodeVersion: "6" | "11",
+		unicodeVersion: '6' | '11',
 		env: IProcessEnvironment,
 		options: ITerminalProcessOptions,
-		shouldPersist: boolean,
+		shouldPersist: boolean
 	): Promise<ITerminalChildProcess>;
 
 	restartPtyHost(): void;
@@ -1391,12 +1070,11 @@ export interface ITerminalBackend
 
 export interface ITerminalBackendPtyServiceContributions {
 	installAutoReply(match: string, reply: string): Promise<void>;
-
 	uninstallAllAutoReplies(): Promise<void>;
 }
 
 export const TerminalExtensions = {
-	Backend: "workbench.contributions.terminal.processBackend",
+	Backend: 'workbench.contributions.terminal.processBackend'
 };
 
 export interface ITerminalBackendRegistry {
@@ -1419,50 +1097,37 @@ export interface ITerminalBackendRegistry {
 class TerminalBackendRegistry implements ITerminalBackendRegistry {
 	private readonly _backends = new Map<string, ITerminalBackend>();
 
-	get backends(): ReadonlyMap<string, ITerminalBackend> {
-		return this._backends;
-	}
+	get backends(): ReadonlyMap<string, ITerminalBackend> { return this._backends; }
 
 	registerTerminalBackend(backend: ITerminalBackend): void {
 		const key = this._sanitizeRemoteAuthority(backend.remoteAuthority);
-
 		if (this._backends.has(key)) {
-			throw new Error(
-				`A terminal backend with remote authority '${key}' was already registered.`,
-			);
+			throw new Error(`A terminal backend with remote authority '${key}' was already registered.`);
 		}
-
 		this._backends.set(key, backend);
 	}
 
-	getTerminalBackend(
-		remoteAuthority: string | undefined,
-	): ITerminalBackend | undefined {
-		return this._backends.get(
-			this._sanitizeRemoteAuthority(remoteAuthority),
-		);
+	getTerminalBackend(remoteAuthority: string | undefined): ITerminalBackend | undefined {
+		return this._backends.get(this._sanitizeRemoteAuthority(remoteAuthority));
 	}
 
 	private _sanitizeRemoteAuthority(remoteAuthority: string | undefined) {
 		// Normalize the key to lowercase as the authority is case-insensitive
-		return remoteAuthority?.toLowerCase() ?? "";
+		return remoteAuthority?.toLowerCase() ?? '';
 	}
 }
 Registry.add(TerminalExtensions.Backend, new TerminalBackendRegistry());
 
-export const ILocalPtyService =
-	createDecorator<ILocalPtyService>("localPtyService");
+export const ILocalPtyService = createDecorator<ILocalPtyService>('localPtyService');
 
 /**
  * A service responsible for communicating with the pty host process on Electron.
  *
  * **This service should only be used within the terminal component.**
  */
-export interface ILocalPtyService extends IPtyHostService {}
+export interface ILocalPtyService extends IPtyHostService { }
 
-export const ITerminalLogService =
-	createDecorator<ITerminalLogService>("terminalLogService");
-
+export const ITerminalLogService = createDecorator<ITerminalLogService>('terminalLogService');
 export interface ITerminalLogService extends ILogService {
 	/**
 	 * Similar to _serviceBrand but used to differentiate this service at compile time from

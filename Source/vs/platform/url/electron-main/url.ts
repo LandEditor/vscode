@@ -2,19 +2,23 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { URI } from "../../../base/common/uri.js";
-import { IWindowOpenable } from "../../window/common/window.js";
+
+import { URI } from '../../../base/common/uri.js';
+import { IWindowOpenable } from '../../window/common/window.js';
 
 export interface IProtocolUrl {
+
 	/**
 	 * The parsed URI from the raw URL.
 	 */
 	uri: URI;
+
 	/**
 	 * The raw URL that was passed in.
 	 */
 	originalUrl: string;
 }
+
 /**
  * A special set of protocol URLs that are to be handled
  * right on startup. Handling is complex depending on the
@@ -51,6 +55,7 @@ export interface IProtocolUrl {
  * - a URL with any other authority will be added to the `urls` array
  */
 export interface IInitialProtocolUrls {
+
 	/**
 	 * Initial protocol URLs to handle that are not
 	 * already converted to `IWindowOpenable` window
@@ -61,6 +66,7 @@ export interface IInitialProtocolUrls {
 	 * is set to `_blank`).
 	 */
 	readonly urls: IProtocolUrl[];
+
 	/**
 	 * Initial protocol URLs that result in direct
 	 * windows to open.

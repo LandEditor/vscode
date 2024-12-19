@@ -2,9 +2,10 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Emitter, Event } from "../../../../../base/common/event.js";
-import { Disposable } from "../../../../../base/common/lifecycle.js";
-import { ICellRange } from "../../common/notebookRange.js";
+
+import { Emitter, Event } from '../../../../../base/common/event.js';
+import { Disposable } from '../../../../../base/common/lifecycle.js';
+import { ICellRange } from '../../common/notebookRange.js';
 
 function rangesEqual(a: ICellRange[], b: ICellRange[]) {
 	if (a.length !== b.length) {
@@ -19,15 +20,12 @@ function rangesEqual(a: ICellRange[], b: ICellRange[]) {
 
 	return true;
 }
+
 // Challenge is List View talks about `element`, which needs extra work to convert to ICellRange as we support Folding and Cell Move
 export class NotebookCellSelectionCollection extends Disposable {
-	private readonly _onDidChangeSelection = this._register(
-		new Emitter<string>(),
-	);
 
-	get onDidChangeSelection(): Event<string> {
-		return this._onDidChangeSelection.event;
-	}
+	private readonly _onDidChangeSelection = this._register(new Emitter<string>());
+	get onDidChangeSelection(): Event<string> { return this._onDidChangeSelection.event; }
 
 	private _primary: ICellRange | null = null;
 
@@ -41,30 +39,17 @@ export class NotebookCellSelectionCollection extends Disposable {
 		return this._primary ?? { start: 0, end: 0 };
 	}
 
-	setState(
-		primary: ICellRange | null,
-		selections: ICellRange[],
-		forceEventEmit: boolean,
-		source: "view" | "model",
-	) {
-		const changed =
-			primary !== this._primary ||
-			!rangesEqual(this._selections, selections);
+	setState(primary: ICellRange | null, selections: ICellRange[], forceEventEmit: boolean, source: 'view' | 'model') {
+		const changed = primary !== this._primary || !rangesEqual(this._selections, selections);
 
 		this._primary = primary;
-
 		this._selections = selections;
-
 		if (changed || forceEventEmit) {
 			this._onDidChangeSelection.fire(source);
 		}
 	}
 
-	setSelections(
-		selections: ICellRange[],
-		forceEventEmit: boolean,
-		source: "view" | "model",
-	) {
+	setSelections(selections: ICellRange[], forceEventEmit: boolean, source: 'view' | 'model') {
 		this.setState(this._primary, selections, forceEventEmit, source);
 	}
 }

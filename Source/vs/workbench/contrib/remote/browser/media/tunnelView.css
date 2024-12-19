@@ -8,10 +8,7 @@
 	flex: 1;
 }
 
-.ports-view
-	.monaco-list
-	.monaco-list-row:hover:not(.highlighted)
-	.monaco-icon-label,
+.ports-view .monaco-list .monaco-list-row:hover:not(.highlighted) .monaco-icon-label,
 .ports-view .monaco-list .monaco-list-row.focused .monaco-icon-label {
 	flex: 1;
 }
@@ -37,39 +34,22 @@
 	height: 22px;
 }
 
-.ports-view
-	.monaco-list
-	.monaco-list-row
-	.ports-view-actionbar-cell
-	.monaco-inputbox {
+.ports-view .monaco-list .monaco-list-row .ports-view-actionbar-cell .monaco-inputbox {
 	line-height: 19px;
 	height: 22px;
 	flex: 1;
 }
 
-.ports-view
-	.monaco-list
-	.monaco-list-row
-	.ports-view-actionbar-cell
-	.monaco-inputbox
-	input {
+.ports-view .monaco-list .monaco-list-row .ports-view-actionbar-cell .monaco-inputbox input {
 	margin-top: -40px;
 }
 
-.ports-view
-	.monaco-list
-	.monaco-list-row
-	.ports-view-actionbar-cell
-	.ports-view-actionbar-cell-localaddress {
+.ports-view .monaco-list .monaco-list-row .ports-view-actionbar-cell .ports-view-actionbar-cell-localaddress {
 	color: var(--vscode-textLink-foreground);
 	text-decoration: var(--text-link-decoration);
 }
 
-.ports-view
-	.monaco-list
-	.monaco-list-row
-	.ports-view-actionbar-cell
-	.ports-view-actionbar-cell-localaddress:hover {
+.ports-view .monaco-list .monaco-list-row .ports-view-actionbar-cell .ports-view-actionbar-cell-localaddress:hover {
 	text-decoration: underline;
 }
 
@@ -82,11 +62,7 @@
 	padding-left: 10px;
 }
 
-.ports-view
-	.monaco-list
-	.monaco-list-row
-	.ports-view-actionbar-cell
-	.monaco-button {
+.ports-view .monaco-list .monaco-list-row .ports-view-actionbar-cell .monaco-button {
 	width: initial;
 	padding: 2px 14px;
 	line-height: 1.4em;
@@ -95,38 +71,20 @@
 	margin-left: 3px;
 }
 
-.ports-view
-	.monaco-list
-	.monaco-list-row
-	.ports-view-actionbar-cell
-	> .ports-view-actionbar-cell-icon.codicon {
+.ports-view .monaco-list .monaco-list-row .ports-view-actionbar-cell > .ports-view-actionbar-cell-icon.codicon {
 	margin-top: 3px;
 	padding-right: 3px;
 }
 
-.ports-view
-	.monaco-list
-	.monaco-list-row.selected
-	.ports-view-actionbar-cell
-	> .ports-view-actionbar-cell-icon.codicon {
+.ports-view .monaco-list .monaco-list-row.selected .ports-view-actionbar-cell > .ports-view-actionbar-cell-icon.codicon {
 	color: currentColor !important;
 }
 
-.ports-view
-	.monaco-list
-	.monaco-list-row
-	.ports-view-actionbar-cell
-	.ports-view-actionbar-cell-resourceLabel
-	.monaco-icon-label-container
-	> .monaco-icon-name-container {
+.ports-view .monaco-list .monaco-list-row .ports-view-actionbar-cell .ports-view-actionbar-cell-resourceLabel .monaco-icon-label-container > .monaco-icon-name-container {
 	flex: 1;
 }
 
-.ports-view
-	.monaco-list
-	.monaco-list-row
-	.ports-view-actionbar-cell
-	.ports-view-actionbar-cell-resourceLabel::after {
+.ports-view .monaco-list .monaco-list-row .ports-view-actionbar-cell .ports-view-actionbar-cell-resourceLabel::after {
 	padding-right: 0px;
 }
 
@@ -134,21 +92,9 @@
 	display: none;
 }
 
-.ports-view
-	.monaco-list
-	.monaco-list-row:hover
-	.ports-view-actionbar-cell
-	.actions,
-.ports-view
-	.monaco-list
-	.monaco-list-row.selected
-	.ports-view-actionbar-cell
-	.actions,
-.ports-view
-	.monaco-list
-	.monaco-list-row.focused
-	.ports-view-actionbar-cell
-	.actions {
+.ports-view .monaco-list .monaco-list-row:hover .ports-view-actionbar-cell .actions,
+.ports-view .monaco-list .monaco-list-row.selected .ports-view-actionbar-cell .actions,
+.ports-view .monaco-list .monaco-list-row.focused .ports-view-actionbar-cell .actions {
 	display: block;
 }
 

@@ -2,59 +2,39 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { RawContextKey } from "../../../../platform/contextkey/common/contextkey.js";
 
-export const InSearchEditor = new RawContextKey<boolean>(
-	"inSearchEditor",
-	false,
-);
+import { RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
 
-export const SearchEditorScheme = "search-editor";
+export const InSearchEditor = new RawContextKey<boolean>('inSearchEditor', false);
 
-export const SearchEditorWorkingCopyTypeId = "search/editor";
+export const SearchEditorScheme = 'search-editor';
 
-export const SearchEditorFindMatchClass = "searchEditorFindMatch";
+export const SearchEditorWorkingCopyTypeId = 'search/editor';
 
-export const SearchEditorID = "workbench.editor.searchEditor";
+export const SearchEditorFindMatchClass = 'searchEditorFindMatch';
 
-export const OpenNewEditorCommandId = "search.action.openNewEditor";
+export const SearchEditorID = 'workbench.editor.searchEditor';
 
-export const OpenEditorCommandId = "search.action.openEditor";
+export const OpenNewEditorCommandId = 'search.action.openNewEditor';
+export const OpenEditorCommandId = 'search.action.openEditor';
+export const ToggleSearchEditorContextLinesCommandId = 'toggleSearchEditorContextLines';
 
-export const ToggleSearchEditorContextLinesCommandId =
-	"toggleSearchEditorContextLines";
-
-export const SearchEditorInputTypeId =
-	"workbench.editorinputs.searchEditorInput";
-
+export const SearchEditorInputTypeId = 'workbench.editorinputs.searchEditorInput';
 export type SearchConfiguration = {
 	query: string;
-
 	filesToInclude: string;
-
 	filesToExclude: string;
-
 	contextLines: number;
-
 	matchWholeWord: boolean;
-
 	isCaseSensitive: boolean;
-
 	isRegexp: boolean;
-
 	useExcludeSettingsAndIgnoreFiles: boolean;
-
 	showIncludesExcludes: boolean;
-
 	onlyOpenEditors: boolean;
-
 	notebookSearchConfig: {
 		includeMarkupInput: boolean;
-
 		includeMarkupPreview: boolean;
-
 		includeCodeInput: boolean;
-
 		includeOutput: boolean;
 	};
 };

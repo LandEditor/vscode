@@ -2,88 +2,60 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Event } from "../../../../base/common/event.js";
-import {
-	IDisposable,
-	MutableDisposable,
-} from "../../../../base/common/lifecycle.js";
-import { IExtUri } from "../../../../base/common/resources.js";
-import { URI } from "../../../../base/common/uri.js";
-import { ITextResourceConfigurationService } from "../../../../editor/common/services/textResourceConfiguration.js";
-import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
-import { IStorageService } from "../../../../platform/storage/common/storage.js";
-import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
-import { IThemeService } from "../../../../platform/theme/common/themeService.js";
-import {
-	EditorResourceAccessor,
-	IEditorCloseEvent,
-	IEditorMemento,
-	IEditorOpenContext,
-	SideBySideEditor,
-} from "../../../common/editor.js";
-import { EditorInput } from "../../../common/editor/editorInput.js";
-import {
-	IEditorGroup,
-	IEditorGroupsService,
-} from "../../../services/editor/common/editorGroupsService.js";
-import { IEditorService } from "../../../services/editor/common/editorService.js";
-import { EditorPane } from "./editorPane.js";
+
+import { URI } from '../../../../base/common/uri.js';
+import { Event } from '../../../../base/common/event.js';
+import { IEditorMemento, IEditorCloseEvent, IEditorOpenContext, EditorResourceAccessor, SideBySideEditor } from '../../../common/editor.js';
+import { EditorPane } from './editorPane.js';
+import { IStorageService } from '../../../../platform/storage/common/storage.js';
+import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
+import { IThemeService } from '../../../../platform/theme/common/themeService.js';
+import { ITextResourceConfigurationService } from '../../../../editor/common/services/textResourceConfiguration.js';
+import { IEditorGroupsService, IEditorGroup } from '../../../services/editor/common/editorGroupsService.js';
+import { IEditorService } from '../../../services/editor/common/editorService.js';
+import { IExtUri } from '../../../../base/common/resources.js';
+import { IDisposable, MutableDisposable } from '../../../../base/common/lifecycle.js';
+import { EditorInput } from '../../../common/editor/editorInput.js';
 
 /**
  * Base class of editors that want to store and restore view state.
  */
-export abstract class AbstractEditorWithViewState<
-	T extends object,
-> extends EditorPane {
+export abstract class AbstractEditorWithViewState<T extends object> extends EditorPane {
+
 	private viewState: IEditorMemento<T>;
 
 	private readonly groupListener = this._register(new MutableDisposable());
 
-	private editorViewStateDisposables:
-		| Map<EditorInput, IDisposable>
-		| undefined;
+	private editorViewStateDisposables: Map<EditorInput, IDisposable> | undefined;
 
 	constructor(
 		id: string,
 		group: IEditorGroup,
 		viewStateStorageKey: string,
-		@ITelemetryService
-		telemetryService: ITelemetryService,
-		@IInstantiationService
-		protected readonly instantiationService: IInstantiationService,
-		@IStorageService
-		storageService: IStorageService,
-		@ITextResourceConfigurationService
-		protected readonly textResourceConfigurationService: ITextResourceConfigurationService,
-		@IThemeService
-		themeService: IThemeService,
-		@IEditorService
-		protected readonly editorService: IEditorService,
-		@IEditorGroupsService
-		protected readonly editorGroupService: IEditorGroupsService,
+		@ITelemetryService telemetryService: ITelemetryService,
+		@IInstantiationService protected readonly instantiationService: IInstantiationService,
+		@IStorageService storageService: IStorageService,
+		@ITextResourceConfigurationService protected readonly textResourceConfigurationService: ITextResourceConfigurationService,
+		@IThemeService themeService: IThemeService,
+		@IEditorService protected readonly editorService: IEditorService,
+		@IEditorGroupsService protected readonly editorGroupService: IEditorGroupsService
 	) {
 		super(id, group, telemetryService, themeService, storageService);
 
-		this.viewState = this.getEditorMemento<T>(
-			editorGroupService,
-			textResourceConfigurationService,
-			viewStateStorageKey,
-			100,
-		);
+		this.viewState = this.getEditorMemento<T>(editorGroupService, textResourceConfigurationService, viewStateStorageKey, 100);
 	}
 
 	protected override setEditorVisible(visible: boolean): void {
+
 		// Listen to close events to trigger `onWillCloseEditorInGroup`
-		this.groupListener.value = this.group.onWillCloseEditor((e) =>
-			this.onWillCloseEditor(e),
-		);
+		this.groupListener.value = this.group.onWillCloseEditor(e => this.onWillCloseEditor(e));
 
 		super.setEditorVisible(visible);
 	}
 
 	private onWillCloseEditor(e: IEditorCloseEvent): void {
 		const editor = e.editor;
-
 		if (editor === this.input) {
 			// React to editors closing to preserve or clear view state. This needs to happen
 			// in the `onWillCloseEditor` because at that time the editor has not yet
@@ -93,6 +65,7 @@ export abstract class AbstractEditorWithViewState<
 	}
 
 	override clearInput(): void {
+
 		// Preserve current input view state before clearing
 		this.updateEditorViewState(this.input);
 
@@ -100,6 +73,7 @@ export abstract class AbstractEditorWithViewState<
 	}
 
 	protected override saveState(): void {
+
 		// Preserve current input view state before shutting down
 		this.updateEditorViewState(this.input);
 
@@ -112,76 +86,60 @@ export abstract class AbstractEditorWithViewState<
 		}
 
 		const resource = this.toEditorViewStateResource(input);
-
 		if (!resource) {
 			return; // we need a resource
 		}
+
 		// If we are not tracking disposed editor view state
 		// make sure to clear the view state once the editor
 		// is disposed.
 		if (!this.tracksDisposedEditorViewState()) {
 			if (!this.editorViewStateDisposables) {
-				this.editorViewStateDisposables = new Map<
-					EditorInput,
-					IDisposable
-				>();
+				this.editorViewStateDisposables = new Map<EditorInput, IDisposable>();
 			}
 
 			if (!this.editorViewStateDisposables.has(input)) {
-				this.editorViewStateDisposables.set(
-					input,
-					Event.once(input.onWillDispose)(() => {
-						this.clearEditorViewState(resource, this.group);
-
-						this.editorViewStateDisposables?.delete(input);
-					}),
-				);
+				this.editorViewStateDisposables.set(input, Event.once(input.onWillDispose)(() => {
+					this.clearEditorViewState(resource, this.group);
+					this.editorViewStateDisposables?.delete(input);
+				}));
 			}
 		}
+
 		// Clear the editor view state if:
 		// - the editor view state should not be tracked for disposed editors
 		// - the user configured to not restore view state unless the editor is still opened in the group
 		if (
 			(input.isDisposed() && !this.tracksDisposedEditorViewState()) ||
-			(!this.shouldRestoreEditorViewState(input) &&
-				!this.group.contains(input))
+			(!this.shouldRestoreEditorViewState(input) && !this.group.contains(input))
 		) {
 			this.clearEditorViewState(resource, this.group);
 		}
+
 		// Otherwise we save the view state
 		else if (!input.isDisposed()) {
 			this.saveEditorViewState(resource);
 		}
 	}
 
-	private shouldRestoreEditorViewState(
-		input: EditorInput,
-		context?: IEditorOpenContext,
-	): boolean {
+	private shouldRestoreEditorViewState(input: EditorInput, context?: IEditorOpenContext): boolean {
+
 		// new editor: check with workbench.editor.restoreViewState setting
 		if (context?.newInGroup) {
-			return this.textResourceConfigurationService.getValue<boolean>(
-				EditorResourceAccessor.getOriginalUri(input, {
-					supportSideBySide: SideBySideEditor.PRIMARY,
-				}),
-				"workbench.editor.restoreViewState",
-			) === false
-				? false
-				: true /* restore by default */;
+			return this.textResourceConfigurationService.getValue<boolean>(EditorResourceAccessor.getOriginalUri(input, { supportSideBySide: SideBySideEditor.PRIMARY }), 'workbench.editor.restoreViewState') === false ? false : true /* restore by default */;
 		}
+
 		// existing editor: always restore viewstate
 		return true;
 	}
 
 	override getViewState(): T | undefined {
 		const input = this.input;
-
 		if (!input || !this.tracksEditorViewState(input)) {
 			return; // need valid input for view state
 		}
 
 		const resource = this.toEditorViewStateResource(input);
-
 		if (!resource) {
 			return; // need a resource for finding view state
 		}
@@ -191,7 +149,6 @@ export abstract class AbstractEditorWithViewState<
 
 	private saveEditorViewState(resource: URI): void {
 		const editorViewState = this.computeEditorViewState(resource);
-
 		if (!editorViewState) {
 			return;
 		}
@@ -199,10 +156,7 @@ export abstract class AbstractEditorWithViewState<
 		this.viewState.saveEditorState(this.group, resource, editorViewState);
 	}
 
-	protected loadEditorViewState(
-		input: EditorInput | undefined,
-		context?: IEditorOpenContext,
-	): T | undefined {
+	protected loadEditorViewState(input: EditorInput | undefined, context?: IEditorOpenContext): T | undefined {
 		if (!input) {
 			return undefined; // we need valid input
 		}
@@ -216,7 +170,6 @@ export abstract class AbstractEditorWithViewState<
 		}
 
 		const resource = this.toEditorViewStateResource(input);
-
 		if (!resource) {
 			return; // need a resource for finding view state
 		}
@@ -224,11 +177,7 @@ export abstract class AbstractEditorWithViewState<
 		return this.viewState.loadEditorState(this.group, resource);
 	}
 
-	protected moveEditorViewState(
-		source: URI,
-		target: URI,
-		comparer: IExtUri,
-	): void {
+	protected moveEditorViewState(source: URI, target: URI, comparer: IExtUri): void {
 		return this.viewState.moveEditorState(source, target, comparer);
 	}
 
@@ -247,7 +196,9 @@ export abstract class AbstractEditorWithViewState<
 			this.editorViewStateDisposables = undefined;
 		}
 	}
+
 	//#region Subclasses should/could override based on needs
+
 	/**
 	 * The actual method to provide for gathering the view state
 	 * object for the control.
@@ -259,12 +210,14 @@ export abstract class AbstractEditorWithViewState<
 	 * https://github.com/microsoft/vscode/issues/40114).
 	 */
 	protected abstract computeEditorViewState(resource: URI): T | undefined;
+
 	/**
 	 * Whether view state should be associated with the given input.
 	 * Subclasses need to ensure that the editor input is expected
 	 * for the editor.
 	 */
 	protected abstract tracksEditorViewState(input: EditorInput): boolean;
+
 	/**
 	 * Whether view state should be tracked even when the editor is
 	 * disposed.
@@ -275,10 +228,11 @@ export abstract class AbstractEditorWithViewState<
 	protected tracksDisposedEditorViewState(): boolean {
 		return false;
 	}
+
 	/**
 	 * Asks to return the `URI` to associate with the view state.
 	 */
-	protected abstract toEditorViewStateResource(
-		input: EditorInput,
-	): URI | undefined;
+	protected abstract toEditorViewStateResource(input: EditorInput): URI | undefined;
+
+	//#endregion
 }

@@ -3,34 +3,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IReference } from "../../../../../base/common/lifecycle.js";
-import { ITransaction } from "../../../../../base/common/observable.js";
-import { ILanguageService } from "../../../../../editor/common/languages/language.js";
-import { IEditorWorkerService } from "../../../../../editor/common/services/editorWorker.js";
-import { IModelService } from "../../../../../editor/common/services/model.js";
-import {
-	IResolvedTextEditorModel,
-	ITextModelService,
-} from "../../../../../editor/common/services/resolverService.js";
-import { IFileService } from "../../../../../platform/files/common/files.js";
-import { IUndoRedoService } from "../../../../../platform/undoRedo/common/undoRedo.js";
-import { SaveReason } from "../../../../common/editor.js";
-import { IResolvedTextFileEditorModel } from "../../../../services/textfile/common/textfiles.js";
-import { ChatEditKind } from "../../common/chatEditingService.js";
-import { IChatService } from "../../common/chatService.js";
-import {
-	ChatEditingModifiedFileEntry,
-	IModifiedEntryTelemetryInfo,
-} from "./chatEditingModifiedFileEntry.js";
+import { IReference } from '../../../../../base/common/lifecycle.js';
+import { ITransaction } from '../../../../../base/common/observable.js';
+import { ILanguageService } from '../../../../../editor/common/languages/language.js';
+import { IEditorWorkerService } from '../../../../../editor/common/services/editorWorker.js';
+import { IModelService } from '../../../../../editor/common/services/model.js';
+import { IResolvedTextEditorModel, ITextModelService } from '../../../../../editor/common/services/resolverService.js';
+import { IFileService } from '../../../../../platform/files/common/files.js';
+import { IUndoRedoService } from '../../../../../platform/undoRedo/common/undoRedo.js';
+import { SaveReason } from '../../../../common/editor.js';
+import { IResolvedTextFileEditorModel } from '../../../../services/textfile/common/textfiles.js';
+import { ChatEditKind } from '../../common/chatEditingService.js';
+import { IChatService } from '../../common/chatService.js';
+import { ChatEditingModifiedFileEntry, IModifiedEntryTelemetryInfo } from './chatEditingModifiedFileEntry.js';
 
 export class ChatEditingModifiedNotebookEntry extends ChatEditingModifiedFileEntry {
 	private readonly resolveTextFileEditorModel: IResolvedTextFileEditorModel;
 
 	constructor(
 		resourceRef: IReference<IResolvedTextEditorModel>,
-		_multiDiffEntryDelegate: {
-			collapse: (transaction: ITransaction | undefined) => void;
-		},
+		_multiDiffEntryDelegate: { collapse: (transaction: ITransaction | undefined) => void },
 		_telemetryInfo: IModifiedEntryTelemetryInfo,
 		kind: ChatEditKind,
 		initialContent: string | undefined,
@@ -42,29 +34,12 @@ export class ChatEditingModifiedNotebookEntry extends ChatEditingModifiedFileEnt
 		@IUndoRedoService _undoRedoService: IUndoRedoService,
 		@IFileService _fileService: IFileService,
 	) {
-		super(
-			resourceRef,
-			_multiDiffEntryDelegate,
-			_telemetryInfo,
-			kind,
-			initialContent,
-			modelService,
-			textModelService,
-			languageService,
-			_chatService,
-			_editorWorkerService,
-			_undoRedoService,
-			_fileService,
-		);
-		this.resolveTextFileEditorModel =
-			resourceRef.object as IResolvedTextFileEditorModel;
+		super(resourceRef, _multiDiffEntryDelegate, _telemetryInfo, kind, initialContent, modelService, textModelService, languageService, _chatService, _editorWorkerService, _undoRedoService, _fileService);
+		this.resolveTextFileEditorModel = resourceRef.object as IResolvedTextFileEditorModel;
 	}
 
 	async saveMirrorDocument(): Promise<void> {
-		await this.resolveTextFileEditorModel.save({
-			reason: SaveReason.EXPLICIT,
-			ignoreModifiedSince: true,
-		});
+		await this.resolveTextFileEditorModel.save({ reason: SaveReason.EXPLICIT, ignoreModifiedSince: true });
 	}
 
 	async revertMirrorDocument(): Promise<void> {

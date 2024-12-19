@@ -2,39 +2,28 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import {
-	CancellationError,
-	onUnexpectedError,
-} from "../../../../base/common/errors.js";
+
+import { CancellationError, onUnexpectedError } from '../../../../base/common/errors.js';
 
 export class LazyPromise implements Promise<any> {
+
 	private _actual: Promise<any> | null;
-
 	private _actualOk: ((value?: any) => any) | null;
-
 	private _actualErr: ((err?: any) => any) | null;
 
 	private _hasValue: boolean;
-
 	private _value: any;
 
 	protected _hasErr: boolean;
-
 	protected _err: any;
 
 	constructor() {
 		this._actual = null;
-
 		this._actualOk = null;
-
 		this._actualErr = null;
-
 		this._hasValue = false;
-
 		this._value = null;
-
 		this._hasErr = false;
-
 		this._err = null;
 	}
 
@@ -46,7 +35,6 @@ export class LazyPromise implements Promise<any> {
 		if (!this._actual) {
 			this._actual = new Promise<any>((c, e) => {
 				this._actualOk = c;
-
 				this._actualErr = e;
 
 				if (this._hasValue) {
@@ -58,7 +46,6 @@ export class LazyPromise implements Promise<any> {
 				}
 			});
 		}
-
 		return this._actual;
 	}
 
@@ -68,7 +55,6 @@ export class LazyPromise implements Promise<any> {
 		}
 
 		this._hasValue = true;
-
 		this._value = value;
 
 		if (this._actual) {
@@ -82,7 +68,6 @@ export class LazyPromise implements Promise<any> {
 		}
 
 		this._hasErr = true;
-
 		this._err = err;
 
 		if (this._actual) {
@@ -106,12 +91,11 @@ export class LazyPromise implements Promise<any> {
 		return this._ensureActual().finally(callback);
 	}
 }
+
 export class CanceledLazyPromise extends LazyPromise {
 	constructor() {
 		super();
-
 		this._hasErr = true;
-
 		this._err = new CancellationError();
 	}
 }

@@ -3,19 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "../../../../nls.js";
-import { ICodeEditor } from "../../../browser/editorBrowser.js";
-import {
-	EditorAction,
-	IActionOptions,
-	registerEditorAction,
-	ServicesAccessor,
-} from "../../../browser/editorExtensions.js";
-import { ICommand } from "../../../common/editorCommon.js";
-import { EditorContextKeys } from "../../../common/editorContextKeys.js";
-import { MoveCaretCommand } from "./moveCaretCommand.js";
+import { ICodeEditor } from '../../../browser/editorBrowser.js';
+import { EditorAction, IActionOptions, registerEditorAction, ServicesAccessor } from '../../../browser/editorExtensions.js';
+import { ICommand } from '../../../common/editorCommon.js';
+import { EditorContextKeys } from '../../../common/editorContextKeys.js';
+import { MoveCaretCommand } from './moveCaretCommand.js';
+import * as nls from '../../../../nls.js';
 
 class MoveCaretAction extends EditorAction {
+
 	private readonly left: boolean;
 
 	constructor(left: boolean, opts: IActionOptions) {
@@ -30,7 +26,6 @@ class MoveCaretAction extends EditorAction {
 		}
 
 		const commands: ICommand[] = [];
-
 		const selections = editor.getSelections();
 
 		for (const selection of selections) {
@@ -38,9 +33,7 @@ class MoveCaretAction extends EditorAction {
 		}
 
 		editor.pushUndoStop();
-
 		editor.executeCommands(this.id, commands);
-
 		editor.pushUndoStop();
 	}
 }
@@ -48,9 +41,9 @@ class MoveCaretAction extends EditorAction {
 class MoveCaretLeftAction extends MoveCaretAction {
 	constructor() {
 		super(true, {
-			id: "editor.action.moveCarretLeftAction",
-			label: nls.localize2("caret.moveLeft", "Move Selected Text Left"),
-			precondition: EditorContextKeys.writable,
+			id: 'editor.action.moveCarretLeftAction',
+			label: nls.localize2('caret.moveLeft', "Move Selected Text Left"),
+			precondition: EditorContextKeys.writable
 		});
 	}
 }
@@ -58,9 +51,9 @@ class MoveCaretLeftAction extends MoveCaretAction {
 class MoveCaretRightAction extends MoveCaretAction {
 	constructor() {
 		super(false, {
-			id: "editor.action.moveCarretRightAction",
-			label: nls.localize2("caret.moveRight", "Move Selected Text Right"),
-			precondition: EditorContextKeys.writable,
+			id: 'editor.action.moveCarretRightAction',
+			label: nls.localize2('caret.moveRight', "Move Selected Text Right"),
+			precondition: EditorContextKeys.writable
 		});
 	}
 }

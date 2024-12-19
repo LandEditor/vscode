@@ -39,21 +39,11 @@
 	color: var(--vscode-peekViewResult-fileForeground);
 }
 
-.monaco-editor
-	.reference-zone-widget
-	.ref-tree
-	.monaco-list:focus
-	.selected
-	.reference-file {
+.monaco-editor .reference-zone-widget .ref-tree .monaco-list:focus .selected .reference-file {
 	color: inherit !important;
 }
 
-.monaco-editor
-	.reference-zone-widget
-	.ref-tree
-	.monaco-list:focus
-	.monaco-list-rows
-	> .monaco-list-row.selected:not(.highlighted) {
+.monaco-editor .reference-zone-widget .ref-tree .monaco-list:focus .monaco-list-rows > .monaco-list-row.selected:not(.highlighted) {
 	background-color: var(--vscode-peekViewResult-selectionBackground);
 	color: var(--vscode-peekViewResult-selectionForeground) !important;
 }
@@ -73,16 +63,8 @@
 	box-sizing: border-box;
 }
 
-.monaco-editor
-	.reference-zone-widget
-	.preview
-	.monaco-editor
-	.monaco-editor-background,
-.monaco-editor
-	.reference-zone-widget
-	.preview
-	.monaco-editor
-	.inputarea.ime-input {
+.monaco-editor .reference-zone-widget .preview .monaco-editor .monaco-editor-background,
+.monaco-editor .reference-zone-widget .preview .monaco-editor .inputarea.ime-input {
 	background-color: var(--vscode-peekViewEditor-background);
 }
 
@@ -97,16 +79,8 @@
 	font-weight: bold;
 }
 
-.monaco-editor.hc-black
-	.reference-zone-widget
-	.ref-tree
-	.referenceMatch
-	.highlight,
-.monaco-editor.hc-light
-	.reference-zone-widget
-	.ref-tree
-	.referenceMatch
-	.highlight {
+.monaco-editor.hc-black .reference-zone-widget .ref-tree .referenceMatch .highlight,
+.monaco-editor.hc-light .reference-zone-widget .ref-tree .referenceMatch .highlight {
 	border: 1px dotted var(--vscode-contrastActiveBorder, transparent);
 	box-sizing: border-box;
 }

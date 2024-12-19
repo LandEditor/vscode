@@ -2,35 +2,24 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Emitter } from "../../../base/common/event.js";
-import { IMarkdownString } from "../../../base/common/htmlContent.js";
-import { IDisposable } from "../../../base/common/lifecycle.js";
-import { isEqual } from "../../../base/common/resources.js";
-import { ThemeIcon } from "../../../base/common/themables.js";
-import { URI } from "../../../base/common/uri.js";
-import { ConfirmResult } from "../../../platform/dialogs/common/dialogs.js";
-import {
-	AbstractEditorInput,
-	EditorInputCapabilities,
-	EditorResourceAccessor,
-	GroupIdentifier,
-	IEditorDescriptor,
-	IEditorIdentifier,
-	IEditorPane,
-	IMoveResult,
-	IRevertOptions,
-	ISaveOptions,
-	isEditorInput,
-	IUntypedEditorInput,
-	Verbosity,
-} from "../editor.js";
+
+import { Emitter } from '../../../base/common/event.js';
+import { URI } from '../../../base/common/uri.js';
+import { EditorInputCapabilities, Verbosity, GroupIdentifier, ISaveOptions, IRevertOptions, IMoveResult, IEditorDescriptor, IEditorPane, IUntypedEditorInput, EditorResourceAccessor, AbstractEditorInput, isEditorInput, IEditorIdentifier } from '../editor.js';
+import { isEqual } from '../../../base/common/resources.js';
+import { ConfirmResult } from '../../../platform/dialogs/common/dialogs.js';
+import { IMarkdownString } from '../../../base/common/htmlContent.js';
+import { IDisposable } from '../../../base/common/lifecycle.js';
+import { ThemeIcon } from '../../../base/common/themables.js';
 
 export interface IEditorCloseHandler {
+
 	/**
 	 * If `true`, will call into the `confirm` method to ask for confirmation
 	 * before closing the editor.
 	 */
 	showConfirm(): boolean;
+
 	/**
 	 * Allows an editor to control what should happen when the editor
 	 * (or a list of editor of the same kind) is being closed.
@@ -47,13 +36,16 @@ export interface IEditorCloseHandler {
 	 */
 	confirm(editors: ReadonlyArray<IEditorIdentifier>): Promise<ConfirmResult>;
 }
+
 export interface IUntypedEditorOptions {
+
 	/**
 	 * Implementations should try to preserve as much
 	 * view state as possible from the typed input based
 	 * on the group the editor is opened.
 	 */
 	readonly preserveViewState?: GroupIdentifier;
+
 	/**
 	 * Implementations should preserve the original
 	 * resource of the typed input and not alter
@@ -61,41 +53,45 @@ export interface IUntypedEditorOptions {
 	 */
 	readonly preserveResource?: boolean;
 }
+
 /**
  * Editor inputs are lightweight objects that can be passed to the workbench API to open inside the editor part.
  * Each editor input is mapped to an editor that is capable of opening it through the Platform facade.
  */
 export abstract class EditorInput extends AbstractEditorInput {
+
 	protected readonly _onDidChangeDirty = this._register(new Emitter<void>());
-
 	protected readonly _onDidChangeLabel = this._register(new Emitter<void>());
-
-	protected readonly _onDidChangeCapabilities = this._register(
-		new Emitter<void>(),
-	);
+	protected readonly _onDidChangeCapabilities = this._register(new Emitter<void>());
 
 	private readonly _onWillDispose = this._register(new Emitter<void>());
+
 	/**
 	 * Triggered when this input changes its dirty state.
 	 */
 	readonly onDidChangeDirty = this._onDidChangeDirty.event;
+
 	/**
 	 * Triggered when this input changes its label
 	 */
 	readonly onDidChangeLabel = this._onDidChangeLabel.event;
+
 	/**
 	 * Triggered when this input changes its capabilities.
 	 */
 	readonly onDidChangeCapabilities = this._onDidChangeCapabilities.event;
+
 	/**
 	 * Triggered when this input is about to be disposed.
 	 */
 	readonly onWillDispose = this._onWillDispose.event;
+
 	/**
 	 * Optional: subclasses can override to implement
 	 * custom confirmation on close behavior.
 	 */
 	readonly closeHandler?: IEditorCloseHandler;
+
 	/**
 	 * Unique type identifier for this input. Every editor input of the
 	 * same class should share the same type identifier. The type identifier
@@ -103,6 +99,7 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 * via the serialisers of the `EditorInputFactoryRegistry`.
 	 */
 	abstract get typeId(): string;
+
 	/**
 	 * Returns the optional associated resource of this input.
 	 *
@@ -115,6 +112,7 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 * Please refer to `EditorResourceAccessor` documentation in that case.
 	 */
 	abstract get resource(): URI | undefined;
+
 	/**
 	 * Identifies the type of editor this input represents
 	 * This ID is registered with the {@link EditorResolverService} to allow
@@ -123,12 +121,14 @@ export abstract class EditorInput extends AbstractEditorInput {
 	get editorId(): string | undefined {
 		return undefined;
 	}
+
 	/**
 	 * The capabilities of the input.
 	 */
 	get capabilities(): EditorInputCapabilities {
 		return EditorInputCapabilities.Readonly;
 	}
+
 	/**
 	 * Figure out if the input has the provided capability.
 	 */
@@ -143,36 +143,42 @@ export abstract class EditorInput extends AbstractEditorInput {
 	isReadonly(): boolean | IMarkdownString {
 		return this.hasCapability(EditorInputCapabilities.Readonly);
 	}
+
 	/**
 	 * Returns the display name of this input.
 	 */
 	getName(): string {
 		return `Editor ${this.typeId}`;
 	}
+
 	/**
 	 * Returns the display description of this input.
 	 */
 	getDescription(verbosity?: Verbosity): string | undefined {
 		return undefined;
 	}
+
 	/**
 	 * Returns the display title of this input.
 	 */
 	getTitle(verbosity?: Verbosity): string {
 		return this.getName();
 	}
+
 	/**
 	 * Returns the extra classes to apply to the label of this input.
 	 */
 	getLabelExtraClasses(): string[] {
 		return [];
 	}
+
 	/**
 	 * Returns the aria label to be read out by a screen reader.
 	 */
 	getAriaLabel(): string {
 		return this.getTitle(Verbosity.SHORT);
 	}
+
 	/**
 	 * Returns the icon which represents this editor input.
 	 * If undefined, the default icon will be used.
@@ -180,33 +186,35 @@ export abstract class EditorInput extends AbstractEditorInput {
 	getIcon(): ThemeIcon | undefined {
 		return undefined;
 	}
+
 	/**
 	 * Returns a descriptor suitable for telemetry events.
 	 *
 	 * Subclasses should extend if they can contribute.
 	 */
-	getTelemetryDescriptor(): {
-		[key: string]: unknown;
-	} {
+	getTelemetryDescriptor(): { [key: string]: unknown } {
 		/* __GDPR__FRAGMENT__
-            "EditorTelemetryDescriptor" : {
-                "typeId" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
-            }
-        */
+			"EditorTelemetryDescriptor" : {
+				"typeId" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
+			}
+		*/
 		return { typeId: this.typeId };
 	}
+
 	/**
 	 * Returns if this input is dirty or not.
 	 */
 	isDirty(): boolean {
 		return false;
 	}
+
 	/**
 	 * Returns if the input has unsaved changes.
 	 */
 	isModified(): boolean {
 		return this.isDirty();
 	}
+
 	/**
 	 * Returns if this input is currently being saved or soon to be
 	 * saved. Based on this assumption the editor may for example
@@ -216,6 +224,7 @@ export abstract class EditorInput extends AbstractEditorInput {
 	isSaving(): boolean {
 		return false;
 	}
+
 	/**
 	 * Returns a type of `IDisposable` that represents the resolved input.
 	 * Subclasses should override to provide a meaningful model or return
@@ -227,6 +236,7 @@ export abstract class EditorInput extends AbstractEditorInput {
 	async resolve(): Promise<IDisposable | null> {
 		return null;
 	}
+
 	/**
 	 * Saves the editor. The provided groupId helps implementors
 	 * to e.g. preserve view state of the editor and re-open it
@@ -236,12 +246,10 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 * this operation or `undefined` to indicate that the operation
 	 * failed or was canceled.
 	 */
-	async save(
-		group: GroupIdentifier,
-		options?: ISaveOptions,
-	): Promise<EditorInput | IUntypedEditorInput | undefined> {
+	async save(group: GroupIdentifier, options?: ISaveOptions): Promise<EditorInput | IUntypedEditorInput | undefined> {
 		return this;
 	}
+
 	/**
 	 * Saves the editor to a different location. The provided `group`
 	 * helps implementors to e.g. preserve view state of the editor
@@ -251,19 +259,15 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 * of this operation or `undefined` to indicate that the operation
 	 * failed or was canceled.
 	 */
-	async saveAs(
-		group: GroupIdentifier,
-		options?: ISaveOptions,
-	): Promise<EditorInput | IUntypedEditorInput | undefined> {
+	async saveAs(group: GroupIdentifier, options?: ISaveOptions): Promise<EditorInput | IUntypedEditorInput | undefined> {
 		return this;
 	}
+
 	/**
 	 * Reverts this input from the provided group.
 	 */
-	async revert(
-		group: GroupIdentifier,
-		options?: IRevertOptions,
-	): Promise<void> {}
+	async revert(group: GroupIdentifier, options?: IRevertOptions): Promise<void> { }
+
 	/**
 	 * Called to determine how to handle a resource that is renamed that matches
 	 * the editors resource (or is a child of).
@@ -272,18 +276,17 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 * to participate. If an editor is returned though, it will replace the
 	 * current one with that editor and optional options.
 	 */
-	async rename(
-		group: GroupIdentifier,
-		target: URI,
-	): Promise<IMoveResult | undefined> {
+	async rename(group: GroupIdentifier, target: URI): Promise<IMoveResult | undefined> {
 		return undefined;
 	}
+
 	/**
 	 * Returns a copy of the current editor input. Used when we can't just reuse the input
 	 */
 	copy(): EditorInput {
 		return this;
 	}
+
 	/**
 	 * Indicates if this editor can be moved to another group. By default
 	 * editors can freely be moved around groups. If an editor cannot be
@@ -293,36 +296,31 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 * a string with a message to show to the user if the editor cannot be
 	 * moved.
 	 */
-	canMove(
-		sourceGroup: GroupIdentifier,
-		targetGroup: GroupIdentifier,
-	): true | string {
+	canMove(sourceGroup: GroupIdentifier, targetGroup: GroupIdentifier): true | string {
 		return true;
 	}
+
 	/**
 	 * Returns if the other object matches this input.
 	 */
 	matches(otherInput: EditorInput | IUntypedEditorInput): boolean {
+
 		// Typed inputs: via  === check
 		if (isEditorInput(otherInput)) {
 			return this === otherInput;
 		}
+
 		// Untyped inputs: go into properties
 		const otherInputEditorId = otherInput.options?.override;
+
 		// If the overrides are both defined and don't match that means they're separate inputs
-		if (
-			this.editorId !== otherInputEditorId &&
-			otherInputEditorId !== undefined &&
-			this.editorId !== undefined
-		) {
+		if (this.editorId !== otherInputEditorId && otherInputEditorId !== undefined && this.editorId !== undefined) {
 			return false;
 		}
 
-		return isEqual(
-			this.resource,
-			EditorResourceAccessor.getCanonicalUri(otherInput),
-		);
+		return isEqual(this.resource, EditorResourceAccessor.getCanonicalUri(otherInput));
 	}
+
 	/**
 	 * If a editor was registered onto multiple editor panes, this method
 	 * will be asked to return the preferred one to use.
@@ -330,11 +328,10 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 * @param editorPanes a list of editor pane descriptors that are candidates
 	 * for the editor to open in.
 	 */
-	prefersEditorPane<T extends IEditorDescriptor<IEditorPane>>(
-		editorPanes: T[],
-	): T | undefined {
+	prefersEditorPane<T extends IEditorDescriptor<IEditorPane>>(editorPanes: T[]): T | undefined {
 		return editorPanes.at(0);
 	}
+
 	/**
 	 * Returns a representation of this typed editor input as untyped
 	 * resource editor input that e.g. can be used to serialize the
@@ -342,11 +339,10 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 *
 	 * May return `undefined` if an untyped representation is not supported.
 	 */
-	toUntyped(
-		options?: IUntypedEditorOptions,
-	): IUntypedEditorInput | undefined {
+	toUntyped(options?: IUntypedEditorOptions): IUntypedEditorInput | undefined {
 		return undefined;
 	}
+
 	/**
 	 * Returns if this editor is disposed.
 	 */

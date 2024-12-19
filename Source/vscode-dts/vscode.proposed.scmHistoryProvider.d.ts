@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
 	// https://github.com/microsoft/vscode/issues/185269
 
 	export interface SourceControl {
@@ -12,14 +12,8 @@ declare module "vscode" {
 
 	export interface SourceControlHistoryProvider {
 		readonly currentHistoryItemRef: SourceControlHistoryItemRef | undefined;
-
-		readonly currentHistoryItemRemoteRef:
-			| SourceControlHistoryItemRef
-			| undefined;
-
-		readonly currentHistoryItemBaseRef:
-			| SourceControlHistoryItemRef
-			| undefined;
+		readonly currentHistoryItemRemoteRef: SourceControlHistoryItemRef | undefined;
+		readonly currentHistoryItemBaseRef: SourceControlHistoryItemRef | undefined;
 
 		/**
 		 * Fires when the current history item refs (local, remote, base)
@@ -32,91 +26,55 @@ declare module "vscode" {
 		 */
 		onDidChangeHistoryItemRefs: Event<SourceControlHistoryItemRefsChangeEvent>;
 
-		provideHistoryItemRefs(
-			historyItemRefs: string[] | undefined,
-			token: CancellationToken,
-		): ProviderResult<SourceControlHistoryItemRef[]>;
+		provideHistoryItemRefs(historyItemRefs: string[] | undefined, token: CancellationToken): ProviderResult<SourceControlHistoryItemRef[]>;
+		provideHistoryItems(options: SourceControlHistoryOptions, token: CancellationToken): ProviderResult<SourceControlHistoryItem[]>;
+		provideHistoryItemChanges(historyItemId: string, historyItemParentId: string | undefined, token: CancellationToken): ProviderResult<SourceControlHistoryItemChange[]>;
 
-		provideHistoryItems(
-			options: SourceControlHistoryOptions,
-			token: CancellationToken,
-		): ProviderResult<SourceControlHistoryItem[]>;
-
-		provideHistoryItemChanges(
-			historyItemId: string,
-			historyItemParentId: string | undefined,
-			token: CancellationToken,
-		): ProviderResult<SourceControlHistoryItemChange[]>;
-
-		resolveHistoryItemRefsCommonAncestor(
-			historyItemRefs: string[],
-			token: CancellationToken,
-		): ProviderResult<string>;
+		resolveHistoryItemRefsCommonAncestor(historyItemRefs: string[], token: CancellationToken): ProviderResult<string>;
 	}
 
 	export interface SourceControlHistoryOptions {
 		readonly skip?: number;
-
 		readonly limit?: number | { id?: string };
-
 		readonly historyItemRefs?: readonly string[];
 	}
 
 	export interface SourceControlHistoryItemStatistics {
 		readonly files: number;
-
 		readonly insertions: number;
-
 		readonly deletions: number;
 	}
 
 	export interface SourceControlHistoryItem {
 		readonly id: string;
-
 		readonly parentIds: string[];
-
 		readonly message: string;
-
 		readonly displayId?: string;
-
 		readonly author?: string;
-
 		readonly timestamp?: number;
-
 		readonly statistics?: SourceControlHistoryItemStatistics;
-
 		readonly references?: SourceControlHistoryItemRef[];
 	}
 
 	export interface SourceControlHistoryItemRef {
 		readonly id: string;
-
 		readonly name: string;
-
 		readonly description?: string;
-
 		readonly revision?: string;
-
 		readonly category?: string;
-
 		readonly icon?: Uri | { light: Uri; dark: Uri } | ThemeIcon;
 	}
 
 	export interface SourceControlHistoryItemChange {
 		readonly uri: Uri;
-
 		readonly originalUri: Uri | undefined;
-
 		readonly modifiedUri: Uri | undefined;
-
 		readonly renameUri: Uri | undefined;
 	}
 
 	export interface SourceControlHistoryItemRefsChangeEvent {
 		readonly added: readonly SourceControlHistoryItemRef[];
-
 		readonly removed: readonly SourceControlHistoryItemRef[];
-
 		readonly modified: readonly SourceControlHistoryItemRef[];
 
 		/**

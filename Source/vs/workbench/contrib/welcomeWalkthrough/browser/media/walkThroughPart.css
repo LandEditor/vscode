@@ -76,62 +76,19 @@
 	border-collapse: collapse;
 }
 
-.monaco-workbench
-	.part.editor
-	> .content
-	.walkThroughContent
-	table
-	> thead
-	> tr
-	> th {
+.monaco-workbench .part.editor > .content .walkThroughContent table > thead > tr > th {
 	text-align: left;
 	border-bottom: 1px solid;
 }
 
-.monaco-workbench
-	.part.editor
-	> .content
-	.walkThroughContent
-	table
-	> thead
-	> tr
-	> th,
-.monaco-workbench
-	.part.editor
-	> .content
-	.walkThroughContent
-	table
-	> thead
-	> tr
-	> td,
-.monaco-workbench
-	.part.editor
-	> .content
-	.walkThroughContent
-	table
-	> tbody
-	> tr
-	> th,
-.monaco-workbench
-	.part.editor
-	> .content
-	.walkThroughContent
-	table
-	> tbody
-	> tr
-	> td {
+.monaco-workbench .part.editor > .content .walkThroughContent table > thead > tr > th,
+.monaco-workbench .part.editor > .content .walkThroughContent table > thead > tr > td,
+.monaco-workbench .part.editor > .content .walkThroughContent table > tbody > tr > th,
+.monaco-workbench .part.editor > .content .walkThroughContent table > tbody > tr > td {
 	padding: 5px 10px;
 }
 
-.monaco-workbench
-	.part.editor
-	> .content
-	.walkThroughContent
-	table
-	> tbody
-	> tr
-	+ tr
-	> td {
+.monaco-workbench .part.editor > .content .walkThroughContent table > tbody > tr + tr > td {
 	border-top: 1px solid;
 }
 
@@ -150,19 +107,13 @@
 	border-color: var(--vscode-textBlockQuote-border);
 }
 
-.monaco-workbench
-	.part.editor
-	> .content
-	.walkThroughContent
-	.monaco-tokenized-source {
+.monaco-workbench .part.editor > .content .walkThroughContent .monaco-tokenized-source {
 	white-space: pre;
 }
 
-.file-icons-enabled
-	.show-file-icons
-	.vs_code_editor_walkthrough\.md-name-file-icon.md-ext-file-icon.ext-file-icon.markdown-lang-file-icon.file-icon::before {
-	content: " ";
-	background-image: url("../../../../browser/media/code-icon.svg");
+.file-icons-enabled .show-file-icons .vs_code_editor_walkthrough\.md-name-file-icon.md-ext-file-icon.ext-file-icon.markdown-lang-file-icon.file-icon::before {
+	content: ' ';
+	background-image: url('../../../../browser/media/code-icon.svg');
 }
 
 .monaco-workbench .part.editor > .content .walkThroughContent .mac-only,
@@ -173,31 +124,15 @@
 .monaco-workbench.mac .part.editor > .content .walkThroughContent .mac-only {
 	display: initial;
 }
-.monaco-workbench.windows
-	.part.editor
-	> .content
-	.walkThroughContent
-	.windows-only {
+.monaco-workbench.windows .part.editor > .content .walkThroughContent .windows-only {
 	display: initial;
 }
-.monaco-workbench.linux
-	.part.editor
-	> .content
-	.walkThroughContent
-	.linux-only {
+.monaco-workbench.linux .part.editor > .content .walkThroughContent .linux-only {
 	display: initial;
 }
 
-.monaco-workbench.hc-black
-	.part.editor
-	> .content
-	.walkThroughContent
-	.monaco-editor,
-.monaco-workbench.hc-light
-	.part.editor
-	> .content
-	.walkThroughContent
-	.monaco-editor {
+.monaco-workbench.hc-black .part.editor > .content .walkThroughContent .monaco-editor,
+.monaco-workbench.hc-light .part.editor > .content .walkThroughContent .monaco-editor {
 	border-width: 1px;
 	border-style: solid;
 }
@@ -226,15 +161,7 @@
 	border-color: var(--vscode-contrastBorder);
 }
 
-.monaco-workbench
-	.part.editor
-	> .content
-	.walkThroughContent
-	.monaco-editor-background,
-.monaco-workbench
-	.part.editor
-	> .content
-	.walkThroughContent
-	.margin-view-overlays {
+.monaco-workbench .part.editor > .content .walkThroughContent .monaco-editor-background,
+.monaco-workbench .part.editor > .content .walkThroughContent .margin-view-overlays {
 	background: var(--vscode-walkThrough-embeddedEditorBackground);
 }

@@ -2,18 +2,21 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import type { MetadataConsts } from "../../../common/encodedTokenAttributes.js";
+
+import type { MetadataConsts } from '../../../common/encodedTokenAttributes.js';
 
 export interface IGlyphRasterizer {
 	/**
 	 * A unique identifier for the rasterizer.
 	 */
 	readonly id: number;
+
 	/**
 	 * An identifier for properties inherent to rendering with this rasterizer. This will be the
 	 * same as other rasterizer cache keys provided they share the same property values in question.
 	 */
 	readonly cacheKey: string;
+
 	/**
 	 * Rasterizes a glyph.
 	 * @param chars The character(s) to rasterize. This can be a single character, a ligature, an
@@ -30,6 +33,7 @@ export interface IGlyphRasterizer {
 		colorMap: string[],
 	): Readonly<IRasterizedGlyph>;
 }
+
 /**
  * A simple bounding box in a 2D plane.
  */
@@ -43,6 +47,7 @@ export interface IBoundingBox {
 	/** The bottom y coordinate (inclusive). */
 	bottom: number;
 }
+
 /**
  * A glyph that has been rasterized to a canvas.
  */

@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TextureAtlas } from "./atlas/textureAtlas.js";
-import { TextureAtlasPage } from "./atlas/textureAtlasPage.js";
-import { BindingId } from "./gpu.js";
+import { TextureAtlas } from './atlas/textureAtlas.js';
+import { TextureAtlasPage } from './atlas/textureAtlasPage.js';
+import { BindingId } from './gpu.js';
 
 export const fullFileRenderStrategyWgsl = /*wgsl*/ `
 struct GlyphInfo {
@@ -56,7 +56,6 @@ struct VSOutput {
 	@builtin(vertex_index) vertexIndex : u32
 ) -> VSOutput {
 	let cell = cells[instanceIndex];
-
 	var glyph = glyphInfo[u32(cell.textureIndex)][u32(cell.glyphIndex)];
 
 	var vsOut: VSOutput;
@@ -75,7 +74,6 @@ struct VSOutput {
 	vsOut.layerIndex = cell.textureIndex;
 	// Textures are flipped from natural direction on the y-axis, so flip it back
 	vsOut.texcoord = vert.position;
-
 	vsOut.texcoord = (
 		// Glyph offset (0-1)
 		(glyph.position / atlasDims) +

@@ -122,15 +122,15 @@ __vsc_escape_value() {
 	builtin local token
 	builtin local out=''
 
-	for ((i = 0; i < "${#str}"; ++i)); do
+	for (( i=0; i < "${#str}"; ++i )); do
 		# Escape backslashes, semi-colons specially, then special ASCII chars below space (0x20).
 		byte="${str:$i:1}"
 		builtin printf -v val '%d' "'$byte"
-		if ((val < 31)); then
+		if  (( val < 31 )); then
 			builtin printf -v token '\\x%02x' "'$byte"
-		elif ((val == 92)); then # \
+		elif (( val == 92 )); then # \
 			token="\\\\"
-		elif ((val == 59)); then # ;
+		elif (( val == 59 )); then # ;
 			token="\\x3b"
 		else
 			token="$byte"
@@ -193,7 +193,7 @@ __vsc_report_prompt() {
 		__vsc_prompt=${__vsc_original_PS1}
 	fi
 
-	__vsc_prompt="$(builtin printf "%s" "${__vsc_prompt//[$'\001'$'\002']/}")"
+	__vsc_prompt="$(builtin printf "%s" "${__vsc_prompt//[$'\001'$'\002']}")"
 	builtin printf "\e]633;P;Prompt=%s\a" "$(__vsc_escape_value "${__vsc_prompt}")"
 }
 

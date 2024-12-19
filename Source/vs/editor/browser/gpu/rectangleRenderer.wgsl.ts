@@ -2,11 +2,13 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
 export const enum RectangleRendererBindingId {
 	Shapes,
 	LayoutInfoUniform,
 	ScrollOffset,
 }
+
 export const rectangleRendererWgsl = /*wgsl*/ `
 
 struct Vertex {
@@ -49,7 +51,6 @@ struct VSOutput {
 	let shape = shapes[instanceIndex];
 
 	var vsOut: VSOutput;
-
 	vsOut.position = vec4f(
 		(
 			// Top left corner
@@ -62,9 +63,7 @@ struct VSOutput {
 		0.0,
 		1.0
 	);
-
 	vsOut.color = shape.color;
-
 	return vsOut;
 }
 

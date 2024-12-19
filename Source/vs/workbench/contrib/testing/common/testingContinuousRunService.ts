@@ -2,33 +2,6 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import * as arrays from "../../../../base/common/arrays.js";
-import { CancellationTokenSource } from "../../../../base/common/cancellation.js";
-import { Emitter, Event } from "../../../../base/common/event.js";
-import {
-	Disposable,
-	DisposableStore,
-	IDisposable,
-	toDisposable,
-} from "../../../../base/common/lifecycle.js";
-import { WellDefinedPrefixTree } from "../../../../base/common/prefixTree.js";
-import {
-	IContextKey,
-	IContextKeyService,
-} from "../../../../platform/contextkey/common/contextkey.js";
-import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
-import {
-	IStorageService,
-	StorageScope,
-	StorageTarget,
-} from "../../../../platform/storage/common/storage.js";
-import { StoredValue } from "./storedValue.js";
-import { TestId } from "./testId.js";
-import { TestingContextKeys } from "./testingContextKeys.js";
-import { ITestProfileService } from "./testProfileService.js";
-import { ITestService } from "./testService.js";
-import { TestService } from "./testServiceImpl.js";
-import { ITestRunProfile, TestRunProfileBitset } from "./testTypes.js";
 
 import * as arrays from '../../../../base/common/arrays.js';
 import { CancellationTokenSource } from '../../../../base/common/cancellation.js';
@@ -51,29 +24,35 @@ export const ITestingContinuousRunService = createDecorator<ITestingContinuousRu
 
 export interface ITestingContinuousRunService {
 	readonly _serviceBrand: undefined;
+
 	/**
 	 * Gets a list of the last test profiles that were continuously run in the workspace.
 	 */
 	readonly lastRunProfileIds: ReadonlySet<number>;
+
 	/**
 	 * Fired when a test is added or removed from continous run, or when
 	 * enablement is changed globally.
 	 */
 	onDidChange: Event<string | undefined>;
+
 	/**
 	 * Gets whether continous run is specifically enabled for the given test ID.
 	 */
 	isSpecificallyEnabledFor(testId: string): boolean;
+
 	/**
 	 * Gets whether continous run is specifically enabled for
 	 * the given test ID, or any of its parents.
 	 */
 	isEnabledForAParentOf(testId: string): boolean;
+
 	/**
 	 * Gets whether continous run is specifically enabled for
 	 * the given test ID, or any of its parents.
 	 */
 	isEnabledForAChildOf(testId: string): boolean;
+
 	/**
 	 * Gets whether continuous run is turned on for the given profile.
 	 */
@@ -83,15 +62,14 @@ export interface ITestingContinuousRunService {
 	 * Gets whether it's enabled at all.
 	 */
 	isEnabled(): boolean;
+
 	/**
 	 * Starts a continuous auto run with a specific set of profiles, or all
 	 * default profiles in a group. Globally if no test is given,
 	 * for a specific test otherwise.
 	 */
-	start(
-		profile: ITestRunProfile[] | TestRunProfileBitset,
-		testId?: string,
-	): void;
+	start(profile: ITestRunProfile[] | TestRunProfileBitset, testId?: string): void;
+
 	/**
 	 * Stops a continuous run for the given test profile.
 	 */
@@ -146,13 +124,12 @@ export class TestingContinuousRunService extends Disposable implements ITestingC
 			}
 		}));
 	}
+
 	/** @inheritdoc */
 	public isSpecificallyEnabledFor(testId: string): boolean {
-		return (
-			this.running.size > 0 &&
-			this.running.hasKey(TestId.fromString(testId).path)
-		);
+		return this.running.size > 0 && this.running.hasKey(TestId.fromString(testId).path);
 	}
+
 	/** @inheritdoc */
 	public isEnabledForAParentOf(testId: string): boolean {
 		return !!this.running.root.value || (this.running.size > 0 && this.running.hasKeyOrParent(TestId.fromString(testId).path));
@@ -168,19 +145,19 @@ export class TestingContinuousRunService extends Disposable implements ITestingC
 
 		return false;
 	}
+
 	/** @inheritdoc */
 	public isEnabledForAChildOf(testId: string): boolean {
 		return !!this.running.root.value || (this.running.size > 0 && this.running.hasKeyOrChildren(TestId.fromString(testId).path));
 	}
+
 	/** @inheritdoc */
 	public isEnabled(): boolean {
 		return !!this.running.root.value || this.running.size > 0;
 	}
+
 	/** @inheritdoc */
-	public start(
-		profiles: ITestRunProfile[] | TestRunProfileBitset,
-		testId?: string,
-	): void {
+	public start(profiles: ITestRunProfile[] | TestRunProfileBitset, testId?: string): void {
 		const store = new DisposableStore();
 
 		let actualProfiles: ISettableObservable<ITestRunProfile[]>;

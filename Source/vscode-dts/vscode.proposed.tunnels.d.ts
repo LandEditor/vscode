@@ -3,22 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	// tunnels @alexr00
 
 	export interface TunnelOptions {
 		remoteAddress: { port: number; host: string };
 		// The desired local port. If this port can't be used, then another will be chosen.
 		localAddressPort?: number;
-
 		label?: string;
 		/**
 		 * @deprecated Use privacy instead
 		 */
 		public?: boolean;
-
 		privacy?: string;
-
 		protocol?: string;
 	}
 
@@ -30,7 +28,6 @@ declare module "vscode" {
 		 * @deprecated Use privacy instead
 		 */
 		public?: boolean;
-
 		privacy?: string;
 		// If protocol is not provided it is assumed to be http, regardless of the localAddress.
 		protocol?: string;
@@ -39,7 +36,6 @@ declare module "vscode" {
 	export interface Tunnel extends TunnelDescription {
 		// Implementers of Tunnel should fire onDidDispose when dispose is called.
 		onDidDispose: Event<void>;
-
 		dispose(): void | Thenable<void>;
 	}
 
@@ -52,9 +48,7 @@ declare module "vscode" {
 		 *
 		 * @param tunnelOptions The `localPort` is a suggestion only. If that port is not available another will be chosen.
 		 */
-		export function openTunnel(
-			tunnelOptions: TunnelOptions,
-		): Thenable<Tunnel>;
+		export function openTunnel(tunnelOptions: TunnelOptions): Thenable<Tunnel>;
 
 		/**
 		 * Gets an array of the currently available tunnels. This does not include environment tunnels, only tunnels that have been created by the user.

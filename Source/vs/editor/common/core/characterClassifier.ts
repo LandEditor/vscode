@@ -2,7 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { toUint8 } from "../../../base/common/uint.js";
+
+import { toUint8 } from '../../../base/common/uint.js';
 
 /**
  * A fast character classifier that uses a compact array for ASCII values.
@@ -12,6 +13,7 @@ export class CharacterClassifier<T extends number> {
 	 * Maintain a compact (fully initialized ASCII map for quickly classifying ASCII characters - used more often in code).
 	 */
 	protected readonly _asciiMap: Uint8Array;
+
 	/**
 	 * The entire map (sparse array).
 	 */
@@ -23,17 +25,13 @@ export class CharacterClassifier<T extends number> {
 		const defaultValue = toUint8(_defaultValue);
 
 		this._defaultValue = defaultValue;
-
 		this._asciiMap = CharacterClassifier._createAsciiMap(defaultValue);
-
 		this._map = new Map<number, number>();
 	}
 
 	private static _createAsciiMap(defaultValue: number): Uint8Array {
 		const asciiMap = new Uint8Array(256);
-
 		asciiMap.fill(defaultValue);
-
 		return asciiMap;
 	}
 
@@ -57,16 +55,17 @@ export class CharacterClassifier<T extends number> {
 
 	public clear() {
 		this._asciiMap.fill(this._defaultValue);
-
 		this._map.clear();
 	}
 }
 
 const enum Boolean {
 	False = 0,
-	True = 1,
+	True = 1
 }
+
 export class CharacterSet {
+
 	private readonly _actual: CharacterClassifier<Boolean>;
 
 	constructor() {
@@ -78,7 +77,7 @@ export class CharacterSet {
 	}
 
 	public has(charCode: number): boolean {
-		return this._actual.get(charCode) === Boolean.True;
+		return (this._actual.get(charCode) === Boolean.True);
 	}
 
 	public clear(): void {

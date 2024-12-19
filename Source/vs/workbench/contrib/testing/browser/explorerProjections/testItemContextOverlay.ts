@@ -2,15 +2,13 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { TestId } from "../../common/testId.js";
-import { TestingContextKeys } from "../../common/testingContextKeys.js";
-import { capabilityContextKeys } from "../../common/testProfileService.js";
-import { InternalTestItem } from "../../common/testTypes.js";
 
-export const getTestItemContextOverlay = (
-	test: InternalTestItem | undefined,
-	capabilities: number,
-): [string, unknown][] => {
+import { InternalTestItem } from '../../common/testTypes.js';
+import { capabilityContextKeys } from '../../common/testProfileService.js';
+import { TestId } from '../../common/testId.js';
+import { TestingContextKeys } from '../../common/testingContextKeys.js';
+
+export const getTestItemContextOverlay = (test: InternalTestItem | undefined, capabilities: number): [string, unknown][] => {
 	if (!test) {
 		return [];
 	}

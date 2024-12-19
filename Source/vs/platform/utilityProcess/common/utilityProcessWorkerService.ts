@@ -2,18 +2,23 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
 export interface IUtilityProcessWorkerProcess {
+
 	/**
 	 * The module to load as child process into the worker.
 	 */
 	readonly moduleId: string;
+
 	/**
 	 * The type of the process appears in the arguments of the
 	 * forked process to identify it easier.
 	 */
 	readonly type: string;
 }
+
 export interface IOnDidTerminateUtilityrocessWorkerProcess {
+
 	/**
 	 * More information around how the utility process worker
 	 * process terminated. Will be `undefined` in case the
@@ -24,47 +29,52 @@ export interface IOnDidTerminateUtilityrocessWorkerProcess {
 	 */
 	readonly reason: IUtilityProcessWorkerProcessExit;
 }
+
 export interface IUtilityProcessWorkerProcessExit {
+
 	/**
 	 * The utility process worker process exit code if known.
 	 */
 	readonly code?: number;
+
 	/**
 	 * The utility process worker process exit signal if known.
 	 */
 	readonly signal?: string;
 }
+
 export interface IUtilityProcessWorkerConfiguration {
+
 	/**
 	 * Configuration specific to the process to fork.
 	 */
 	readonly process: IUtilityProcessWorkerProcess;
+
 	/**
 	 * Configuration specific for how to respond with the
 	 * communication message port to the receiver window.
 	 */
 	readonly reply: {
 		readonly windowId: number;
-
 		readonly channel?: string;
-
 		readonly nonce?: string;
 	};
 }
-export interface IUtilityProcessWorkerCreateConfiguration
-	extends IUtilityProcessWorkerConfiguration {
+
+export interface IUtilityProcessWorkerCreateConfiguration extends IUtilityProcessWorkerConfiguration {
 	readonly reply: {
 		readonly windowId: number;
-
 		readonly channel: string;
-
 		readonly nonce: string;
 	};
 }
-export const ipcUtilityProcessWorkerChannelName = "utilityProcessWorker";
+
+export const ipcUtilityProcessWorkerChannelName = 'utilityProcessWorker';
 
 export interface IUtilityProcessWorkerService {
+
 	readonly _serviceBrand: undefined;
+
 	/**
 	 * Will fork a new process with the provided module identifier in a utility
 	 * process and establishes a message port connection to that process. The other
@@ -89,13 +99,10 @@ export interface IUtilityProcessWorkerService {
 	 * about the termination that can be used to figure out if the termination was unexpected
 	 * or not and whether the worker needs to be restarted.
 	 */
-	createWorker(
-		configuration: IUtilityProcessWorkerCreateConfiguration,
-	): Promise<IOnDidTerminateUtilityrocessWorkerProcess>;
+	createWorker(configuration: IUtilityProcessWorkerCreateConfiguration): Promise<IOnDidTerminateUtilityrocessWorkerProcess>;
+
 	/**
 	 * Terminates the process for the provided configuration if any.
 	 */
-	disposeWorker(
-		configuration: IUtilityProcessWorkerConfiguration,
-	): Promise<void>;
+	disposeWorker(configuration: IUtilityProcessWorkerConfiguration): Promise<void>;
 }

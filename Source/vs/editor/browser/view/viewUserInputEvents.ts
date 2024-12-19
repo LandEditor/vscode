@@ -2,42 +2,29 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { IKeyboardEvent } from "../../../base/browser/keyboardEvent.js";
-import { IMouseWheelEvent } from "../../../base/browser/mouseEvent.js";
-import { Position } from "../../common/core/position.js";
-import { ICoordinatesConverter } from "../../common/viewModel.js";
-import {
-	IEditorMouseEvent,
-	IMouseTarget,
-	IMouseTargetViewZoneData,
-	IPartialEditorMouseEvent,
-	MouseTargetType,
-} from "../editorBrowser.js";
+
+import { IKeyboardEvent } from '../../../base/browser/keyboardEvent.js';
+import { IEditorMouseEvent, IMouseTarget, IMouseTargetViewZoneData, IPartialEditorMouseEvent, MouseTargetType } from '../editorBrowser.js';
+import { ICoordinatesConverter } from '../../common/viewModel.js';
+import { IMouseWheelEvent } from '../../../base/browser/mouseEvent.js';
+import { Position } from '../../common/core/position.js';
 
 export interface EventCallback<T> {
 	(event: T): void;
 }
+
 export class ViewUserInputEvents {
+
 	public onKeyDown: EventCallback<IKeyboardEvent> | null = null;
-
 	public onKeyUp: EventCallback<IKeyboardEvent> | null = null;
-
 	public onContextMenu: EventCallback<IEditorMouseEvent> | null = null;
-
 	public onMouseMove: EventCallback<IEditorMouseEvent> | null = null;
-
 	public onMouseLeave: EventCallback<IPartialEditorMouseEvent> | null = null;
-
 	public onMouseDown: EventCallback<IEditorMouseEvent> | null = null;
-
 	public onMouseUp: EventCallback<IEditorMouseEvent> | null = null;
-
 	public onMouseDrag: EventCallback<IEditorMouseEvent> | null = null;
-
 	public onMouseDrop: EventCallback<IPartialEditorMouseEvent> | null = null;
-
 	public onMouseDropCanceled: EventCallback<void> | null = null;
-
 	public onMouseWheel: EventCallback<IMouseWheelEvent> | null = null;
 
 	private readonly _coordinatesConverter: ICoordinatesConverter;
@@ -90,89 +77,43 @@ export class ViewUserInputEvents {
 		this.onMouseWheel?.(e);
 	}
 
-	private _convertViewToModelMouseEvent(
-		e: IEditorMouseEvent,
-	): IEditorMouseEvent;
-
-	private _convertViewToModelMouseEvent(
-		e: IPartialEditorMouseEvent,
-	): IPartialEditorMouseEvent;
-
-	private _convertViewToModelMouseEvent(
-		e: IEditorMouseEvent | IPartialEditorMouseEvent,
-	): IEditorMouseEvent | IPartialEditorMouseEvent {
+	private _convertViewToModelMouseEvent(e: IEditorMouseEvent): IEditorMouseEvent;
+	private _convertViewToModelMouseEvent(e: IPartialEditorMouseEvent): IPartialEditorMouseEvent;
+	private _convertViewToModelMouseEvent(e: IEditorMouseEvent | IPartialEditorMouseEvent): IEditorMouseEvent | IPartialEditorMouseEvent {
 		if (e.target) {
 			return {
 				event: e.event,
-				target: this._convertViewToModelMouseTarget(e.target),
+				target: this._convertViewToModelMouseTarget(e.target)
 			};
 		}
-
 		return e;
 	}
 
 	private _convertViewToModelMouseTarget(target: IMouseTarget): IMouseTarget {
-		return ViewUserInputEvents.convertViewToModelMouseTarget(
-			target,
-			this._coordinatesConverter,
-		);
+		return ViewUserInputEvents.convertViewToModelMouseTarget(target, this._coordinatesConverter);
 	}
 
-	public static convertViewToModelMouseTarget(
-		target: IMouseTarget,
-		coordinatesConverter: ICoordinatesConverter,
-	): IMouseTarget {
+	public static convertViewToModelMouseTarget(target: IMouseTarget, coordinatesConverter: ICoordinatesConverter): IMouseTarget {
 		const result = { ...target };
-
 		if (result.position) {
-			result.position =
-				coordinatesConverter.convertViewPositionToModelPosition(
-					result.position,
-				);
+			result.position = coordinatesConverter.convertViewPositionToModelPosition(result.position);
 		}
-
 		if (result.range) {
-			result.range = coordinatesConverter.convertViewRangeToModelRange(
-				result.range,
-			);
+			result.range = coordinatesConverter.convertViewRangeToModelRange(result.range);
 		}
-
-		if (
-			result.type === MouseTargetType.GUTTER_VIEW_ZONE ||
-			result.type === MouseTargetType.CONTENT_VIEW_ZONE
-		) {
-			result.detail = this.convertViewToModelViewZoneData(
-				result.detail,
-				coordinatesConverter,
-			);
+		if (result.type === MouseTargetType.GUTTER_VIEW_ZONE || result.type === MouseTargetType.CONTENT_VIEW_ZONE) {
+			result.detail = this.convertViewToModelViewZoneData(result.detail, coordinatesConverter);
 		}
-
 		return result;
 	}
 
-	private static convertViewToModelViewZoneData(
-		data: IMouseTargetViewZoneData,
-		coordinatesConverter: ICoordinatesConverter,
-	): IMouseTargetViewZoneData {
+	private static convertViewToModelViewZoneData(data: IMouseTargetViewZoneData, coordinatesConverter: ICoordinatesConverter): IMouseTargetViewZoneData {
 		return {
 			viewZoneId: data.viewZoneId,
-			positionBefore: data.positionBefore
-				? coordinatesConverter.convertViewPositionToModelPosition(
-						data.positionBefore,
-					)
-				: data.positionBefore,
-			positionAfter: data.positionAfter
-				? coordinatesConverter.convertViewPositionToModelPosition(
-						data.positionAfter,
-					)
-				: data.positionAfter,
-			position: coordinatesConverter.convertViewPositionToModelPosition(
-				data.position,
-			),
-			afterLineNumber:
-				coordinatesConverter.convertViewPositionToModelPosition(
-					new Position(data.afterLineNumber, 1),
-				).lineNumber,
+			positionBefore: data.positionBefore ? coordinatesConverter.convertViewPositionToModelPosition(data.positionBefore) : data.positionBefore,
+			positionAfter: data.positionAfter ? coordinatesConverter.convertViewPositionToModelPosition(data.positionAfter) : data.positionAfter,
+			position: coordinatesConverter.convertViewPositionToModelPosition(data.position),
+			afterLineNumber: coordinatesConverter.convertViewPositionToModelPosition(new Position(data.afterLineNumber, 1)).lineNumber,
 		};
 	}
 }

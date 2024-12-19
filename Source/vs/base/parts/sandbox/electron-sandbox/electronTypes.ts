@@ -2,20 +2,24 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
+
 // #######################################################################
 // ###                                                                 ###
 // ###      electron.d.ts types we expose from electron-sandbox        ###
 // ###                    (copied from Electron 29.x)                  ###
 // ###                                                                 ###
 // #######################################################################
+
 type Event<Params extends object = {}> = {
 	preventDefault: () => void;
-
 	readonly defaultPrevented: boolean;
 } & Params;
 
 export interface IpcRendererEvent extends Event {
+
 	// Docs: https://electronjs.org/docs/api/structures/ipc-renderer-event
+
 	// Note: API with `Transferable` intentionally commented out because you
 	// cannot transfer these when `contextIsolation: true`.
 	// /**
@@ -27,8 +31,11 @@ export interface IpcRendererEvent extends Event {
 	 */
 	sender: IpcRenderer;
 }
+
 export interface IpcRenderer {
+
 	// Docs: https://electronjs.org/docs/api/ipc-renderer
+
 	/**
 	 * Resolves with the response from the main process.
 	 *
@@ -64,18 +71,12 @@ export interface IpcRenderer {
 	 * Listens to `channel`, when a new message arrives `listener` would be called with
 	 * `listener(event, args...)`.
 	 */
-	on(
-		channel: string,
-		listener: (event: IpcRendererEvent, ...args: any[]) => void,
-	): this;
+	on(channel: string, listener: (event: IpcRendererEvent, ...args: any[]) => void): this;
 	/**
 	 * Adds a one time `listener` function for the event. This `listener` is invoked
 	 * only the next time a message is sent to `channel`, after which it is removed.
 	 */
-	once(
-		channel: string,
-		listener: (event: IpcRendererEvent, ...args: any[]) => void,
-	): this;
+	once(channel: string, listener: (event: IpcRendererEvent, ...args: any[]) => void): this;
 	// Note: API with `Transferable` intentionally commented out because you
 	// cannot transfer these when `contextIsolation: true`.
 	// /**
@@ -96,10 +97,7 @@ export interface IpcRenderer {
 	 * Removes the specified `listener` from the listener array for the specified
 	 * `channel`.
 	 */
-	removeListener(
-		channel: string,
-		listener: (event: IpcRendererEvent, ...args: any[]) => void,
-	): this;
+	removeListener(channel: string, listener: (event: IpcRendererEvent, ...args: any[]) => void): this;
 	/**
 	 * Send an asynchronous message to the main process via `channel`, along with
 	 * arguments. Arguments will be serialized with the Structured Clone Algorithm,
@@ -126,6 +124,7 @@ export interface IpcRenderer {
 	 */
 	send(channel: string, ...args: any[]): void;
 }
+
 export interface WebFrame {
 	/**
 	 * Changes the zoom level to the specified level. The original size is 0 and each
@@ -140,8 +139,11 @@ export interface WebFrame {
 	 */
 	setZoomLevel(level: number): void;
 }
+
 export interface ProcessMemoryInfo {
+
 	// Docs: https://electronjs.org/docs/api/structures/process-memory-info
+
 	/**
 	 * The amount of memory not shared by other processes, such as JS heap or HTML
 	 * content in Kilobytes.
@@ -159,22 +161,22 @@ export interface ProcessMemoryInfo {
 	 */
 	shared: number;
 }
+
 /**
  * Additional information around a `app.on('login')` event.
  */
 export interface AuthInfo {
 	isProxy: boolean;
-
 	scheme: string;
-
 	host: string;
-
 	port: number;
-
 	realm: string;
 }
+
 export interface WebUtils {
+
 	// Docs: https://electronjs.org/docs/api/web-utils
+
 	/**
 	 * The file system path that this `File` object points to. In the case where the
 	 * object passed in is not a `File` object an exception is thrown. In the case

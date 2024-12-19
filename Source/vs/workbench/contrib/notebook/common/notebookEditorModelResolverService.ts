@@ -2,20 +2,16 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Event, IWaitUntil } from "../../../../base/common/event.js";
-import { IReference } from "../../../../base/common/lifecycle.js";
-import { URI } from "../../../../base/common/uri.js";
-import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
-import { NotebookTextModel } from "./model/notebookTextModel.js";
-import {
-	IResolvedNotebookEditorModel,
-	NotebookEditorModelCreationOptions,
-} from "./notebookCommon.js";
 
-export const INotebookEditorModelResolverService =
-	createDecorator<INotebookEditorModelResolverService>(
-		"INotebookModelResolverService",
-	);
+import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
+import { URI } from '../../../../base/common/uri.js';
+import { IResolvedNotebookEditorModel, NotebookEditorModelCreationOptions } from './notebookCommon.js';
+import { IReference } from '../../../../base/common/lifecycle.js';
+import { Event, IWaitUntil } from '../../../../base/common/event.js';
+import { NotebookTextModel } from './model/notebookTextModel.js';
+
+export const INotebookEditorModelResolverService = createDecorator<INotebookEditorModelResolverService>('INotebookModelResolverService');
+
 /**
  * A notebook file can only be opened ONCE per notebook type.
  * This event fires when a file is already open as type A
@@ -24,9 +20,9 @@ export const INotebookEditorModelResolverService =
  */
 export interface INotebookConflictEvent extends IWaitUntil {
 	resource: URI;
-
 	viewType: string;
 }
+
 export interface IUntitledNotebookResource {
 	/**
 	 * Depending on the value of `untitledResource` will
@@ -43,30 +39,19 @@ export interface IUntitledNotebookResource {
 	 */
 	untitledResource: URI | undefined;
 }
+
 export interface INotebookEditorModelResolverService {
 	readonly _serviceBrand: undefined;
 
 	readonly onDidSaveNotebook: Event<URI>;
-
 	readonly onDidChangeDirty: Event<IResolvedNotebookEditorModel>;
 
 	readonly onWillFailWithConflict: Event<INotebookConflictEvent>;
 
 	isDirty(resource: URI): boolean;
 
-	createUntitledNotebookTextModel(
-		viewType: string,
-	): Promise<NotebookTextModel>;
+	createUntitledNotebookTextModel(viewType: string): Promise<NotebookTextModel>;
 
-	resolve(
-		resource: URI,
-		viewType?: string,
-		creationOptions?: NotebookEditorModelCreationOptions,
-	): Promise<IReference<IResolvedNotebookEditorModel>>;
-
-	resolve(
-		resource: IUntitledNotebookResource,
-		viewType: string,
-		creationOtions?: NotebookEditorModelCreationOptions,
-	): Promise<IReference<IResolvedNotebookEditorModel>>;
+	resolve(resource: URI, viewType?: string, creationOptions?: NotebookEditorModelCreationOptions): Promise<IReference<IResolvedNotebookEditorModel>>;
+	resolve(resource: IUntitledNotebookResource, viewType: string, creationOtions?: NotebookEditorModelCreationOptions): Promise<IReference<IResolvedNotebookEditorModel>>;
 }

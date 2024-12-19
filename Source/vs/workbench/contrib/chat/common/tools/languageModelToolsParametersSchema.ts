@@ -2,269 +2,258 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { IJSONSchema } from "../../../../../base/common/jsonSchema.js";
-import {
-	IJSONContributionRegistry,
-	Extensions as JSONExtensions,
-} from "../../../../../platform/jsonschemas/common/jsonContributionRegistry.js";
-import { Registry } from "../../../../../platform/registry/common/platform.js";
+
+import { IJSONSchema } from '../../../../../base/common/jsonSchema.js';
+import { Extensions as JSONExtensions, IJSONContributionRegistry } from '../../../../../platform/jsonschemas/common/jsonContributionRegistry.js';
+import { Registry } from '../../../../../platform/registry/common/platform.js';
 
 /**
  * A schema for parametersSchema
  * This is a subset of https://json-schema.org/draft-07/schema to capture what is actually supported by language models for tools, mainly, that they must be an object at the top level.
  * Possibly it can be whittled down some more based on which attributes are supported by language models.
  */
-export const toolsParametersSchemaSchemaId = "vscode://schemas/toolsParameters";
-
+export const toolsParametersSchemaSchemaId = 'vscode://schemas/toolsParameters';
 const toolsParametersSchemaSchema: IJSONSchema = {
 	definitions: {
 		schemaArray: {
-			type: "array",
+			type: 'array',
 			minItems: 1,
 			items: {
-				$ref: "#",
-			},
+				$ref: '#'
+			}
 		},
 		nonNegativeInteger: {
-			type: "integer",
-			minimum: 0,
+			type: 'integer',
+			minimum: 0
 		},
 		nonNegativeIntegerDefault0: {
 			allOf: [
 				{
-					$ref: "#/definitions/nonNegativeInteger",
+					$ref: '#/definitions/nonNegativeInteger'
 				},
 				{
-					default: 0,
-				},
-			],
+					default: 0
+				}
+			]
 		},
 		simpleTypes: {
 			enum: [
-				"array",
-				"boolean",
-				"integer",
-				"null",
-				"number",
-				"object",
-				"string",
-			],
+				'array',
+				'boolean',
+				'integer',
+				'null',
+				'number',
+				'object',
+				'string'
+			]
 		},
 		stringArray: {
-			type: "array",
+			type: 'array',
 			items: {
-				type: "string",
+				type: 'string'
 			},
 			uniqueItems: true,
-			default: [],
-		},
+			default: []
+		}
 	},
-	type: ["object"],
+	type: ['object'],
 	properties: {
 		$id: {
-			type: "string",
-			format: "uri-reference",
+			type: 'string',
+			format: 'uri-reference'
 		},
 		$schema: {
-			type: "string",
-			format: "uri",
+			type: 'string',
+			format: 'uri'
 		},
 		$ref: {
-			type: "string",
-			format: "uri-reference",
+			type: 'string',
+			format: 'uri-reference'
 		},
 		$comment: {
-			type: "string",
+			type: 'string'
 		},
 		title: {
-			type: "string",
+			type: 'string'
 		},
 		description: {
-			type: "string",
+			type: 'string'
 		},
 		readOnly: {
-			type: "boolean",
-			default: false,
+			type: 'boolean',
+			default: false
 		},
 		writeOnly: {
-			type: "boolean",
-			default: false,
+			type: 'boolean',
+			default: false
 		},
 		multipleOf: {
-			type: "number",
-			exclusiveMinimum: 0,
+			type: 'number',
+			exclusiveMinimum: 0
 		},
 		maximum: {
-			type: "number",
+			type: 'number'
 		},
 		exclusiveMaximum: {
-			type: "number",
+			type: 'number'
 		},
 		minimum: {
-			type: "number",
+			type: 'number'
 		},
 		exclusiveMinimum: {
-			type: "number",
+			type: 'number'
 		},
 		maxLength: {
-			$ref: "#/definitions/nonNegativeInteger",
+			$ref: '#/definitions/nonNegativeInteger'
 		},
 		minLength: {
-			$ref: "#/definitions/nonNegativeIntegerDefault0",
+			$ref: '#/definitions/nonNegativeIntegerDefault0'
 		},
 		pattern: {
-			type: "string",
-			format: "regex",
+			type: 'string',
+			format: 'regex'
 		},
 		additionalItems: {
-			$ref: "#",
+			$ref: '#'
 		},
 		items: {
 			anyOf: [
 				{
-					$ref: "#",
+					$ref: '#'
 				},
 				{
-					$ref: "#/definitions/schemaArray",
-				},
+					$ref: '#/definitions/schemaArray'
+				}
 			],
-			default: true,
+			default: true
 		},
 		maxItems: {
-			$ref: "#/definitions/nonNegativeInteger",
+			$ref: '#/definitions/nonNegativeInteger'
 		},
 		minItems: {
-			$ref: "#/definitions/nonNegativeIntegerDefault0",
+			$ref: '#/definitions/nonNegativeIntegerDefault0'
 		},
 		uniqueItems: {
-			type: "boolean",
-			default: false,
+			type: 'boolean',
+			default: false
 		},
 		contains: {
-			$ref: "#",
+			$ref: '#'
 		},
 		maxProperties: {
-			$ref: "#/definitions/nonNegativeInteger",
+			$ref: '#/definitions/nonNegativeInteger'
 		},
 		minProperties: {
-			$ref: "#/definitions/nonNegativeIntegerDefault0",
+			$ref: '#/definitions/nonNegativeIntegerDefault0'
 		},
 		required: {
-			$ref: "#/definitions/stringArray",
+			$ref: '#/definitions/stringArray'
 		},
 		additionalProperties: {
-			$ref: "#",
+			$ref: '#'
 		},
 		definitions: {
-			type: "object",
+			type: 'object',
 			additionalProperties: {
-				$ref: "#",
+				$ref: '#'
 			},
-			default: {},
+			default: {}
 		},
 		properties: {
-			type: "object",
+			type: 'object',
 			additionalProperties: {
-				$ref: "#",
+				$ref: '#'
 			},
-			default: {},
+			default: {}
 		},
 		patternProperties: {
-			type: "object",
+			type: 'object',
 			additionalProperties: {
-				$ref: "#",
+				$ref: '#'
 			},
 			propertyNames: {
-				format: "regex",
+				format: 'regex'
 			},
-			default: {},
+			default: {}
 		},
 		dependencies: {
-			type: "object",
+			type: 'object',
 			additionalProperties: {
 				anyOf: [
 					{
-						$ref: "#",
+						$ref: '#'
 					},
 					{
-						$ref: "#/definitions/stringArray",
-					},
-				],
-			},
+						$ref: '#/definitions/stringArray'
+					}
+				]
+			}
 		},
 		propertyNames: {
-			$ref: "#",
+			$ref: '#'
 		},
 		enum: {
-			type: "array",
+			type: 'array',
 			minItems: 1,
-			uniqueItems: true,
+			uniqueItems: true
 		},
 		type: {
 			anyOf: [
 				{
-					$ref: "#/definitions/simpleTypes",
+					$ref: '#/definitions/simpleTypes'
 				},
 				{
-					type: "array",
+					type: 'array',
 					items: {
-						$ref: "#/definitions/simpleTypes",
+						$ref: '#/definitions/simpleTypes'
 					},
 					minItems: 1,
-					uniqueItems: true,
-				},
-			],
+					uniqueItems: true
+				}
+			]
 		},
 		format: {
-			type: "string",
+			type: 'string'
 		},
 		contentMediaType: {
-			type: "string",
+			type: 'string'
 		},
 		contentEncoding: {
-			type: "string",
+			type: 'string'
 		},
 		if: {
-			$ref: "#",
+			$ref: '#'
 		},
 		then: {
-			$ref: "#",
+			$ref: '#'
 		},
 		else: {
-			$ref: "#",
+			$ref: '#'
 		},
 		allOf: {
-			$ref: "#/definitions/schemaArray",
+			$ref: '#/definitions/schemaArray'
 		},
 		anyOf: {
-			$ref: "#/definitions/schemaArray",
+			$ref: '#/definitions/schemaArray'
 		},
 		oneOf: {
-			$ref: "#/definitions/schemaArray",
+			$ref: '#/definitions/schemaArray'
 		},
 		not: {
-			$ref: "#",
-		},
+			$ref: '#'
+		}
 	},
-	defaultSnippets: [
-		{
-			body: {
-				type: "object",
-				properties: {
-					"${1:paramName}": {
-						type: "string",
-						description: "${2:description}",
-					},
-				},
-			},
+	defaultSnippets: [{
+		body: {
+			type: 'object',
+			properties: {
+				'${1:paramName}': {
+					type: 'string',
+					description: '${2:description}'
+				}
+			}
 		},
-	],
+	}],
 };
-
-const contributionRegistry = Registry.as<IJSONContributionRegistry>(
-	JSONExtensions.JSONContribution,
-);
-contributionRegistry.registerSchema(
-	toolsParametersSchemaSchemaId,
-	toolsParametersSchemaSchema,
-);
+const contributionRegistry = Registry.as<IJSONContributionRegistry>(JSONExtensions.JSONContribution);
+contributionRegistry.registerSchema(toolsParametersSchemaSchemaId, toolsParametersSchemaSchema);

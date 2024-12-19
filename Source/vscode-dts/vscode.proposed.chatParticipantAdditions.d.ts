@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	export interface ChatParticipant {
 		onDidPerformAction: Event<ChatUserActionEvent>;
 	}
@@ -13,7 +14,6 @@ declare module "vscode" {
 	 */
 	export interface ChatCommand {
 		readonly name: string;
-
 		readonly description: string;
 	}
 
@@ -21,31 +21,23 @@ declare module "vscode" {
 		participant: string;
 		// TODO@API validate this against statically-declared slash commands?
 		command?: ChatCommand;
-
 		constructor(participant: string, command?: ChatCommand);
 	}
 
 	export interface ChatVulnerability {
 		title: string;
-
 		description: string;
 		// id: string; // Later we will need to be able to link these across multiple content chunks.
 	}
 
 	export class ChatResponseMarkdownWithVulnerabilitiesPart {
 		value: MarkdownString;
-
 		vulnerabilities: ChatVulnerability[];
-
-		constructor(
-			value: string | MarkdownString,
-			vulnerabilities: ChatVulnerability[],
-		);
+		constructor(value: string | MarkdownString, vulnerabilities: ChatVulnerability[]);
 	}
 
 	export class ChatResponseCodeblockUriPart {
 		value: Uri;
-
 		constructor(value: Uri);
 	}
 
@@ -58,157 +50,87 @@ declare module "vscode" {
 
 	export interface ChatDocumentContext {
 		uri: Uri;
-
 		version: number;
-
 		ranges: Range[];
 	}
 
 	export class ChatResponseTextEditPart {
 		uri: Uri;
-
 		edits: TextEdit[];
-
 		isDone?: boolean;
-
 		constructor(uri: Uri, done: true);
-
 		constructor(uri: Uri, edits: TextEdit | TextEdit[]);
 	}
 
 	export class ChatResponseConfirmationPart {
 		title: string;
-
 		message: string;
-
 		data: any;
-
 		buttons?: string[];
-
-		constructor(
-			title: string,
-			message: string,
-			data: any,
-			buttons?: string[],
-		);
+		constructor(title: string, message: string, data: any, buttons?: string[]);
 	}
 
 	export class ChatResponseCodeCitationPart {
 		value: Uri;
-
 		license: string;
-
 		snippet: string;
-
 		constructor(value: Uri, license: string, snippet: string);
 	}
 
-	export type ExtendedChatResponsePart =
-		| ChatResponsePart
-		| ChatResponseTextEditPart
-		| ChatResponseDetectedParticipantPart
-		| ChatResponseConfirmationPart
-		| ChatResponseCodeCitationPart
-		| ChatResponseReferencePart2
-		| ChatResponseMovePart;
+	export type ExtendedChatResponsePart = ChatResponsePart | ChatResponseTextEditPart | ChatResponseDetectedParticipantPart | ChatResponseConfirmationPart | ChatResponseCodeCitationPart | ChatResponseReferencePart2 | ChatResponseMovePart;
 
 	export class ChatResponseWarningPart {
 		value: MarkdownString;
-
 		constructor(value: string | MarkdownString);
 	}
 
 	export class ChatResponseProgressPart2 extends ChatResponseProgressPart {
 		value: string;
-
-		task?: (
-			progress: Progress<
-				ChatResponseWarningPart | ChatResponseReferencePart
-			>,
-		) => Thenable<string | void>;
-
-		constructor(
-			value: string,
-			task?: (
-				progress: Progress<
-					ChatResponseWarningPart | ChatResponseReferencePart
-				>,
-			) => Thenable<string | void>,
-		);
+		task?: (progress: Progress<ChatResponseWarningPart | ChatResponseReferencePart>) => Thenable<string | void>;
+		constructor(value: string, task?: (progress: Progress<ChatResponseWarningPart | ChatResponseReferencePart>) => Thenable<string | void>);
 	}
 
 	export class ChatResponseReferencePart2 {
 		/**
 		 * The reference target.
 		 */
-		value:
-			| Uri
-			| Location
-			| { variableName: string; value?: Uri | Location }
-			| string;
+		value: Uri | Location | { variableName: string; value?: Uri | Location } | string;
 
 		/**
 		 * The icon for the reference.
 		 */
-		iconPath?:
-			| Uri
-			| ThemeIcon
-			| {
-					/**
-					 * The icon path for the light theme.
-					 */
-					light: Uri;
-					/**
-					 * The icon path for the dark theme.
-					 */
-					dark: Uri;
-			  };
-
-		options?: {
-			status?: {
-				description: string;
-
-				kind: ChatResponseReferencePartStatusKind;
-			};
+		iconPath?: Uri | ThemeIcon | {
+			/**
+			 * The icon path for the light theme.
+			 */
+			light: Uri;
+			/**
+			 * The icon path for the dark theme.
+			 */
+			dark: Uri;
 		};
+		options?: { status?: { description: string; kind: ChatResponseReferencePartStatusKind } };
 
 		/**
 		 * Create a new ChatResponseReferencePart.
 		 * @param value A uri or location
 		 * @param iconPath Icon for the reference shown in UI
 		 */
-		constructor(
-			value:
-				| Uri
-				| Location
-				| { variableName: string; value?: Uri | Location }
-				| string,
-			iconPath?:
-				| Uri
-				| ThemeIcon
-				| {
-						/**
-						 * The icon path for the light theme.
-						 */
-						light: Uri;
-						/**
-						 * The icon path for the dark theme.
-						 */
-						dark: Uri;
-				  },
-			options?: {
-				status?: {
-					description: string;
-
-					kind: ChatResponseReferencePartStatusKind;
-				};
-			},
-		);
+		constructor(value: Uri | Location | { variableName: string; value?: Uri | Location } | string, iconPath?: Uri | ThemeIcon | {
+			/**
+			 * The icon path for the light theme.
+			 */
+			light: Uri;
+			/**
+			 * The icon path for the dark theme.
+			 */
+			dark: Uri;
+		}, options?: { status?: { description: string; kind: ChatResponseReferencePartStatusKind } });
 	}
 
 	export class ChatResponseMovePart {
-		readonly uri: Uri;
 
+		readonly uri: Uri;
 		readonly range: Range;
 
 		constructor(uri: Uri, range: Range);
@@ -236,44 +158,25 @@ declare module "vscode" {
 	}
 
 	export interface ChatResponseStream {
+
 		/**
 		 * Push a progress part to this stream. Short-hand for
 		 * `push(new ChatResponseProgressPart(value))`.
-		 *
-		 * @param value A progress message
-		 * @param task If provided, a task to run while the progress is displayed. When the Thenable resolves, the progress will be marked complete in the UI, and the progress message will be updated to the resolved string if one is specified.
-		 * @returns This stream.
-		 */
-		progress(
-			value: string,
-			task?: (
-				progress: Progress<
-					ChatResponseWarningPart | ChatResponseReferencePart
-				>,
-			) => Thenable<string | void>,
-		): void;
+		*
+		* @param value A progress message
+		* @param task If provided, a task to run while the progress is displayed. When the Thenable resolves, the progress will be marked complete in the UI, and the progress message will be updated to the resolved string if one is specified.
+		* @returns This stream.
+		*/
+		progress(value: string, task?: (progress: Progress<ChatResponseWarningPart | ChatResponseReferencePart>) => Thenable<string | void>): void;
 
 		textEdit(target: Uri, edits: TextEdit | TextEdit[]): void;
 
 		textEdit(target: Uri, isDone: true): void;
 
-		markdownWithVulnerabilities(
-			value: string | MarkdownString,
-			vulnerabilities: ChatVulnerability[],
-		): void;
-
+		markdownWithVulnerabilities(value: string | MarkdownString, vulnerabilities: ChatVulnerability[]): void;
 		codeblockUri(uri: Uri): void;
-
 		detectedParticipant(participant: string, command?: ChatCommand): void;
-
-		push(
-			part:
-				| ChatResponsePart
-				| ChatResponseTextEditPart
-				| ChatResponseDetectedParticipantPart
-				| ChatResponseWarningPart
-				| ChatResponseProgressPart2,
-		): void;
+		push(part: ChatResponsePart | ChatResponseTextEditPart | ChatResponseDetectedParticipantPart | ChatResponseWarningPart | ChatResponseProgressPart2): void;
 
 		/**
 		 * Show an inline message in the chat view asking the user to confirm an action.
@@ -285,12 +188,7 @@ declare module "vscode" {
 		 * TODO@API should this be MarkdownString?
 		 * TODO@API should actually be a more generic function that takes an array of buttons
 		 */
-		confirmation(
-			title: string,
-			message: string,
-			data: any,
-			buttons?: string[],
-		): void;
+		confirmation(title: string, message: string, data: any, buttons?: string[]): void;
 
 		/**
 		 * Push a warning to this stream. Short-hand for
@@ -301,29 +199,9 @@ declare module "vscode" {
 		 */
 		warning(message: string | MarkdownString): void;
 
-		reference(
-			value:
-				| Uri
-				| Location
-				| { variableName: string; value?: Uri | Location },
-			iconPath?: Uri | ThemeIcon | { light: Uri; dark: Uri },
-		): void;
+		reference(value: Uri | Location | { variableName: string; value?: Uri | Location }, iconPath?: Uri | ThemeIcon | { light: Uri; dark: Uri }): void;
 
-		reference2(
-			value:
-				| Uri
-				| Location
-				| string
-				| { variableName: string; value?: Uri | Location },
-			iconPath?: Uri | ThemeIcon | { light: Uri; dark: Uri },
-			options?: {
-				status?: {
-					description: string;
-
-					kind: ChatResponseReferencePartStatusKind;
-				};
-			},
-		): void;
+		reference2(value: Uri | Location | string | { variableName: string; value?: Uri | Location }, iconPath?: Uri | ThemeIcon | { light: Uri; dark: Uri }, options?: { status?: { description: string; kind: ChatResponseReferencePartStatusKind } }): void;
 
 		codeCitation(value: Uri, license: string, snippet: string): void;
 
@@ -333,7 +211,7 @@ declare module "vscode" {
 	export enum ChatResponseReferencePartStatusKind {
 		Complete = 1,
 		Partial = 2,
-		Omitted = 3,
+		Omitted = 3
 	}
 
 	/**
@@ -361,59 +239,33 @@ declare module "vscode" {
 		/**
 		 * Provide a set of variables that can only be used with this participant.
 		 */
-		participantVariableProvider?: {
-			provider: ChatParticipantCompletionItemProvider;
-
-			triggerCharacters: string[];
-		};
+		participantVariableProvider?: { provider: ChatParticipantCompletionItemProvider; triggerCharacters: string[] };
 	}
 
 	export interface ChatParticipantCompletionItemProvider {
-		provideCompletionItems(
-			query: string,
-			token: CancellationToken,
-		): ProviderResult<ChatCompletionItem[]>;
+		provideCompletionItems(query: string, token: CancellationToken): ProviderResult<ChatCompletionItem[]>;
 	}
 
 	export class ChatCompletionItem {
 		id: string;
-
 		label: string | CompletionItemLabel;
-
 		values: ChatVariableValue[];
-
 		fullName?: string;
-
 		icon?: ThemeIcon;
-
 		insertText?: string;
-
 		detail?: string;
-
 		documentation?: string | MarkdownString;
-
 		command?: Command;
 
-		constructor(
-			id: string,
-			label: string | CompletionItemLabel,
-			values: ChatVariableValue[],
-		);
+		constructor(id: string, label: string | CompletionItemLabel, values: ChatVariableValue[]);
 	}
 
-	export type ChatExtendedRequestHandler = (
-		request: ChatRequest,
-		context: ChatContext,
-		response: ChatResponseStream,
-		token: CancellationToken,
-	) => ProviderResult<ChatResult | void>;
+	export type ChatExtendedRequestHandler = (request: ChatRequest, context: ChatContext, response: ChatResponseStream, token: CancellationToken) => ProviderResult<ChatResult | void>;
 
 	export interface ChatResult {
 		nextQuestion?: {
 			prompt: string;
-
 			participant?: string;
-
 			command?: string;
 		};
 	}
@@ -422,47 +274,24 @@ declare module "vscode" {
 		/**
 		 * Create a chat participant with the extended progress type
 		 */
-		export function createChatParticipant(
-			id: string,
-			handler: ChatExtendedRequestHandler,
-		): ChatParticipant;
+		export function createChatParticipant(id: string, handler: ChatExtendedRequestHandler): ChatParticipant;
 
-		export function registerChatParticipantDetectionProvider(
-			participantDetectionProvider: ChatParticipantDetectionProvider,
-		): Disposable;
+		export function registerChatParticipantDetectionProvider(participantDetectionProvider: ChatParticipantDetectionProvider): Disposable;
 	}
 
 	export interface ChatParticipantMetadata {
 		participant: string;
-
 		command?: string;
-
-		disambiguation: {
-			category: string;
-
-			description: string;
-
-			examples: string[];
-		}[];
+		disambiguation: { category: string; description: string; examples: string[] }[];
 	}
 
 	export interface ChatParticipantDetectionResult {
 		participant: string;
-
 		command?: string;
 	}
 
 	export interface ChatParticipantDetectionProvider {
-		provideParticipantDetection(
-			chatRequest: ChatRequest,
-			context: ChatContext,
-			options: {
-				participants?: ChatParticipantMetadata[];
-
-				location: ChatLocation;
-			},
-			token: CancellationToken,
-		): ProviderResult<ChatParticipantDetectionResult>;
+		provideParticipantDetection(chatRequest: ChatRequest, context: ChatContext, options: { participants?: ChatParticipantMetadata[]; location: ChatLocation }, token: CancellationToken): ProviderResult<ChatParticipantDetectionResult>;
 	}
 
 	/*
@@ -472,113 +301,83 @@ declare module "vscode" {
 	export enum ChatCopyKind {
 		// Keyboard shortcut or context menu
 		Action = 1,
-		Toolbar = 2,
+		Toolbar = 2
 	}
 
 	export interface ChatCopyAction {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
-		kind: "copy";
-
+		kind: 'copy';
 		codeBlockIndex: number;
-
 		copyKind: ChatCopyKind;
-
 		copiedCharacters: number;
-
 		totalCharacters: number;
-
 		copiedText: string;
 	}
 
 	export interface ChatInsertAction {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
-		kind: "insert";
-
+		kind: 'insert';
 		codeBlockIndex: number;
-
 		totalCharacters: number;
-
 		newFile?: boolean;
 	}
 
 	export interface ChatApplyAction {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
-		kind: "apply";
-
+		kind: 'apply';
 		codeBlockIndex: number;
-
 		totalCharacters: number;
-
 		newFile?: boolean;
-
 		codeMapper?: string;
 	}
 
 	export interface ChatTerminalAction {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
-		kind: "runInTerminal";
-
+		kind: 'runInTerminal';
 		codeBlockIndex: number;
-
 		languageId?: string;
 	}
 
 	export interface ChatCommandAction {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
-		kind: "command";
-
+		kind: 'command';
 		commandButton: ChatCommandButton;
 	}
 
 	export interface ChatFollowupAction {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
-		kind: "followUp";
-
+		kind: 'followUp';
 		followup: ChatFollowup;
 	}
 
 	export interface ChatBugReportAction {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
-		kind: "bug";
+		kind: 'bug';
 	}
 
 	export interface ChatEditorAction {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
-		kind: "editor";
-
+		kind: 'editor';
 		accepted: boolean;
 	}
 
 	export interface ChatEditingSessionAction {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
-		kind: "chatEditingSessionAction";
-
+		kind: 'chatEditingSessionAction';
 		uri: Uri;
-
 		hasRemainingEdits: boolean;
-
 		outcome: ChatEditingSessionActionOutcome;
 	}
 
 	export enum ChatEditingSessionActionOutcome {
 		Accepted = 1,
 		Rejected = 2,
-		Saved = 3,
+		Saved = 3
 	}
 
 	export interface ChatUserActionEvent {
 		readonly result: ChatResult;
-
-		readonly action:
-			| ChatCopyAction
-			| ChatInsertAction
-			| ChatApplyAction
-			| ChatTerminalAction
-			| ChatCommandAction
-			| ChatFollowupAction
-			| ChatBugReportAction
-			| ChatEditorAction
-			| ChatEditingSessionAction;
+		readonly action: ChatCopyAction | ChatInsertAction | ChatApplyAction | ChatTerminalAction | ChatCommandAction | ChatFollowupAction | ChatBugReportAction | ChatEditorAction | ChatEditingSessionAction;
 	}
 
 	export interface ChatPromptReference {
@@ -593,9 +392,6 @@ declare module "vscode" {
 	}
 
 	export namespace lm {
-		export function fileIsIgnored(
-			uri: Uri,
-			token: CancellationToken,
-		): Thenable<boolean>;
+		export function fileIsIgnored(uri: Uri, token: CancellationToken): Thenable<boolean>;
 	}
 }

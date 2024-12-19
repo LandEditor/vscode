@@ -5,7 +5,7 @@
 
 .monaco-editor .zone-widget .zone-widget-container.breakpoint-widget {
 	display: flex;
-	border-color: #007acc;
+	border-color: #007ACC;
 
 	.breakpoint-select-container {
 		display: flex;
@@ -53,11 +53,11 @@
 		width: 300px;
 	}
 
-	.select-breakpoint-container .select-box-container {
+	.select-breakpoint-container .select-box-container  {
 		width: 300px;
 	}
 
-	.select-mode-container .select-box-container {
+	.select-mode-container .select-box-container  {
 		width: 100px;
 		margin-right: 10px;
 	}
@@ -65,4 +65,5 @@
 	.select-breakpoint-container:after {
 		right: 14px;
 	}
+
 }

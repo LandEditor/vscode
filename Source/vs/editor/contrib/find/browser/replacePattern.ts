@@ -2,45 +2,46 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CharCode } from "../../../../base/common/charCode.js";
-import { buildReplaceStringWithCasePreserved } from "../../../../base/common/search.js";
+
+import { CharCode } from '../../../../base/common/charCode.js';
+import { buildReplaceStringWithCasePreserved } from '../../../../base/common/search.js';
 
 const enum ReplacePatternKind {
 	StaticValue = 0,
-	DynamicPieces = 1,
+	DynamicPieces = 1
 }
+
 /**
  * Assigned when the replace pattern is entirely static.
  */
 class StaticValueReplacePattern {
 	public readonly kind = ReplacePatternKind.StaticValue;
-
-	constructor(public readonly staticValue: string) {}
+	constructor(public readonly staticValue: string) { }
 }
+
 /**
  * Assigned when the replace pattern has replacement patterns.
  */
 class DynamicPiecesReplacePattern {
 	public readonly kind = ReplacePatternKind.DynamicPieces;
-
-	constructor(public readonly pieces: ReplacePiece[]) {}
+	constructor(public readonly pieces: ReplacePiece[]) { }
 }
+
 export class ReplacePattern {
+
 	public static fromStaticValue(value: string): ReplacePattern {
 		return new ReplacePattern([ReplacePiece.staticValue(value)]);
 	}
 
-	private readonly _state:
-		| StaticValueReplacePattern
-		| DynamicPiecesReplacePattern;
+	private readonly _state: StaticValueReplacePattern | DynamicPiecesReplacePattern;
 
 	public get hasReplacementPatterns(): boolean {
-		return this._state.kind === ReplacePatternKind.DynamicPieces;
+		return (this._state.kind === ReplacePatternKind.DynamicPieces);
 	}
 
 	constructor(pieces: ReplacePiece[] | null) {
 		if (!pieces || pieces.length === 0) {
-			this._state = new StaticValueReplacePattern("");
+			this._state = new StaticValueReplacePattern('');
 		} else if (pieces.length === 1 && pieces[0].staticValue !== null) {
 			this._state = new StaticValueReplacePattern(pieces[0].staticValue);
 		} else {
@@ -48,129 +49,89 @@ export class ReplacePattern {
 		}
 	}
 
-	public buildReplaceString(
-		matches: string[] | null,
-		preserveCase?: boolean,
-	): string {
+	public buildReplaceString(matches: string[] | null, preserveCase?: boolean): string {
 		if (this._state.kind === ReplacePatternKind.StaticValue) {
 			if (preserveCase) {
-				return buildReplaceStringWithCasePreserved(
-					matches,
-					this._state.staticValue,
-				);
+				return buildReplaceStringWithCasePreserved(matches, this._state.staticValue);
 			} else {
 				return this._state.staticValue;
 			}
 		}
 
-		let result = "";
-
+		let result = '';
 		for (let i = 0, len = this._state.pieces.length; i < len; i++) {
 			const piece = this._state.pieces[i];
-
 			if (piece.staticValue !== null) {
 				// static value ReplacePiece
 				result += piece.staticValue;
-
 				continue;
 			}
-			// match index ReplacePiece
-			let match: string = ReplacePattern._substitute(
-				piece.matchIndex,
-				matches,
-			);
 
+			// match index ReplacePiece
+			let match: string = ReplacePattern._substitute(piece.matchIndex, matches);
 			if (piece.caseOps !== null && piece.caseOps.length > 0) {
 				const repl: string[] = [];
-
 				const lenOps: number = piece.caseOps.length;
-
 				let opIdx: number = 0;
-
-				for (
-					let idx: number = 0, len: number = match.length;
-					idx < len;
-					idx++
-				) {
+				for (let idx: number = 0, len: number = match.length; idx < len; idx++) {
 					if (opIdx >= lenOps) {
 						repl.push(match.slice(idx));
-
 						break;
 					}
-
 					switch (piece.caseOps[opIdx]) {
-						case "U":
+						case 'U':
 							repl.push(match[idx].toUpperCase());
-
 							break;
-
-						case "u":
+						case 'u':
 							repl.push(match[idx].toUpperCase());
-
 							opIdx++;
-
 							break;
-
-						case "L":
+						case 'L':
 							repl.push(match[idx].toLowerCase());
-
 							break;
-
-						case "l":
+						case 'l':
 							repl.push(match[idx].toLowerCase());
-
 							opIdx++;
-
 							break;
-
 						default:
 							repl.push(match[idx]);
 					}
 				}
-
-				match = repl.join("");
+				match = repl.join('');
 			}
-
 			result += match;
 		}
 
 		return result;
 	}
 
-	private static _substitute(
-		matchIndex: number,
-		matches: string[] | null,
-	): string {
+	private static _substitute(matchIndex: number, matches: string[] | null): string {
 		if (matches === null) {
-			return "";
+			return '';
 		}
-
 		if (matchIndex === 0) {
 			return matches[0];
 		}
 
-		let remainder = "";
-
+		let remainder = '';
 		while (matchIndex > 0) {
 			if (matchIndex < matches.length) {
 				// A match can be undefined
-				const match = matches[matchIndex] || "";
-
+				const match = (matches[matchIndex] || '');
 				return match + remainder;
 			}
-
 			remainder = String(matchIndex % 10) + remainder;
-
 			matchIndex = Math.floor(matchIndex / 10);
 		}
-
-		return "$" + remainder;
+		return '$' + remainder;
 	}
 }
+
 /**
  * A replace piece can either be a static string or an index to a specific match.
  */
 export class ReplacePiece {
+
 	public static staticValue(value: string): ReplacePiece {
 		return new ReplacePiece(value, -1, null);
 	}
@@ -184,20 +145,12 @@ export class ReplacePiece {
 	}
 
 	public readonly staticValue: string | null;
-
 	public readonly matchIndex: number;
-
 	public readonly caseOps: string[] | null;
 
-	private constructor(
-		staticValue: string | null,
-		matchIndex: number,
-		caseOps: string[] | null,
-	) {
+	private constructor(staticValue: string | null, matchIndex: number, caseOps: string[] | null) {
 		this.staticValue = staticValue;
-
 		this.matchIndex = matchIndex;
-
 		if (!caseOps || caseOps.length === 0) {
 			this.caseOps = null;
 		} else {
@@ -205,40 +158,30 @@ export class ReplacePiece {
 		}
 	}
 }
+
 class ReplacePieceBuilder {
+
 	private readonly _source: string;
-
 	private _lastCharIndex: number;
-
 	private readonly _result: ReplacePiece[];
-
 	private _resultLen: number;
-
 	private _currentStaticPiece: string;
 
 	constructor(source: string) {
 		this._source = source;
-
 		this._lastCharIndex = 0;
-
 		this._result = [];
-
 		this._resultLen = 0;
-
-		this._currentStaticPiece = "";
+		this._currentStaticPiece = '';
 	}
 
 	public emitUnchanged(toCharIndex: number): void {
-		this._emitStatic(
-			this._source.substring(this._lastCharIndex, toCharIndex),
-		);
-
+		this._emitStatic(this._source.substring(this._lastCharIndex, toCharIndex));
 		this._lastCharIndex = toCharIndex;
 	}
 
 	public emitStatic(value: string, toCharIndex: number): void {
 		this._emitStatic(value);
-
 		this._lastCharIndex = toCharIndex;
 	}
 
@@ -246,42 +189,29 @@ class ReplacePieceBuilder {
 		if (value.length === 0) {
 			return;
 		}
-
 		this._currentStaticPiece += value;
 	}
 
-	public emitMatchIndex(
-		index: number,
-		toCharIndex: number,
-		caseOps: string[],
-	): void {
+	public emitMatchIndex(index: number, toCharIndex: number, caseOps: string[]): void {
 		if (this._currentStaticPiece.length !== 0) {
-			this._result[this._resultLen++] = ReplacePiece.staticValue(
-				this._currentStaticPiece,
-			);
-
-			this._currentStaticPiece = "";
+			this._result[this._resultLen++] = ReplacePiece.staticValue(this._currentStaticPiece);
+			this._currentStaticPiece = '';
 		}
-
 		this._result[this._resultLen++] = ReplacePiece.caseOps(index, caseOps);
-
 		this._lastCharIndex = toCharIndex;
 	}
 
+
 	public finalize(): ReplacePattern {
 		this.emitUnchanged(this._source.length);
-
 		if (this._currentStaticPiece.length !== 0) {
-			this._result[this._resultLen++] = ReplacePiece.staticValue(
-				this._currentStaticPiece,
-			);
-
-			this._currentStaticPiece = "";
+			this._result[this._resultLen++] = ReplacePiece.staticValue(this._currentStaticPiece);
+			this._currentStaticPiece = '';
 		}
-
 		return new ReplacePattern(this._result);
 	}
 }
+
 /**
  * \n			=> inserts a LF
  * \t			=> inserts a TAB
@@ -303,13 +233,13 @@ export function parseReplaceString(replaceString: string): ReplacePattern {
 	}
 
 	const caseOps: string[] = [];
-
 	const result = new ReplacePieceBuilder(replaceString);
 
 	for (let i = 0, len = replaceString.length; i < len; i++) {
 		const chCode = replaceString.charCodeAt(i);
 
 		if (chCode === CharCode.Backslash) {
+
 			// move to next char
 			i++;
 
@@ -325,25 +255,17 @@ export function parseReplaceString(replaceString: string): ReplacePattern {
 				case CharCode.Backslash:
 					// \\ => inserts a "\"
 					result.emitUnchanged(i - 1);
-
-					result.emitStatic("\\", i + 1);
-
+					result.emitStatic('\\', i + 1);
 					break;
-
 				case CharCode.n:
 					// \n => inserts a LF
 					result.emitUnchanged(i - 1);
-
-					result.emitStatic("\n", i + 1);
-
+					result.emitStatic('\n', i + 1);
 					break;
-
 				case CharCode.t:
 					// \t => inserts a TAB
 					result.emitUnchanged(i - 1);
-
-					result.emitStatic("\t", i + 1);
-
+					result.emitStatic('\t', i + 1);
 					break;
 				// Case modification of string replacements, patterned after Boost, but only applied
 				// to the replacement text, not subsequent content.
@@ -356,11 +278,8 @@ export function parseReplaceString(replaceString: string): ReplacePattern {
 				case CharCode.L:
 					// \L => lower-cases ALL following characters.
 					result.emitUnchanged(i - 1);
-
-					result.emitStatic("", i + 1);
-
+					result.emitStatic('', i + 1);
 					caseOps.push(String.fromCharCode(nextChCode));
-
 					break;
 			}
 
@@ -368,6 +287,7 @@ export function parseReplaceString(replaceString: string): ReplacePattern {
 		}
 
 		if (chCode === CharCode.DollarSign) {
+
 			// move to next char
 			i++;
 
@@ -381,64 +301,43 @@ export function parseReplaceString(replaceString: string): ReplacePattern {
 			if (nextChCode === CharCode.DollarSign) {
 				// $$ => inserts a "$"
 				result.emitUnchanged(i - 1);
-
-				result.emitStatic("$", i + 1);
-
+				result.emitStatic('$', i + 1);
 				continue;
 			}
 
-			if (
-				nextChCode === CharCode.Digit0 ||
-				nextChCode === CharCode.Ampersand
-			) {
+			if (nextChCode === CharCode.Digit0 || nextChCode === CharCode.Ampersand) {
 				// $& and $0 => inserts the matched substring.
 				result.emitUnchanged(i - 1);
-
 				result.emitMatchIndex(0, i + 1, caseOps);
-
 				caseOps.length = 0;
-
 				continue;
 			}
 
-			if (
-				CharCode.Digit1 <= nextChCode &&
-				nextChCode <= CharCode.Digit9
-			) {
+			if (CharCode.Digit1 <= nextChCode && nextChCode <= CharCode.Digit9) {
 				// $n
+
 				let matchIndex = nextChCode - CharCode.Digit0;
+
 				// peek next char to probe for $nn
 				if (i + 1 < len) {
 					const nextNextChCode = replaceString.charCodeAt(i + 1);
-
-					if (
-						CharCode.Digit0 <= nextNextChCode &&
-						nextNextChCode <= CharCode.Digit9
-					) {
+					if (CharCode.Digit0 <= nextNextChCode && nextNextChCode <= CharCode.Digit9) {
 						// $nn
+
 						// move to next char
 						i++;
-
-						matchIndex =
-							matchIndex * 10 +
-							(nextNextChCode - CharCode.Digit0);
+						matchIndex = matchIndex * 10 + (nextNextChCode - CharCode.Digit0);
 
 						result.emitUnchanged(i - 2);
-
 						result.emitMatchIndex(matchIndex, i + 1, caseOps);
-
 						caseOps.length = 0;
-
 						continue;
 					}
 				}
 
 				result.emitUnchanged(i - 1);
-
 				result.emitMatchIndex(matchIndex, i + 1, caseOps);
-
 				caseOps.length = 0;
-
 				continue;
 			}
 		}

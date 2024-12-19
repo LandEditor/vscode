@@ -2,35 +2,23 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { StandardTokenType } from "../encodedTokenAttributes.js";
-import { ILanguageIdCodec } from "../languages.js";
-import { IViewLineTokens, LineTokens } from "../tokens/lineTokens.js";
 
-export function createScopedLineTokens(
-	context: LineTokens,
-	offset: number,
-): ScopedLineTokens {
+import { IViewLineTokens, LineTokens } from '../tokens/lineTokens.js';
+import { StandardTokenType } from '../encodedTokenAttributes.js';
+import { ILanguageIdCodec } from '../languages.js';
+
+export function createScopedLineTokens(context: LineTokens, offset: number): ScopedLineTokens {
 	const tokenCount = context.getCount();
-
 	const tokenIndex = context.findTokenIndexAtOffset(offset);
-
 	const desiredLanguageId = context.getLanguageId(tokenIndex);
 
 	let lastTokenIndex = tokenIndex;
-
-	while (
-		lastTokenIndex + 1 < tokenCount &&
-		context.getLanguageId(lastTokenIndex + 1) === desiredLanguageId
-	) {
+	while (lastTokenIndex + 1 < tokenCount && context.getLanguageId(lastTokenIndex + 1) === desiredLanguageId) {
 		lastTokenIndex++;
 	}
 
 	let firstTokenIndex = tokenIndex;
-
-	while (
-		firstTokenIndex > 0 &&
-		context.getLanguageId(firstTokenIndex - 1) === desiredLanguageId
-	) {
+	while (firstTokenIndex > 0 && context.getLanguageId(firstTokenIndex - 1) === desiredLanguageId) {
 		firstTokenIndex--;
 	}
 
@@ -40,24 +28,19 @@ export function createScopedLineTokens(
 		firstTokenIndex,
 		lastTokenIndex + 1,
 		context.getStartOffset(firstTokenIndex),
-		context.getEndOffset(lastTokenIndex),
+		context.getEndOffset(lastTokenIndex)
 	);
 }
+
 export class ScopedLineTokens {
 	_scopedLineTokensBrand: void = undefined;
 
 	public readonly languageIdCodec: ILanguageIdCodec;
-
 	public readonly languageId: string;
-
 	private readonly _actual: LineTokens;
-
 	private readonly _firstTokenIndex: number;
-
 	private readonly _lastTokenIndex: number;
-
 	public readonly firstCharOffset: number;
-
 	private readonly _lastCharOffset: number;
 
 	constructor(
@@ -66,30 +49,20 @@ export class ScopedLineTokens {
 		firstTokenIndex: number,
 		lastTokenIndex: number,
 		firstCharOffset: number,
-		lastCharOffset: number,
+		lastCharOffset: number
 	) {
 		this._actual = actual;
-
 		this.languageId = languageId;
-
 		this._firstTokenIndex = firstTokenIndex;
-
 		this._lastTokenIndex = lastTokenIndex;
-
 		this.firstCharOffset = firstCharOffset;
-
 		this._lastCharOffset = lastCharOffset;
-
 		this.languageIdCodec = actual.languageIdCodec;
 	}
 
 	public getLineContent(): string {
 		const actualLineContent = this._actual.getLineContent();
-
-		return actualLineContent.substring(
-			this.firstCharOffset,
-			this._lastCharOffset,
-		);
+		return actualLineContent.substring(this.firstCharOffset, this._lastCharOffset);
 	}
 
 	public getLineLength(): number {
@@ -98,7 +71,6 @@ export class ScopedLineTokens {
 
 	public getActualLineContentBefore(offset: number): string {
 		const actualLineContent = this._actual.getLineContent();
-
 		return actualLineContent.substring(0, this.firstCharOffset + offset);
 	}
 
@@ -107,34 +79,22 @@ export class ScopedLineTokens {
 	}
 
 	public findTokenIndexAtOffset(offset: number): number {
-		return (
-			this._actual.findTokenIndexAtOffset(offset + this.firstCharOffset) -
-			this._firstTokenIndex
-		);
+		return this._actual.findTokenIndexAtOffset(offset + this.firstCharOffset) - this._firstTokenIndex;
 	}
 
 	public getStandardTokenType(tokenIndex: number): StandardTokenType {
-		return this._actual.getStandardTokenType(
-			tokenIndex + this._firstTokenIndex,
-		);
+		return this._actual.getStandardTokenType(tokenIndex + this._firstTokenIndex);
 	}
 
 	public toIViewLineTokens(): IViewLineTokens {
-		return this._actual.sliceAndInflate(
-			this.firstCharOffset,
-			this._lastCharOffset,
-			0,
-		);
+		return this._actual.sliceAndInflate(this.firstCharOffset, this._lastCharOffset, 0);
 	}
 }
 
 const enum IgnoreBracketsInTokens {
-	value = StandardTokenType.Comment |
-		StandardTokenType.String |
-		StandardTokenType.RegEx,
+	value = StandardTokenType.Comment | StandardTokenType.String | StandardTokenType.RegEx
 }
-export function ignoreBracketsInToken(
-	standardTokenType: StandardTokenType,
-): boolean {
+
+export function ignoreBracketsInToken(standardTokenType: StandardTokenType): boolean {
 	return (standardTokenType & IgnoreBracketsInTokens.value) !== 0;
 }

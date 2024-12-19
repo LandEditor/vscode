@@ -2,101 +2,69 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Disposable } from "../../../../base/common/lifecycle.js";
-import {
-	IStorageService,
-	StorageScope,
-	StorageTarget,
-} from "../../../../platform/storage/common/storage.js";
-import { Memento } from "../../../common/memento.js";
-import { IExtensionService } from "../../../services/extensions/common/extensions.js";
-import { updateContributedOpeners } from "./configuration.js";
+
+import { Disposable } from '../../../../base/common/lifecycle.js';
+import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+import { Memento } from '../../../common/memento.js';
+import { updateContributedOpeners } from './configuration.js';
+import { IExtensionService } from '../../../services/extensions/common/extensions.js';
 
 interface RegisteredExternalOpener {
 	readonly extensionId: string;
 
 	isCurrentlyRegistered: boolean;
 }
+
 interface OpenersMemento {
 	[id: string]: RegisteredExternalOpener;
 }
+
 export class ContributedExternalUriOpenersStore extends Disposable {
-	private static readonly STORAGE_ID = "externalUriOpeners";
+
+	private static readonly STORAGE_ID = 'externalUriOpeners';
 
 	private readonly _openers = new Map<string, RegisteredExternalOpener>();
-
 	private readonly _memento: Memento;
-
 	private _mementoObject: OpenersMemento;
 
 	constructor(
-		@IStorageService
-		storageService: IStorageService,
-		@IExtensionService
-		private readonly _extensionService: IExtensionService,
+		@IStorageService storageService: IStorageService,
+		@IExtensionService private readonly _extensionService: IExtensionService
 	) {
 		super();
 
-		this._memento = new Memento(
-			ContributedExternalUriOpenersStore.STORAGE_ID,
-			storageService,
-		);
-
-		this._mementoObject = this._memento.getMemento(
-			StorageScope.PROFILE,
-			StorageTarget.MACHINE,
-		);
-
+		this._memento = new Memento(ContributedExternalUriOpenersStore.STORAGE_ID, storageService);
+		this._mementoObject = this._memento.getMemento(StorageScope.PROFILE, StorageTarget.MACHINE);
 		for (const [id, value] of Object.entries(this._mementoObject || {})) {
 			this.add(id, value.extensionId, { isCurrentlyRegistered: false });
 		}
 
 		this.invalidateOpenersOnExtensionsChanged();
 
-		this._register(
-			this._extensionService.onDidChangeExtensions(() =>
-				this.invalidateOpenersOnExtensionsChanged(),
-			),
-		);
-
-		this._register(
-			this._extensionService.onDidChangeExtensionsStatus(() =>
-				this.invalidateOpenersOnExtensionsChanged(),
-			),
-		);
+		this._register(this._extensionService.onDidChangeExtensions(() => this.invalidateOpenersOnExtensionsChanged()));
+		this._register(this._extensionService.onDidChangeExtensionsStatus(() => this.invalidateOpenersOnExtensionsChanged()));
 	}
 
 	public didRegisterOpener(id: string, extensionId: string): void {
 		this.add(id, extensionId, {
-			isCurrentlyRegistered: true,
+			isCurrentlyRegistered: true
 		});
 	}
 
-	private add(
-		id: string,
-		extensionId: string,
-		options: {
-			isCurrentlyRegistered: boolean;
-		},
-	): void {
+	private add(id: string, extensionId: string, options: { isCurrentlyRegistered: boolean }): void {
 		const existing = this._openers.get(id);
-
 		if (existing) {
-			existing.isCurrentlyRegistered =
-				existing.isCurrentlyRegistered || options.isCurrentlyRegistered;
-
+			existing.isCurrentlyRegistered = existing.isCurrentlyRegistered || options.isCurrentlyRegistered;
 			return;
 		}
 
 		const entry = {
 			extensionId,
-			isCurrentlyRegistered: options.isCurrentlyRegistered,
+			isCurrentlyRegistered: options.isCurrentlyRegistered
 		};
-
 		this._openers.set(id, entry);
 
 		this._mementoObject[id] = entry;
-
 		this._memento.saveMemento();
 
 		this.updateSchema();
@@ -106,7 +74,6 @@ export class ContributedExternalUriOpenersStore extends Disposable {
 		this._openers.delete(id);
 
 		delete this._mementoObject[id];
-
 		this._memento.saveMemento();
 
 		this.updateSchema();
@@ -114,14 +81,10 @@ export class ContributedExternalUriOpenersStore extends Disposable {
 
 	private async invalidateOpenersOnExtensionsChanged() {
 		await this._extensionService.whenInstalledExtensionsRegistered();
-
 		const registeredExtensions = this._extensionService.extensions;
 
 		for (const [id, entry] of this._openers) {
-			const extension = registeredExtensions.find(
-				(r) => r.identifier.value === entry.extensionId,
-			);
-
+			const extension = registeredExtensions.find(r => r.identifier.value === entry.extensionId);
 			if (extension) {
 				if (!this._extensionService.canRemoveExtension(extension)) {
 					// The extension is running. We should have registered openers at this point
@@ -138,12 +101,10 @@ export class ContributedExternalUriOpenersStore extends Disposable {
 
 	private updateSchema() {
 		const ids: string[] = [];
-
 		const descriptions: string[] = [];
 
 		for (const [id, entry] of this._openers) {
 			ids.push(id);
-
 			descriptions.push(entry.extensionId);
 		}
 

@@ -157,11 +157,11 @@
 }
 
 .monaco-hover .hover-contents a.code-link:before {
-	content: "(";
+	content: '(';
 }
 
 .monaco-hover .hover-contents a.code-link:after {
-	content: ")";
+	content: ')';
 }
 
 .monaco-hover .hover-contents a.code-link > span {

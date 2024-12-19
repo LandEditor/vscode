@@ -2,23 +2,21 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Event } from "../../../base/common/event.js";
-import { Disposable } from "../../../base/common/lifecycle.js";
-import { ILogger, ILogService, LogLevel, MultiplexLogger } from "./log.js";
+
+import { Disposable } from '../../../base/common/lifecycle.js';
+import { Event } from '../../../base/common/event.js';
+import { ILogger, ILogService, LogLevel, MultiplexLogger } from './log.js';
 
 export class LogService extends Disposable implements ILogService {
+
 	declare readonly _serviceBrand: undefined;
 
 	private readonly logger: ILogger;
 
 	constructor(primaryLogger: ILogger, otherLoggers: ILogger[] = []) {
 		super();
-
 		this.logger = new MultiplexLogger([primaryLogger, ...otherLoggers]);
-
-		this._register(
-			primaryLogger.onDidChangeLogLevel((level) => this.setLevel(level)),
-		);
+		this._register(primaryLogger.onDidChangeLogLevel(level => this.setLevel(level)));
 	}
 
 	get onDidChangeLogLevel(): Event<LogLevel> {

@@ -33,22 +33,11 @@
 	border-radius: 2px;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.body
-	.content.synthetic-focus {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .body .content.synthetic-focus {
 	outline: 1px solid var(--vscode-inlineChatInput-focusBorder);
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.body
-	.content
-	.input {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .body .content .input {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -57,25 +46,11 @@
 	cursor: text;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.body
-	.content
-	.input
-	.monaco-editor-background {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .body .content .input .monaco-editor-background {
 	background-color: var(--vscode-inlineChatInput-background);
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.body
-	.content
-	.input
-	.editor-placeholder {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .body .content .input .editor-placeholder {
 	position: absolute;
 	z-index: 1;
 	color: var(--vscode-inlineChatInput-placeholderForeground);
@@ -84,25 +59,11 @@
 	text-overflow: ellipsis;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.body
-	.content
-	.input
-	.editor-placeholder.hidden {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .body .content .input .editor-placeholder.hidden {
 	display: none;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.body
-	.content
-	.input
-	.editor-container {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .body .content .input .editor-container {
 	vertical-align: middle;
 }
 .monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .body .toolbar {
@@ -115,24 +76,13 @@
 	background: var(--vscode-inlineChatInput-background);
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.body
-	.toolbar
-	.actions-container {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .body .toolbar .actions-container {
 	display: flex;
 	flex-direction: row;
 	gap: 4px;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.body
-	> .widget-toolbar {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .body > .widget-toolbar {
 	padding-left: 4px;
 }
 
@@ -145,13 +95,7 @@
 }
 
 /* UGLY - fighting against workbench styles */
-.monaco-workbench
-	.part.editor
-	> .content
-	.monaco-editor
-	.inline-chat
-	.progress
-	.monaco-progress-container {
+.monaco-workbench .part.editor > .content .monaco-editor .inline-chat .progress .monaco-progress-container {
 	top: 0;
 }
 
@@ -164,20 +108,11 @@
 	align-items: center;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.status.actions {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .status.actions {
 	margin-top: 4px;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.status
-	.actions.hidden {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .status .actions.hidden {
 	display: none;
 }
 
@@ -189,96 +124,49 @@
 	display: flex;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.status
-	.label.hidden {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .status .label.hidden {
 	display: none;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.status
-	.label.info {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .status .label.info {
 	margin-right: auto;
 	padding-left: 2px;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.status
-	.label.info
-	> .codicon {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .status .label.info > .codicon {
 	padding: 0 5px;
 	font-size: 12px;
 	line-height: 18px;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.status
-	.label.status {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .status .label.status {
 	padding-left: 10px;
 	padding-right: 4px;
 	margin-left: auto;
 	align-self: center;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.status
-	.label
-	.slash-command-pill
-	CODE {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .status .label .slash-command-pill CODE {
 	border-radius: 3px;
 	padding: 0 1px;
 	background-color: var(--vscode-chat-slashCommandBackground);
 	color: var(--vscode-chat-slashCommandForeground);
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.markdownMessage {
+
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .markdownMessage {
 	padding: 10px 5px;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.markdownMessage.hidden {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .markdownMessage.hidden {
 	display: none;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.markdownMessage
-	.message
-	* {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .markdownMessage .message * {
 	margin: unset;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.markdownMessage
-	.message
-	code {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .markdownMessage .message code {
 	font-family: var(--monaco-monospace-font);
 	font-size: 12px;
 	color: var(--vscode-textPreformat-foreground);
@@ -287,22 +175,11 @@
 	border-radius: 4px;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.markdownMessage
-	.message
-	.interactive-result-code-block {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .markdownMessage .message .interactive-result-code-block {
 	margin: 16px 0;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.markdownMessage
-	.message {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .markdownMessage .message {
 	-webkit-line-clamp: initial;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
@@ -311,136 +188,60 @@
 	user-select: text;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.status
-	.label
-	A {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .status .label A {
 	color: var(--vscode-textLink-foreground);
 	cursor: pointer;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.status
-	.label.error {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .status .label.error {
 	color: var(--vscode-errorForeground);
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.status
-	.label.warn {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .status .label.warn {
 	color: var(--vscode-editorWarning-foreground);
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.status
-	.actions {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .status .actions  {
 	display: flex;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.status
-	.actions
-	> .monaco-button,
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.status
-	.actions
-	> .monaco-button-dropdown {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .status .actions > .monaco-button,
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .status .actions > .monaco-button-dropdown {
 	margin-right: 6px;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.status
-	.actions
-	> .monaco-button-dropdown
-	> .monaco-dropdown-button {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .status .actions > .monaco-button-dropdown > .monaco-dropdown-button {
 	display: flex;
 	align-items: center;
 	padding: 0 4px;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.status
-	.actions
-	> .monaco-button.codicon {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .status .actions > .monaco-button.codicon {
 	display: flex;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.status
-	.actions
-	> .monaco-button.codicon::before {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .status .actions > .monaco-button.codicon::before {
 	align-self: center;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.status
-	.actions
-	.monaco-text-button {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .status .actions .monaco-text-button {
 	padding: 2px 4px;
 	white-space: nowrap;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.status
-	.monaco-toolbar
-	.action-item {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .status .monaco-toolbar .action-item {
 	padding: 0 2px;
 }
 
 /* TODO@jrieken not needed? */
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.status
-	.monaco-toolbar
-	.action-label.checked {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .status .monaco-toolbar .action-label.checked {
 	color: var(--vscode-inputOption-activeForeground);
 	background-color: var(--vscode-inputOption-activeBackground);
 	outline: 1px solid var(--vscode-inputOption-activeBorder);
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.status
-	.monaco-toolbar
-	.action-item.button-item
-	.action-label:is(:hover, :focus) {
+
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .status .monaco-toolbar .action-item.button-item .action-label:is(:hover, :focus) {
 	background-color: var(--vscode-button-hoverBackground);
 }
 
@@ -460,11 +261,7 @@
 	margin: 0 2px 6px 2px;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.previewCreateTitle {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .previewCreateTitle {
 	padding-top: 6px;
 }
 
@@ -476,45 +273,24 @@
 	margin: 0 2px 6px 2px;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.previewDiff.hidden,
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.previewCreate.hidden,
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat
-	.previewCreateTitle.hidden {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .previewDiff.hidden,
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .previewCreate.hidden,
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat .previewCreateTitle.hidden {
 	display: none;
 }
 
 /* decoration styles */
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat-lines-deleted-range-inline {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat-lines-deleted-range-inline {
 	text-decoration: line-through;
 	background-color: var(--vscode-diffEditor-removedTextBackground);
 	opacity: 0.6;
 }
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat-lines-inserted-range {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat-lines-inserted-range {
 	background-color: var(--vscode-diffEditor-insertedTextBackground);
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat-block-selection {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat-block-selection {
 	background-color: var(--vscode-inlineChat-regionHighlight);
 }
 
@@ -522,28 +298,14 @@
 	opacity: 0;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat-slash-command-detail {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat-slash-command-detail {
 	opacity: 0.5;
 }
 
 /* diff zone */
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat-diff-widget
-	.monaco-diff-editor
-	.monaco-editor-background,
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat-diff-widget
-	.monaco-diff-editor
-	.monaco-editor
-	.margin-view-overlays {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat-diff-widget .monaco-diff-editor .monaco-editor-background,
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat-diff-widget .monaco-diff-editor .monaco-editor .margin-view-overlays {
 	background-color: var(--vscode-inlineChat-regionHighlight);
 }
 
@@ -554,11 +316,7 @@
 	background-color: var(--vscode-inlineChat-regionHighlight);
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.inline-chat-newfile-widget
-	.title {
+.monaco-workbench .notebookOverlay .cell-chat-part .inline-chat-newfile-widget .title {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -567,46 +325,22 @@
 
 /* gutter decoration */
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.glyph-margin-widgets
-	.cgmr.codicon-inline-chat-opaque,
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.glyph-margin-widgets
-	.cgmr.codicon-inline-chat-transparent {
+.monaco-workbench .notebookOverlay .cell-chat-part .glyph-margin-widgets .cgmr.codicon-inline-chat-opaque,
+.monaco-workbench .notebookOverlay .cell-chat-part .glyph-margin-widgets .cgmr.codicon-inline-chat-transparent {
 	display: block;
 	cursor: pointer;
-	transition: opacity 0.2s ease-in-out;
+	transition: opacity .2s ease-in-out;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.glyph-margin-widgets
-	.cgmr.codicon-inline-chat-opaque {
+.monaco-workbench .notebookOverlay .cell-chat-part .glyph-margin-widgets .cgmr.codicon-inline-chat-opaque {
 	opacity: 0.5;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.glyph-margin-widgets
-	.cgmr.codicon-inline-chat-transparent {
+.monaco-workbench .notebookOverlay .cell-chat-part .glyph-margin-widgets .cgmr.codicon-inline-chat-transparent {
 	opacity: 0;
 }
 
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.glyph-margin-widgets
-	.cgmr.codicon-inline-chat-opaque:hover,
-.monaco-workbench
-	.notebookOverlay
-	.cell-chat-part
-	.glyph-margin-widgets
-	.cgmr.codicon-inline-chat-transparent:hover {
+.monaco-workbench .notebookOverlay .cell-chat-part .glyph-margin-widgets .cgmr.codicon-inline-chat-opaque:hover,
+.monaco-workbench .notebookOverlay .cell-chat-part .glyph-margin-widgets .cgmr.codicon-inline-chat-transparent:hover {
 	opacity: 1;
 }

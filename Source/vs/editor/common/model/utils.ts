@@ -2,7 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CharCode } from "../../../base/common/charCode.js";
+
+import { CharCode } from '../../../base/common/charCode.js';
 
 /**
  * Returns:
@@ -11,22 +12,18 @@ import { CharCode } from "../../../base/common/charCode.js";
  */
 export function computeIndentLevel(line: string, tabSize: number): number {
 	let indent = 0;
-
 	let i = 0;
-
 	const len = line.length;
 
 	while (i < len) {
 		const chCode = line.charCodeAt(i);
-
 		if (chCode === CharCode.Space) {
 			indent++;
 		} else if (chCode === CharCode.Tab) {
-			indent = indent - (indent % tabSize) + tabSize;
+			indent = indent - indent % tabSize + tabSize;
 		} else {
 			break;
 		}
-
 		i++;
 	}
 

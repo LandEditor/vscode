@@ -3,39 +3,37 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { Parser } from "@vscode/tree-sitter-wasm";
-
-import { VSBuffer } from "../../base/common/buffer.js";
-import { CancellationToken } from "../../base/common/cancellation.js";
-import { Codicon } from "../../base/common/codicons.js";
-import { Color } from "../../base/common/color.js";
-import { IReadonlyVSDataTransfer } from "../../base/common/dataTransfer.js";
-import { Event } from "../../base/common/event.js";
-import { HierarchicalKind } from "../../base/common/hierarchicalKind.js";
-import { IMarkdownString } from "../../base/common/htmlContent.js";
-import { IDisposable } from "../../base/common/lifecycle.js";
-import { ThemeIcon } from "../../base/common/themables.js";
-import { URI, UriComponents } from "../../base/common/uri.js";
-import { localize } from "../../nls.js";
-import { ExtensionIdentifier } from "../../platform/extensions/common/extensions.js";
-import { IMarkerData } from "../../platform/markers/common/markers.js";
-import { EditOperation, ISingleEditOperation } from "./core/editOperation.js";
-import { IPosition, Position } from "./core/position.js";
-import { IRange, Range } from "./core/range.js";
-import { Selection } from "./core/selection.js";
-import { LanguageId } from "./encodedTokenAttributes.js";
-import { LanguageSelector } from "./languageSelector.js";
-import * as model from "./model.js";
-import { IModelTokensChangedEvent } from "./textModelEvents.js";
-import { TokenizationRegistry as TokenizationRegistryImpl } from "./tokenizationRegistry.js";
-import { ContiguousMultilineTokens } from "./tokens/contiguousMultilineTokens.js";
+import { VSBuffer } from '../../base/common/buffer.js';
+import { CancellationToken } from '../../base/common/cancellation.js';
+import { Codicon } from '../../base/common/codicons.js';
+import { Color } from '../../base/common/color.js';
+import { IReadonlyVSDataTransfer } from '../../base/common/dataTransfer.js';
+import { Event } from '../../base/common/event.js';
+import { HierarchicalKind } from '../../base/common/hierarchicalKind.js';
+import { IMarkdownString } from '../../base/common/htmlContent.js';
+import { IDisposable } from '../../base/common/lifecycle.js';
+import { ThemeIcon } from '../../base/common/themables.js';
+import { URI, UriComponents } from '../../base/common/uri.js';
+import { EditOperation, ISingleEditOperation } from './core/editOperation.js';
+import { IPosition, Position } from './core/position.js';
+import { IRange, Range } from './core/range.js';
+import { Selection } from './core/selection.js';
+import { LanguageId } from './encodedTokenAttributes.js';
+import { LanguageSelector } from './languageSelector.js';
+import * as model from './model.js';
+import { TokenizationRegistry as TokenizationRegistryImpl } from './tokenizationRegistry.js';
+import { ContiguousMultilineTokens } from './tokens/contiguousMultilineTokens.js';
+import { localize } from '../../nls.js';
+import { ExtensionIdentifier } from '../../platform/extensions/common/extensions.js';
+import { IMarkerData } from '../../platform/markers/common/markers.js';
+import { IModelTokensChangedEvent } from './textModelEvents.js';
+import type { Parser } from '@vscode/tree-sitter-wasm';
 
 /**
  * @internal
  */
 export interface ILanguageIdCodec {
 	encodeLanguageId(languageId: string): LanguageId;
-
 	decodeLanguageId(languageId: LanguageId): string;
 }
 
@@ -46,10 +44,11 @@ export class Token {
 		public readonly offset: number,
 		public readonly type: string,
 		public readonly language: string,
-	) {}
+	) {
+	}
 
 	public toString(): string {
-		return "(" + this.offset + ", " + this.type + ")";
+		return '(' + this.offset + ', ' + this.type + ')';
 	}
 }
 
@@ -62,7 +61,8 @@ export class TokenizationResult {
 	constructor(
 		public readonly tokens: Token[],
 		public readonly endState: IState,
-	) {}
+	) {
+	}
 }
 
 /**
@@ -80,7 +80,8 @@ export class EncodedTokenizationResult {
 		 */
 		public readonly tokens: Uint32Array,
 		public readonly endState: IState,
-	) {}
+	) {
+	}
 }
 
 /**
@@ -88,35 +89,11 @@ export class EncodedTokenizationResult {
  * @internal
  */
 export interface ITreeSitterTokenizationSupport {
-	tokenizeEncoded(
-		lineNumber: number,
-		textModel: model.ITextModel,
-	): Uint32Array | undefined;
-
-	captureAtPosition(
-		lineNumber: number,
-		column: number,
-		textModel: model.ITextModel,
-	): Parser.QueryCapture[];
-
-	captureAtPositionTree(
-		lineNumber: number,
-		column: number,
-		tree: Parser.Tree,
-	): Parser.QueryCapture[];
-
-	onDidChangeTokens: Event<{
-		textModel: model.ITextModel;
-
-		changes: IModelTokensChangedEvent;
-	}>;
-
-	tokenizeEncodedInstrumented(
-		lineNumber: number,
-		textModel: model.ITextModel,
-	):
-		| { result: Uint32Array; captureTime: number; metadataTime: number }
-		| undefined;
+	tokenizeEncoded(lineNumber: number, textModel: model.ITextModel): Uint32Array | undefined;
+	captureAtPosition(lineNumber: number, column: number, textModel: model.ITextModel): Parser.QueryCapture[];
+	captureAtPositionTree(lineNumber: number, column: number, tree: Parser.Tree): Parser.QueryCapture[];
+	onDidChangeTokens: Event<{ textModel: model.ITextModel; changes: IModelTokensChangedEvent }>;
+	tokenizeEncodedInstrumented(lineNumber: number, textModel: model.ITextModel): { result: Uint32Array; captureTime: number; metadataTime: number } | undefined;
 }
 
 /**
@@ -133,19 +110,12 @@ export interface ITokenizationSupport {
 
 	tokenize(line: string, hasEOL: boolean, state: IState): TokenizationResult;
 
-	tokenizeEncoded(
-		line: string,
-		hasEOL: boolean,
-		state: IState,
-	): EncodedTokenizationResult;
+	tokenizeEncoded(line: string, hasEOL: boolean, state: IState): EncodedTokenizationResult;
 
 	/**
 	 * Can be/return undefined if default background tokenization should be used.
 	 */
-	createBackgroundTokenizer?(
-		textModel: model.ITextModel,
-		store: IBackgroundTokenizationStore,
-	): IBackgroundTokenizer | undefined;
+	createBackgroundTokenizer?(textModel: model.ITextModel, store: IBackgroundTokenizationStore): IBackgroundTokenizer | undefined;
 }
 
 /**
@@ -158,10 +128,7 @@ export interface IBackgroundTokenizer extends IDisposable {
 	 * This might be necessary if the renderer overwrote those tokens with heuristically computed ones for some viewport,
 	 * when the change does not even propagate to that viewport.
 	 */
-	requestTokens(
-		startLineNumber: number,
-		endLineNumberExclusive: number,
-	): void;
+	requestTokens(startLineNumber: number, endLineNumberExclusive: number): void;
 
 	reportMismatchingTokens?(lineNumber: number): void;
 }
@@ -188,7 +155,6 @@ export interface IBackgroundTokenizationStore {
  */
 export interface IState {
 	clone(): IState;
-
 	equals(other: IState): boolean;
 }
 
@@ -198,11 +164,7 @@ export interface IState {
  * to that type `T`. In addition, `null` and `undefined` can be returned - either directly or from a
  * thenable.
  */
-export type ProviderResult<T> =
-	| T
-	| undefined
-	| null
-	| Thenable<T | undefined | null>;
+export type ProviderResult<T> = T | undefined | null | Thenable<T | undefined | null>;
 
 /**
  * A hover represents additional information for a symbol or word. Hovers are
@@ -242,12 +204,7 @@ export interface HoverProvider<THover = Hover> {
 	 * position will be merged by the editor. A hover can have a range which defaults
 	 * to the word range at the position when omitted.
 	 */
-	provideHover(
-		model: model.ITextModel,
-		position: Position,
-		token: CancellationToken,
-		context?: HoverContext<THover>,
-	): ProviderResult<THover>;
+	provideHover(model: model.ITextModel, position: Position, token: CancellationToken, context?: HoverContext<THover>): ProviderResult<THover>;
 }
 
 export interface HoverContext<THover = Hover> {
@@ -276,7 +233,7 @@ export enum HoverVerbosityAction {
 	/**
 	 * Decrease the verbosity of the hover
 	 */
-	Decrease,
+	Decrease
 }
 
 /**
@@ -295,6 +252,7 @@ export interface EvaluatableExpression {
 	expression?: string;
 }
 
+
 /**
  * The evaluatable expression provider interface defines the contract between extensions and
  * the debug hover.
@@ -306,11 +264,7 @@ export interface EvaluatableExpressionProvider {
 	 * position will be merged by the editor. A hover can have a range which defaults
 	 * to the word range at the position when omitted.
 	 */
-	provideEvaluatableExpression(
-		model: model.ITextModel,
-		position: Position,
-		token: CancellationToken,
-	): ProviderResult<EvaluatableExpression>;
+	provideEvaluatableExpression(model: model.ITextModel, position: Position, token: CancellationToken): ProviderResult<EvaluatableExpression>;
 }
 
 /**
@@ -319,7 +273,6 @@ export interface EvaluatableExpressionProvider {
  */
 export interface InlineValueContext {
 	frameId: number;
-
 	stoppedLocation: Range;
 }
 
@@ -328,10 +281,8 @@ export interface InlineValueContext {
  * @internal
  */
 export interface InlineValueText {
-	type: "text";
-
+	type: 'text';
 	range: IRange;
-
 	text: string;
 }
 
@@ -340,12 +291,9 @@ export interface InlineValueText {
  * @internal
  */
 export interface InlineValueVariableLookup {
-	type: "variable";
-
+	type: 'variable';
 	range: IRange;
-
 	variableName?: string;
-
 	caseSensitiveLookup: boolean;
 }
 
@@ -354,10 +302,8 @@ export interface InlineValueVariableLookup {
  * @internal
  */
 export interface InlineValueExpression {
-	type: "expression";
-
+	type: 'expression';
 	range: IRange;
-
 	expression?: string;
 }
 
@@ -369,10 +315,7 @@ export interface InlineValueExpression {
  * The InlineValue types combines all inline value types into one type.
  * @internal
  */
-export type InlineValue =
-	| InlineValueText
-	| InlineValueVariableLookup
-	| InlineValueExpression;
+export type InlineValue = InlineValueText | InlineValueVariableLookup | InlineValueExpression;
 
 /**
  * The inline values provider interface defines the contract between extensions and
@@ -388,12 +331,7 @@ export interface InlineValuesProvider {
 	 * position will be merged by the editor. A hover can have a range which defaults
 	 * to the word range at the position when omitted.
 	 */
-	provideInlineValues(
-		model: model.ITextModel,
-		viewPort: Range,
-		context: InlineValueContext,
-		token: CancellationToken,
-	): ProviderResult<InlineValue[]>;
+	provideInlineValues(model: model.ITextModel, viewPort: Range, context: InlineValueContext, token: CancellationToken): ProviderResult<InlineValue[]>;
 }
 
 export const enum CompletionItemKind {
@@ -431,64 +369,36 @@ export const enum CompletionItemKind {
  * @internal
  */
 export namespace CompletionItemKinds {
+
 	const byKind = new Map<CompletionItemKind, ThemeIcon>();
-
 	byKind.set(CompletionItemKind.Method, Codicon.symbolMethod);
-
 	byKind.set(CompletionItemKind.Function, Codicon.symbolFunction);
-
 	byKind.set(CompletionItemKind.Constructor, Codicon.symbolConstructor);
-
 	byKind.set(CompletionItemKind.Field, Codicon.symbolField);
-
 	byKind.set(CompletionItemKind.Variable, Codicon.symbolVariable);
-
 	byKind.set(CompletionItemKind.Class, Codicon.symbolClass);
-
 	byKind.set(CompletionItemKind.Struct, Codicon.symbolStruct);
-
 	byKind.set(CompletionItemKind.Interface, Codicon.symbolInterface);
-
 	byKind.set(CompletionItemKind.Module, Codicon.symbolModule);
-
 	byKind.set(CompletionItemKind.Property, Codicon.symbolProperty);
-
 	byKind.set(CompletionItemKind.Event, Codicon.symbolEvent);
-
 	byKind.set(CompletionItemKind.Operator, Codicon.symbolOperator);
-
 	byKind.set(CompletionItemKind.Unit, Codicon.symbolUnit);
-
 	byKind.set(CompletionItemKind.Value, Codicon.symbolValue);
-
 	byKind.set(CompletionItemKind.Enum, Codicon.symbolEnum);
-
 	byKind.set(CompletionItemKind.Constant, Codicon.symbolConstant);
-
 	byKind.set(CompletionItemKind.Enum, Codicon.symbolEnum);
-
 	byKind.set(CompletionItemKind.EnumMember, Codicon.symbolEnumMember);
-
 	byKind.set(CompletionItemKind.Keyword, Codicon.symbolKeyword);
-
 	byKind.set(CompletionItemKind.Snippet, Codicon.symbolSnippet);
-
 	byKind.set(CompletionItemKind.Text, Codicon.symbolText);
-
 	byKind.set(CompletionItemKind.Color, Codicon.symbolColor);
-
 	byKind.set(CompletionItemKind.File, Codicon.symbolFile);
-
 	byKind.set(CompletionItemKind.Reference, Codicon.symbolReference);
-
 	byKind.set(CompletionItemKind.Customcolor, Codicon.symbolCustomColor);
-
 	byKind.set(CompletionItemKind.Folder, Codicon.symbolFolder);
-
 	byKind.set(CompletionItemKind.TypeParameter, Codicon.symbolTypeParameter);
-
 	byKind.set(CompletionItemKind.User, Codicon.account);
-
 	byKind.set(CompletionItemKind.Issue, Codicon.issues);
 
 	/**
@@ -496,77 +406,44 @@ export namespace CompletionItemKinds {
 	 */
 	export function toIcon(kind: CompletionItemKind): ThemeIcon {
 		let codicon = byKind.get(kind);
-
 		if (!codicon) {
-			console.info("No codicon found for CompletionItemKind " + kind);
-
+			console.info('No codicon found for CompletionItemKind ' + kind);
 			codicon = Codicon.symbolProperty;
 		}
-
 		return codicon;
 	}
 
 	const data = new Map<string, CompletionItemKind>();
-
-	data.set("method", CompletionItemKind.Method);
-
-	data.set("function", CompletionItemKind.Function);
-
-	data.set("constructor", <any>CompletionItemKind.Constructor);
-
-	data.set("field", CompletionItemKind.Field);
-
-	data.set("variable", CompletionItemKind.Variable);
-
-	data.set("class", CompletionItemKind.Class);
-
-	data.set("struct", CompletionItemKind.Struct);
-
-	data.set("interface", CompletionItemKind.Interface);
-
-	data.set("module", CompletionItemKind.Module);
-
-	data.set("property", CompletionItemKind.Property);
-
-	data.set("event", CompletionItemKind.Event);
-
-	data.set("operator", CompletionItemKind.Operator);
-
-	data.set("unit", CompletionItemKind.Unit);
-
-	data.set("value", CompletionItemKind.Value);
-
-	data.set("constant", CompletionItemKind.Constant);
-
-	data.set("enum", CompletionItemKind.Enum);
-
-	data.set("enum-member", CompletionItemKind.EnumMember);
-
-	data.set("enumMember", CompletionItemKind.EnumMember);
-
-	data.set("keyword", CompletionItemKind.Keyword);
-
-	data.set("snippet", CompletionItemKind.Snippet);
-
-	data.set("text", CompletionItemKind.Text);
-
-	data.set("color", CompletionItemKind.Color);
-
-	data.set("file", CompletionItemKind.File);
-
-	data.set("reference", CompletionItemKind.Reference);
-
-	data.set("customcolor", CompletionItemKind.Customcolor);
-
-	data.set("folder", CompletionItemKind.Folder);
-
-	data.set("type-parameter", CompletionItemKind.TypeParameter);
-
-	data.set("typeParameter", CompletionItemKind.TypeParameter);
-
-	data.set("account", CompletionItemKind.User);
-
-	data.set("issue", CompletionItemKind.Issue);
+	data.set('method', CompletionItemKind.Method);
+	data.set('function', CompletionItemKind.Function);
+	data.set('constructor', <any>CompletionItemKind.Constructor);
+	data.set('field', CompletionItemKind.Field);
+	data.set('variable', CompletionItemKind.Variable);
+	data.set('class', CompletionItemKind.Class);
+	data.set('struct', CompletionItemKind.Struct);
+	data.set('interface', CompletionItemKind.Interface);
+	data.set('module', CompletionItemKind.Module);
+	data.set('property', CompletionItemKind.Property);
+	data.set('event', CompletionItemKind.Event);
+	data.set('operator', CompletionItemKind.Operator);
+	data.set('unit', CompletionItemKind.Unit);
+	data.set('value', CompletionItemKind.Value);
+	data.set('constant', CompletionItemKind.Constant);
+	data.set('enum', CompletionItemKind.Enum);
+	data.set('enum-member', CompletionItemKind.EnumMember);
+	data.set('enumMember', CompletionItemKind.EnumMember);
+	data.set('keyword', CompletionItemKind.Keyword);
+	data.set('snippet', CompletionItemKind.Snippet);
+	data.set('text', CompletionItemKind.Text);
+	data.set('color', CompletionItemKind.Color);
+	data.set('file', CompletionItemKind.File);
+	data.set('reference', CompletionItemKind.Reference);
+	data.set('customcolor', CompletionItemKind.Customcolor);
+	data.set('folder', CompletionItemKind.Folder);
+	data.set('type-parameter', CompletionItemKind.TypeParameter);
+	data.set('typeParameter', CompletionItemKind.TypeParameter);
+	data.set('account', CompletionItemKind.User);
+	data.set('issue', CompletionItemKind.Issue);
 
 	/**
 	 * @internal
@@ -575,37 +452,27 @@ export namespace CompletionItemKinds {
 	/**
 	 * @internal
 	 */
-	export function fromString(
-		value: string,
-		strict: true,
-	): CompletionItemKind | undefined;
+	export function fromString(value: string, strict: true): CompletionItemKind | undefined;
 	/**
 	 * @internal
 	 */
-	export function fromString(
-		value: string,
-		strict?: boolean,
-	): CompletionItemKind | undefined {
+	export function fromString(value: string, strict?: boolean): CompletionItemKind | undefined {
 		let res = data.get(value);
-
-		if (typeof res === "undefined" && !strict) {
+		if (typeof res === 'undefined' && !strict) {
 			res = CompletionItemKind.Property;
 		}
-
 		return res;
 	}
 }
 
 export interface CompletionItemLabel {
 	label: string;
-
 	detail?: string;
-
 	description?: string;
 }
 
 export const enum CompletionItemTag {
-	Deprecated = 1,
+	Deprecated = 1
 }
 
 export const enum CompletionItemInsertTextRule {
@@ -625,7 +492,6 @@ export const enum CompletionItemInsertTextRule {
 
 export interface CompletionItemRanges {
 	insert: IRange;
-
 	replace: IRange;
 }
 
@@ -723,9 +589,7 @@ export interface CompletionItem {
 
 export interface CompletionList {
 	suggestions: CompletionItem[];
-
 	incomplete?: boolean;
-
 	dispose?(): void;
 
 	/**
@@ -756,7 +620,7 @@ export const enum PartialAcceptTriggerKind {
 export const enum CompletionTriggerKind {
 	Invoke = 0,
 	TriggerCharacter = 1,
-	TriggerForIncompleteCompletions = 2,
+	TriggerForIncompleteCompletions = 2
 }
 /**
  * Contains additional information about the context in which
@@ -786,6 +650,7 @@ export interface CompletionContext {
  * the item, like adding {@link CompletionItem.documentation doc-comment} or {@link CompletionItem.detail details}.
  */
 export interface CompletionItemProvider {
+
 	/**
 	 * Used to identify completions in the (debug) UI and telemetry. This isn't the extension identifier because extensions
 	 * often contribute multiple completion item providers.
@@ -798,12 +663,7 @@ export interface CompletionItemProvider {
 	/**
 	 * Provide completion items for the given position and document.
 	 */
-	provideCompletionItems(
-		model: model.ITextModel,
-		position: Position,
-		context: CompletionContext,
-		token: CancellationToken,
-	): ProviderResult<CompletionList>;
+	provideCompletionItems(model: model.ITextModel, position: Position, context: CompletionContext, token: CancellationToken): ProviderResult<CompletionList>;
 
 	/**
 	 * Given a completion item fill in more data, like {@link CompletionItem.documentation doc-comment}
@@ -811,10 +671,7 @@ export interface CompletionItemProvider {
 	 *
 	 * The editor will only resolve a completion item once.
 	 */
-	resolveCompletionItem?(
-		item: CompletionItem,
-		token: CancellationToken,
-	): ProviderResult<CompletionItem>;
+	resolveCompletionItem?(item: CompletionItem, token: CancellationToken): ProviderResult<CompletionItem>;
 }
 
 /**
@@ -835,25 +692,24 @@ export enum InlineCompletionTriggerKind {
 }
 
 export interface InlineCompletionContext {
+
 	/**
 	 * How the completion was triggered.
 	 */
 	readonly triggerKind: InlineCompletionTriggerKind;
-
 	readonly selectedSuggestionInfo: SelectedSuggestionInfo | undefined;
 	/**
 	 * @experimental
 	 * @internal
-	 */
+	*/
 	readonly userPrompt?: string | undefined;
 	/**
 	 * @experimental
 	 * @internal
-	 */
+	*/
 	readonly requestUuid?: string | undefined;
 
 	readonly includeInlineEdits: boolean;
-
 	readonly includeInlineCompletions: boolean;
 }
 
@@ -863,15 +719,14 @@ export class SelectedSuggestionInfo {
 		public readonly text: string,
 		public readonly completionKind: CompletionItemKind,
 		public readonly isSnippetText: boolean,
-	) {}
+	) {
+	}
 
 	public equals(other: SelectedSuggestionInfo) {
-		return (
-			Range.lift(this.range).equalsRange(other.range) &&
-			this.text === other.text &&
-			this.completionKind === other.completionKind &&
-			this.isSnippetText === other.isSnippetText
-		);
+		return Range.lift(this.range).equalsRange(other.range)
+			&& this.text === other.text
+			&& this.completionKind === other.completionKind
+			&& this.isSnippetText === other.isSnippetText;
 	}
 }
 
@@ -883,7 +738,7 @@ export interface InlineCompletion {
 	 *
 	 * The text can also be a snippet. In that case, a preview with default parameters is shown.
 	 * When accepting the suggestion, the full snippet is inserted.
-	 */
+	*/
 	readonly insertText: string | { snippet: string };
 
 	/**
@@ -902,28 +757,26 @@ export interface InlineCompletion {
 	/**
 	 * The range to replace.
 	 * Must begin and end on the same line.
-	 */
+	*/
 	readonly range?: IRange;
 
 	readonly command?: Command;
 
 	/**
 	 * Is called the first time an inline completion is shown.
-	 */
+	*/
 	readonly shownCommand?: Command;
 
 	/**
 	 * If set to `true`, unopened closing brackets are removed and unclosed opening brackets are closed.
 	 * Defaults to `false`.
-	 */
+	*/
 	readonly completeBracketPairs?: boolean;
 
 	readonly isInlineEdit?: boolean;
 }
 
-export interface InlineCompletions<
-	TItem extends InlineCompletion = InlineCompletion,
-> {
+export interface InlineCompletions<TItem extends InlineCompletion = InlineCompletion> {
 	readonly items: readonly TItem[];
 	/**
 	 * A list of commands associated with the inline completions of this list.
@@ -940,52 +793,31 @@ export interface InlineCompletions<
 
 export type InlineCompletionProviderGroupId = string;
 
-export interface InlineCompletionsProvider<
-	T extends InlineCompletions = InlineCompletions,
-> {
-	provideInlineCompletions(
-		model: model.ITextModel,
-		position: Position,
-		context: InlineCompletionContext,
-		token: CancellationToken,
-	): ProviderResult<T>;
+export interface InlineCompletionsProvider<T extends InlineCompletions = InlineCompletions> {
+	provideInlineCompletions(model: model.ITextModel, position: Position, context: InlineCompletionContext, token: CancellationToken): ProviderResult<T>;
 
 	/**
 	 * @experimental
 	 * @internal
-	 */
-	provideInlineEditsForRange?(
-		model: model.ITextModel,
-		range: Range,
-		context: InlineCompletionContext,
-		token: CancellationToken,
-	): ProviderResult<T>;
+	*/
+	provideInlineEditsForRange?(model: model.ITextModel, range: Range, context: InlineCompletionContext, token: CancellationToken): ProviderResult<T>;
 
 	/**
 	 * Will be called when an item is shown.
 	 * @param updatedInsertText Is useful to understand bracket completion.
-	 */
-	handleItemDidShow?(
-		completions: T,
-		item: T["items"][number],
-		updatedInsertText: string,
-	): void;
+	*/
+	handleItemDidShow?(completions: T, item: T['items'][number], updatedInsertText: string): void;
 
 	/**
 	 * Will be called when an item is partially accepted. TODO: also handle full acceptance here!
 	 */
-	handlePartialAccept?(
-		completions: T,
-		item: T["items"][number],
-		acceptedCharacters: number,
-		info: PartialAcceptInfo,
-	): void;
+	handlePartialAccept?(completions: T, item: T['items'][number], acceptedCharacters: number, info: PartialAcceptInfo): void;
 
-	handleRejection?(completions: T, item: T["items"][number]): void;
+	handleRejection?(completions: T, item: T['items'][number]): void;
 
 	/**
 	 * Will be called when a completions list is no longer in use and can be garbage-collected.
-	 */
+	*/
 	freeInlineCompletions(completions: T): void;
 
 	/**
@@ -1005,21 +837,13 @@ export interface InlineCompletionsProvider<
 
 export interface CodeAction {
 	title: string;
-
 	command?: Command;
-
 	edit?: WorkspaceEdit;
-
 	diagnostics?: IMarkerData[];
-
 	kind?: string;
-
 	isPreferred?: boolean;
-
 	isAI?: boolean;
-
 	disabled?: string;
-
 	ranges?: IRange[];
 }
 
@@ -1033,7 +857,6 @@ export const enum CodeActionTriggerType {
  */
 export interface CodeActionContext {
 	only?: string;
-
 	trigger: CodeActionTriggerType;
 }
 
@@ -1047,6 +870,7 @@ export interface CodeActionList extends IDisposable {
  * @internal
  */
 export interface CodeActionProvider {
+
 	displayName?: string;
 
 	extensionId?: string;
@@ -1054,39 +878,24 @@ export interface CodeActionProvider {
 	/**
 	 * Provide commands for the given document and range.
 	 */
-	provideCodeActions(
-		model: model.ITextModel,
-		range: Range | Selection,
-		context: CodeActionContext,
-		token: CancellationToken,
-	): ProviderResult<CodeActionList>;
+	provideCodeActions(model: model.ITextModel, range: Range | Selection, context: CodeActionContext, token: CancellationToken): ProviderResult<CodeActionList>;
 
 	/**
 	 * Given a code action fill in the edit. Will only invoked when missing.
 	 */
-	resolveCodeAction?(
-		codeAction: CodeAction,
-		token: CancellationToken,
-	): ProviderResult<CodeAction>;
+	resolveCodeAction?(codeAction: CodeAction, token: CancellationToken): ProviderResult<CodeAction>;
 
 	/**
 	 * Optional list of CodeActionKinds that this provider returns.
 	 */
 	readonly providedCodeActionKinds?: ReadonlyArray<string>;
 
-	readonly documentation?: ReadonlyArray<{
-		readonly kind: string;
-
-		readonly command: Command;
-	}>;
+	readonly documentation?: ReadonlyArray<{ readonly kind: string; readonly command: Command }>;
 
 	/**
 	 * @internal
 	 */
-	_getAdditionalMenuItems?(
-		context: CodeActionContext,
-		actions: readonly CodeAction[],
-	): Command[];
+	_getAdditionalMenuItems?(context: CodeActionContext, actions: readonly CodeAction[]): Command[];
 }
 
 /**
@@ -1094,13 +903,10 @@ export interface CodeActionProvider {
  */
 export interface DocumentPasteEdit {
 	readonly title: string;
-
 	readonly kind: HierarchicalKind;
-
 	readonly handledMimeType?: string;
 	yieldTo?: readonly DropYieldTo[];
 	insertText: string | { readonly snippet: string };
-
 	additionalEdit?: WorkspaceEdit;
 }
 
@@ -1117,7 +923,6 @@ export enum DocumentPasteTriggerKind {
  */
 export interface DocumentPasteContext {
 	readonly only?: HierarchicalKind;
-
 	readonly triggerKind: DocumentPasteTriggerKind;
 }
 
@@ -1126,7 +931,6 @@ export interface DocumentPasteContext {
  */
 export interface DocumentPasteEditsSession {
 	edits: readonly DocumentPasteEdit[];
-
 	dispose(): void;
 }
 
@@ -1135,32 +939,15 @@ export interface DocumentPasteEditsSession {
  */
 export interface DocumentPasteEditProvider {
 	readonly id?: string;
-
 	readonly copyMimeTypes: readonly string[];
-
 	readonly pasteMimeTypes: readonly string[];
-
 	readonly providedPasteEditKinds: readonly HierarchicalKind[];
 
-	prepareDocumentPaste?(
-		model: model.ITextModel,
-		ranges: readonly IRange[],
-		dataTransfer: IReadonlyVSDataTransfer,
-		token: CancellationToken,
-	): Promise<undefined | IReadonlyVSDataTransfer>;
+	prepareDocumentPaste?(model: model.ITextModel, ranges: readonly IRange[], dataTransfer: IReadonlyVSDataTransfer, token: CancellationToken): Promise<undefined | IReadonlyVSDataTransfer>;
 
-	provideDocumentPasteEdits?(
-		model: model.ITextModel,
-		ranges: readonly IRange[],
-		dataTransfer: IReadonlyVSDataTransfer,
-		context: DocumentPasteContext,
-		token: CancellationToken,
-	): Promise<DocumentPasteEditsSession | undefined>;
+	provideDocumentPasteEdits?(model: model.ITextModel, ranges: readonly IRange[], dataTransfer: IReadonlyVSDataTransfer, context: DocumentPasteContext, token: CancellationToken): Promise<DocumentPasteEditsSession | undefined>;
 
-	resolveDocumentPasteEdit?(
-		edit: DocumentPasteEdit,
-		token: CancellationToken,
-	): Promise<DocumentPasteEdit>;
+	resolveDocumentPasteEdit?(edit: DocumentPasteEdit, token: CancellationToken): Promise<DocumentPasteEdit>;
 }
 
 /**
@@ -1238,11 +1025,8 @@ export enum SignatureHelpTriggerKind {
 
 export interface SignatureHelpContext {
 	readonly triggerKind: SignatureHelpTriggerKind;
-
 	readonly triggerCharacter?: string;
-
 	readonly isRetrigger: boolean;
-
 	readonly activeSignatureHelp?: SignatureHelp;
 }
 
@@ -1251,19 +1035,14 @@ export interface SignatureHelpContext {
  * the [parameter hints](https://code.visualstudio.com/docs/editor/intellisense)-feature.
  */
 export interface SignatureHelpProvider {
-	readonly signatureHelpTriggerCharacters?: ReadonlyArray<string>;
 
+	readonly signatureHelpTriggerCharacters?: ReadonlyArray<string>;
 	readonly signatureHelpRetriggerCharacters?: ReadonlyArray<string>;
 
 	/**
 	 * Provide help for the signature at the given position and document.
 	 */
-	provideSignatureHelp(
-		model: model.ITextModel,
-		position: Position,
-		token: CancellationToken,
-		context: SignatureHelpContext,
-	): ProviderResult<SignatureHelpResult>;
+	provideSignatureHelp(model: model.ITextModel, position: Position, token: CancellationToken, context: SignatureHelpContext): ProviderResult<SignatureHelpResult>;
 }
 
 /**
@@ -1281,7 +1060,7 @@ export enum DocumentHighlightKind {
 	/**
 	 * Write-access of a symbol, like writing to a variable.
 	 */
-	Write,
+	Write
 }
 /**
  * A document highlight is a range inside a text document which deserves
@@ -1323,11 +1102,7 @@ export interface DocumentHighlightProvider {
 	 * Provide a set of document highlights, like all occurrences of a variable or
 	 * all exit-points of a function.
 	 */
-	provideDocumentHighlights(
-		model: model.ITextModel,
-		position: Position,
-		token: CancellationToken,
-	): ProviderResult<DocumentHighlight[]>;
+	provideDocumentHighlights(model: model.ITextModel, position: Position, token: CancellationToken): ProviderResult<DocumentHighlight[]>;
 }
 
 /**
@@ -1349,12 +1124,7 @@ export interface MultiDocumentHighlightProvider {
 	 * @param token A cancellation token.
 	 * @returns A map of URI to document highlights.
 	 */
-	provideMultiDocumentHighlights(
-		primaryModel: model.ITextModel,
-		position: Position,
-		otherModels: model.ITextModel[],
-		token: CancellationToken,
-	): ProviderResult<Map<URI, DocumentHighlight[]>>;
+	provideMultiDocumentHighlights(primaryModel: model.ITextModel, position: Position, otherModels: model.ITextModel[], token: CancellationToken): ProviderResult<Map<URI, DocumentHighlight[]>>;
 }
 
 /**
@@ -1362,14 +1132,11 @@ export interface MultiDocumentHighlightProvider {
  * the linked editing feature.
  */
 export interface LinkedEditingRangeProvider {
+
 	/**
 	 * Provide a list of ranges that can be edited together.
 	 */
-	provideLinkedEditingRanges(
-		model: model.ITextModel,
-		position: Position,
-		token: CancellationToken,
-	): ProviderResult<LinkedEditingRanges>;
+	provideLinkedEditingRanges(model: model.ITextModel, position: Position, token: CancellationToken): ProviderResult<LinkedEditingRanges>;
 }
 
 /**
@@ -1407,12 +1174,7 @@ export interface ReferenceProvider {
 	/**
 	 * Provide a set of project-wide references for the given position and document.
 	 */
-	provideReferences(
-		model: model.ITextModel,
-		position: Position,
-		context: ReferenceContext,
-		token: CancellationToken,
-	): ProviderResult<Location[]>;
+	provideReferences(model: model.ITextModel, position: Position, context: ReferenceContext, token: CancellationToken): ProviderResult<Location[]>;
 }
 
 /**
@@ -1457,25 +1219,21 @@ export interface LocationLink {
  * @internal
  */
 export function isLocationLink(thing: any): thing is LocationLink {
-	return (
-		thing &&
-		URI.isUri((thing as LocationLink).uri) &&
-		Range.isIRange((thing as LocationLink).range) &&
-		(Range.isIRange((thing as LocationLink).originSelectionRange) ||
-			Range.isIRange((thing as LocationLink).targetSelectionRange))
-	);
+	return thing
+		&& URI.isUri((thing as LocationLink).uri)
+		&& Range.isIRange((thing as LocationLink).range)
+		&& (Range.isIRange((thing as LocationLink).originSelectionRange) || Range.isIRange((thing as LocationLink).targetSelectionRange));
 }
 
 /**
  * @internal
  */
 export function isLocation(thing: any): thing is Location {
-	return (
-		thing &&
-		URI.isUri((thing as Location).uri) &&
-		Range.isIRange((thing as Location).range)
-	);
+	return thing
+		&& URI.isUri((thing as Location).uri)
+		&& Range.isIRange((thing as Location).range);
 }
+
 
 export type Definition = Location | Location[] | LocationLink[];
 
@@ -1488,11 +1246,7 @@ export interface DefinitionProvider {
 	/**
 	 * Provide the definition of the symbol at the given position and document.
 	 */
-	provideDefinition(
-		model: model.ITextModel,
-		position: Position,
-		token: CancellationToken,
-	): ProviderResult<Definition | LocationLink[]>;
+	provideDefinition(model: model.ITextModel, position: Position, token: CancellationToken): ProviderResult<Definition | LocationLink[]>;
 }
 
 /**
@@ -1504,11 +1258,7 @@ export interface DeclarationProvider {
 	/**
 	 * Provide the declaration of the symbol at the given position and document.
 	 */
-	provideDeclaration(
-		model: model.ITextModel,
-		position: Position,
-		token: CancellationToken,
-	): ProviderResult<Definition | LocationLink[]>;
+	provideDeclaration(model: model.ITextModel, position: Position, token: CancellationToken): ProviderResult<Definition | LocationLink[]>;
 }
 
 /**
@@ -1519,11 +1269,7 @@ export interface ImplementationProvider {
 	/**
 	 * Provide the implementation of the symbol at the given position and document.
 	 */
-	provideImplementation(
-		model: model.ITextModel,
-		position: Position,
-		token: CancellationToken,
-	): ProviderResult<Definition | LocationLink[]>;
+	provideImplementation(model: model.ITextModel, position: Position, token: CancellationToken): ProviderResult<Definition | LocationLink[]>;
 }
 
 /**
@@ -1534,11 +1280,7 @@ export interface TypeDefinitionProvider {
 	/**
 	 * Provide the type definition of the symbol at the given position and document.
 	 */
-	provideTypeDefinition(
-		model: model.ITextModel,
-		position: Position,
-		token: CancellationToken,
-	): ProviderResult<Definition | LocationLink[]>;
+	provideTypeDefinition(model: model.ITextModel, position: Position, token: CancellationToken): ProviderResult<Definition | LocationLink[]>;
 }
 
 /**
@@ -1570,54 +1312,46 @@ export const enum SymbolKind {
 	Struct = 22,
 	Event = 23,
 	Operator = 24,
-	TypeParameter = 25,
+	TypeParameter = 25
 }
 
 /**
  * @internal
  */
 export const symbolKindNames: { [symbol: number]: string } = {
-	[SymbolKind.Array]: localize("Array", "array"),
-	[SymbolKind.Boolean]: localize("Boolean", "boolean"),
-	[SymbolKind.Class]: localize("Class", "class"),
-	[SymbolKind.Constant]: localize("Constant", "constant"),
-	[SymbolKind.Constructor]: localize("Constructor", "constructor"),
-	[SymbolKind.Enum]: localize("Enum", "enumeration"),
-	[SymbolKind.EnumMember]: localize("EnumMember", "enumeration member"),
-	[SymbolKind.Event]: localize("Event", "event"),
-	[SymbolKind.Field]: localize("Field", "field"),
-	[SymbolKind.File]: localize("File", "file"),
-	[SymbolKind.Function]: localize("Function", "function"),
-	[SymbolKind.Interface]: localize("Interface", "interface"),
-	[SymbolKind.Key]: localize("Key", "key"),
-	[SymbolKind.Method]: localize("Method", "method"),
-	[SymbolKind.Module]: localize("Module", "module"),
-	[SymbolKind.Namespace]: localize("Namespace", "namespace"),
-	[SymbolKind.Null]: localize("Null", "null"),
-	[SymbolKind.Number]: localize("Number", "number"),
-	[SymbolKind.Object]: localize("Object", "object"),
-	[SymbolKind.Operator]: localize("Operator", "operator"),
-	[SymbolKind.Package]: localize("Package", "package"),
-	[SymbolKind.Property]: localize("Property", "property"),
-	[SymbolKind.String]: localize("String", "string"),
-	[SymbolKind.Struct]: localize("Struct", "struct"),
-	[SymbolKind.TypeParameter]: localize("TypeParameter", "type parameter"),
-	[SymbolKind.Variable]: localize("Variable", "variable"),
+	[SymbolKind.Array]: localize('Array', "array"),
+	[SymbolKind.Boolean]: localize('Boolean', "boolean"),
+	[SymbolKind.Class]: localize('Class', "class"),
+	[SymbolKind.Constant]: localize('Constant', "constant"),
+	[SymbolKind.Constructor]: localize('Constructor', "constructor"),
+	[SymbolKind.Enum]: localize('Enum', "enumeration"),
+	[SymbolKind.EnumMember]: localize('EnumMember', "enumeration member"),
+	[SymbolKind.Event]: localize('Event', "event"),
+	[SymbolKind.Field]: localize('Field', "field"),
+	[SymbolKind.File]: localize('File', "file"),
+	[SymbolKind.Function]: localize('Function', "function"),
+	[SymbolKind.Interface]: localize('Interface', "interface"),
+	[SymbolKind.Key]: localize('Key', "key"),
+	[SymbolKind.Method]: localize('Method', "method"),
+	[SymbolKind.Module]: localize('Module', "module"),
+	[SymbolKind.Namespace]: localize('Namespace', "namespace"),
+	[SymbolKind.Null]: localize('Null', "null"),
+	[SymbolKind.Number]: localize('Number', "number"),
+	[SymbolKind.Object]: localize('Object', "object"),
+	[SymbolKind.Operator]: localize('Operator', "operator"),
+	[SymbolKind.Package]: localize('Package', "package"),
+	[SymbolKind.Property]: localize('Property', "property"),
+	[SymbolKind.String]: localize('String', "string"),
+	[SymbolKind.Struct]: localize('Struct', "struct"),
+	[SymbolKind.TypeParameter]: localize('TypeParameter', "type parameter"),
+	[SymbolKind.Variable]: localize('Variable', "variable"),
 };
 
 /**
  * @internal
  */
-export function getAriaLabelForSymbol(
-	symbolName: string,
-	kind: SymbolKind,
-): string {
-	return localize(
-		"symbolAriaLabel",
-		"{0} ({1})",
-		symbolName,
-		symbolKindNames[kind],
-	);
+export function getAriaLabelForSymbol(symbolName: string, kind: SymbolKind): string {
+	return localize('symbolAriaLabel', '{0} ({1})', symbolName, symbolKindNames[kind]);
 }
 
 export const enum SymbolTag {
@@ -1628,71 +1362,43 @@ export const enum SymbolTag {
  * @internal
  */
 export namespace SymbolKinds {
+
 	const byKind = new Map<SymbolKind, ThemeIcon>();
-
 	byKind.set(SymbolKind.File, Codicon.symbolFile);
-
 	byKind.set(SymbolKind.Module, Codicon.symbolModule);
-
 	byKind.set(SymbolKind.Namespace, Codicon.symbolNamespace);
-
 	byKind.set(SymbolKind.Package, Codicon.symbolPackage);
-
 	byKind.set(SymbolKind.Class, Codicon.symbolClass);
-
 	byKind.set(SymbolKind.Method, Codicon.symbolMethod);
-
 	byKind.set(SymbolKind.Property, Codicon.symbolProperty);
-
 	byKind.set(SymbolKind.Field, Codicon.symbolField);
-
 	byKind.set(SymbolKind.Constructor, Codicon.symbolConstructor);
-
 	byKind.set(SymbolKind.Enum, Codicon.symbolEnum);
-
 	byKind.set(SymbolKind.Interface, Codicon.symbolInterface);
-
 	byKind.set(SymbolKind.Function, Codicon.symbolFunction);
-
 	byKind.set(SymbolKind.Variable, Codicon.symbolVariable);
-
 	byKind.set(SymbolKind.Constant, Codicon.symbolConstant);
-
 	byKind.set(SymbolKind.String, Codicon.symbolString);
-
 	byKind.set(SymbolKind.Number, Codicon.symbolNumber);
-
 	byKind.set(SymbolKind.Boolean, Codicon.symbolBoolean);
-
 	byKind.set(SymbolKind.Array, Codicon.symbolArray);
-
 	byKind.set(SymbolKind.Object, Codicon.symbolObject);
-
 	byKind.set(SymbolKind.Key, Codicon.symbolKey);
-
 	byKind.set(SymbolKind.Null, Codicon.symbolNull);
-
 	byKind.set(SymbolKind.EnumMember, Codicon.symbolEnumMember);
-
 	byKind.set(SymbolKind.Struct, Codicon.symbolStruct);
-
 	byKind.set(SymbolKind.Event, Codicon.symbolEvent);
-
 	byKind.set(SymbolKind.Operator, Codicon.symbolOperator);
-
 	byKind.set(SymbolKind.TypeParameter, Codicon.symbolTypeParameter);
 	/**
 	 * @internal
 	 */
 	export function toIcon(kind: SymbolKind): ThemeIcon {
 		let icon = byKind.get(kind);
-
 		if (!icon) {
-			console.info("No codicon found for SymbolKind " + kind);
-
+			console.info('No codicon found for SymbolKind ' + kind);
 			icon = Codicon.symbolProperty;
 		}
-
 		return icon;
 	}
 
@@ -1705,10 +1411,7 @@ export namespace SymbolKinds {
 	byCompletionKind.set(SymbolKind.Method, CompletionItemKind.Method);
 	byCompletionKind.set(SymbolKind.Property, CompletionItemKind.Property);
 	byCompletionKind.set(SymbolKind.Field, CompletionItemKind.Field);
-	byCompletionKind.set(
-		SymbolKind.Constructor,
-		CompletionItemKind.Constructor,
-	);
+	byCompletionKind.set(SymbolKind.Constructor, CompletionItemKind.Constructor);
 	byCompletionKind.set(SymbolKind.Enum, CompletionItemKind.Enum);
 	byCompletionKind.set(SymbolKind.Interface, CompletionItemKind.Interface);
 	byCompletionKind.set(SymbolKind.Function, CompletionItemKind.Function);
@@ -1725,17 +1428,14 @@ export namespace SymbolKinds {
 	byCompletionKind.set(SymbolKind.Struct, CompletionItemKind.Struct);
 	byCompletionKind.set(SymbolKind.Event, CompletionItemKind.Event);
 	byCompletionKind.set(SymbolKind.Operator, CompletionItemKind.Operator);
-	byCompletionKind.set(
-		SymbolKind.TypeParameter,
-		CompletionItemKind.TypeParameter,
-	);
+	byCompletionKind.set(SymbolKind.TypeParameter, CompletionItemKind.TypeParameter);
 	/**
 	 * @internal
 	 */
 	export function toCompletionKind(kind: SymbolKind): CompletionItemKind {
 		let completionKind = byCompletionKind.get(kind);
 		if (completionKind === undefined) {
-			console.info("No completion kind found for SymbolKind " + kind);
+			console.info('No completion kind found for SymbolKind ' + kind);
 			completionKind = CompletionItemKind.File;
 		}
 		return completionKind;
@@ -1744,19 +1444,12 @@ export namespace SymbolKinds {
 
 export interface DocumentSymbol {
 	name: string;
-
 	detail: string;
-
 	kind: SymbolKind;
-
 	tags: ReadonlyArray<SymbolTag>;
-
 	containerName?: string;
-
 	range: IRange;
-
 	selectionRange: IRange;
-
 	children?: DocumentSymbol[];
 }
 
@@ -1765,22 +1458,18 @@ export interface DocumentSymbol {
  * the [go to symbol](https://code.visualstudio.com/docs/editor/editingevolved#_go-to-symbol)-feature.
  */
 export interface DocumentSymbolProvider {
+
 	displayName?: string;
 
 	/**
 	 * Provide symbol information for the given document.
 	 */
-	provideDocumentSymbols(
-		model: model.ITextModel,
-		token: CancellationToken,
-	): ProviderResult<DocumentSymbol[]>;
+	provideDocumentSymbols(model: model.ITextModel, token: CancellationToken): ProviderResult<DocumentSymbol[]>;
 }
 
 export interface TextEdit {
 	range: IRange;
-
 	text: string;
-
 	eol?: model.EndOfLineSequence;
 }
 
@@ -1809,6 +1498,7 @@ export interface FormattingOptions {
  * the formatting-feature.
  */
 export interface DocumentFormattingEditProvider {
+
 	/**
 	 * @internal
 	 */
@@ -1819,11 +1509,7 @@ export interface DocumentFormattingEditProvider {
 	/**
 	 * Provide formatting edits for a whole document.
 	 */
-	provideDocumentFormattingEdits(
-		model: model.ITextModel,
-		options: FormattingOptions,
-		token: CancellationToken,
-	): ProviderResult<TextEdit[]>;
+	provideDocumentFormattingEdits(model: model.ITextModel, options: FormattingOptions, token: CancellationToken): ProviderResult<TextEdit[]>;
 }
 /**
  * The document formatting provider interface defines the contract between extensions and
@@ -1844,25 +1530,17 @@ export interface DocumentRangeFormattingEditProvider {
 	 * or larger range. Often this is done by adjusting the start and end
 	 * of the range to full syntax nodes.
 	 */
-	provideDocumentRangeFormattingEdits(
-		model: model.ITextModel,
-		range: Range,
-		options: FormattingOptions,
-		token: CancellationToken,
-	): ProviderResult<TextEdit[]>;
+	provideDocumentRangeFormattingEdits(model: model.ITextModel, range: Range, options: FormattingOptions, token: CancellationToken): ProviderResult<TextEdit[]>;
 
-	provideDocumentRangesFormattingEdits?(
-		model: model.ITextModel,
-		ranges: Range[],
-		options: FormattingOptions,
-		token: CancellationToken,
-	): ProviderResult<TextEdit[]>;
+	provideDocumentRangesFormattingEdits?(model: model.ITextModel, ranges: Range[], options: FormattingOptions, token: CancellationToken): ProviderResult<TextEdit[]>;
 }
 /**
  * The document formatting provider interface defines the contract between extensions and
  * the formatting-feature.
  */
 export interface OnTypeFormattingEditProvider {
+
+
 	/**
 	 * @internal
 	 */
@@ -1877,13 +1555,7 @@ export interface OnTypeFormattingEditProvider {
 	 * what range the position to expand to, like find the matching `{`
 	 * when `}` has been entered.
 	 */
-	provideOnTypeFormattingEdits(
-		model: model.ITextModel,
-		position: Position,
-		ch: string,
-		options: FormattingOptions,
-		token: CancellationToken,
-	): ProviderResult<TextEdit[]>;
+	provideOnTypeFormattingEdits(model: model.ITextModel, position: Position, ch: string, options: FormattingOptions, token: CancellationToken): ProviderResult<TextEdit[]>;
 }
 
 /**
@@ -1891,7 +1563,6 @@ export interface OnTypeFormattingEditProvider {
  */
 export interface IInplaceReplaceSupportResult {
 	value: string;
-
 	range: IRange;
 }
 
@@ -1900,36 +1571,27 @@ export interface IInplaceReplaceSupportResult {
  */
 export interface ILink {
 	range: IRange;
-
 	url?: URI | string;
-
 	tooltip?: string;
 }
 
 export interface ILinksList {
 	links: ILink[];
-
 	dispose?(): void;
 }
 /**
  * A provider of links.
  */
 export interface LinkProvider {
-	provideLinks(
-		model: model.ITextModel,
-		token: CancellationToken,
-	): ProviderResult<ILinksList>;
-
-	resolveLink?: (
-		link: ILink,
-		token: CancellationToken,
-	) => ProviderResult<ILink>;
+	provideLinks(model: model.ITextModel, token: CancellationToken): ProviderResult<ILinksList>;
+	resolveLink?: (link: ILink, token: CancellationToken) => ProviderResult<ILink>;
 }
 
 /**
  * A color in RGBA format.
  */
 export interface IColor {
+
 	/**
 	 * The red component in the range [0-1].
 	 */
@@ -1977,6 +1639,7 @@ export interface IColorPresentation {
  * A color range is a range in a text model which represents a color.
  */
 export interface IColorInformation {
+
 	/**
 	 * The range within the model.
 	 */
@@ -1995,18 +1658,11 @@ export interface DocumentColorProvider {
 	/**
 	 * Provides the color ranges for a specific model.
 	 */
-	provideDocumentColors(
-		model: model.ITextModel,
-		token: CancellationToken,
-	): ProviderResult<IColorInformation[]>;
+	provideDocumentColors(model: model.ITextModel, token: CancellationToken): ProviderResult<IColorInformation[]>;
 	/**
 	 * Provide the string representations for a color.
 	 */
-	provideColorPresentations(
-		model: model.ITextModel,
-		colorInfo: IColorInformation,
-		token: CancellationToken,
-	): ProviderResult<IColorPresentation[]>;
+	provideColorPresentations(model: model.ITextModel, colorInfo: IColorInformation, token: CancellationToken): ProviderResult<IColorPresentation[]>;
 }
 
 export interface SelectionRange {
@@ -2017,18 +1673,16 @@ export interface SelectionRangeProvider {
 	/**
 	 * Provide ranges that should be selected from the given position.
 	 */
-	provideSelectionRanges(
-		model: model.ITextModel,
-		positions: Position[],
-		token: CancellationToken,
-	): ProviderResult<SelectionRange[][]>;
+	provideSelectionRanges(model: model.ITextModel, positions: Position[], token: CancellationToken): ProviderResult<SelectionRange[][]>;
 }
 
-export interface FoldingContext {}
+export interface FoldingContext {
+}
 /**
  * A provider of folding ranges for editor models.
  */
 export interface FoldingRangeProvider {
+
 	/**
 	 * @internal
 	 */
@@ -2042,14 +1696,11 @@ export interface FoldingRangeProvider {
 	/**
 	 * Provides the folding ranges for a specific model.
 	 */
-	provideFoldingRanges(
-		model: model.ITextModel,
-		context: FoldingContext,
-		token: CancellationToken,
-	): ProviderResult<FoldingRange[]>;
+	provideFoldingRanges(model: model.ITextModel, context: FoldingContext, token: CancellationToken): ProviderResult<FoldingRange[]>;
 }
 
 export interface FoldingRange {
+
 	/**
 	 * The one-based start line of the range to fold. The folded area starts after the line's last character.
 	 */
@@ -2072,16 +1723,16 @@ export class FoldingRangeKind {
 	/**
 	 * Kind for folding range representing a comment. The value of the kind is 'comment'.
 	 */
-	static readonly Comment = new FoldingRangeKind("comment");
+	static readonly Comment = new FoldingRangeKind('comment');
 	/**
 	 * Kind for folding range representing a import. The value of the kind is 'imports'.
 	 */
-	static readonly Imports = new FoldingRangeKind("imports");
+	static readonly Imports = new FoldingRangeKind('imports');
 	/**
 	 * Kind for folding range representing regions (for example marked by `#region`, `#endregion`).
 	 * The value of the kind is 'region'.
 	 */
-	static readonly Region = new FoldingRangeKind("region");
+	static readonly Region = new FoldingRangeKind('region');
 
 	/**
 	 * Returns a {@link FoldingRangeKind} for the given value.
@@ -2090,16 +1741,10 @@ export class FoldingRangeKind {
 	 */
 	static fromValue(value: string) {
 		switch (value) {
-			case "comment":
-				return FoldingRangeKind.Comment;
-
-			case "imports":
-				return FoldingRangeKind.Imports;
-
-			case "region":
-				return FoldingRangeKind.Region;
+			case 'comment': return FoldingRangeKind.Comment;
+			case 'imports': return FoldingRangeKind.Imports;
+			case 'region': return FoldingRangeKind.Region;
 		}
-
 		return new FoldingRangeKind(value);
 	}
 
@@ -2108,14 +1753,14 @@ export class FoldingRangeKind {
 	 *
 	 * @param value of the kind.
 	 */
-	public constructor(public value: string) {}
+	public constructor(public value: string) {
+	}
 }
+
 
 export interface WorkspaceEditMetadata {
 	needsConfirmation: boolean;
-
 	label: string;
-
 	description?: string;
 	/**
 	 * @internal
@@ -2125,19 +1770,12 @@ export interface WorkspaceEditMetadata {
 
 export interface WorkspaceFileEditOptions {
 	overwrite?: boolean;
-
 	ignoreIfNotExists?: boolean;
-
 	ignoreIfExists?: boolean;
-
 	recursive?: boolean;
-
 	copy?: boolean;
-
 	folder?: boolean;
-
 	skipTrashBin?: boolean;
-
 	maxSize?: number;
 
 	/**
@@ -2148,21 +1786,15 @@ export interface WorkspaceFileEditOptions {
 
 export interface IWorkspaceFileEdit {
 	oldResource?: URI;
-
 	newResource?: URI;
-
 	options?: WorkspaceFileEditOptions;
-
 	metadata?: WorkspaceEditMetadata;
 }
 
 export interface IWorkspaceTextEdit {
 	resource: URI;
-
 	textEdit: TextEdit & { insertAsSnippet?: boolean };
-
 	versionId: number | undefined;
-
 	metadata?: WorkspaceEditMetadata;
 }
 
@@ -2172,11 +1804,8 @@ export interface WorkspaceEdit {
 
 export interface ICustomEdit {
 	readonly resource: URI;
-
 	readonly metadata?: WorkspaceEditMetadata;
-
 	undo(): Promise<void> | void;
-
 	redo(): Promise<void> | void;
 }
 
@@ -2185,27 +1814,16 @@ export interface Rejection {
 }
 export interface RenameLocation {
 	range: IRange;
-
 	text: string;
 }
 
 export interface RenameProvider {
-	provideRenameEdits(
-		model: model.ITextModel,
-		position: Position,
-		newName: string,
-		token: CancellationToken,
-	): ProviderResult<WorkspaceEdit & Rejection>;
-
-	resolveRenameLocation?(
-		model: model.ITextModel,
-		position: Position,
-		token: CancellationToken,
-	): ProviderResult<RenameLocation & Rejection>;
+	provideRenameEdits(model: model.ITextModel, position: Position, newName: string, token: CancellationToken): ProviderResult<WorkspaceEdit & Rejection>;
+	resolveRenameLocation?(model: model.ITextModel, position: Position, token: CancellationToken): ProviderResult<RenameLocation & Rejection>;
 }
 
 export enum NewSymbolNameTag {
-	AIGenerated = 1,
+	AIGenerated = 1
 }
 
 export enum NewSymbolNameTriggerKind {
@@ -2215,28 +1833,18 @@ export enum NewSymbolNameTriggerKind {
 
 export interface NewSymbolName {
 	readonly newSymbolName: string;
-
 	readonly tags?: readonly NewSymbolNameTag[];
 }
 
 export interface NewSymbolNamesProvider {
 	supportsAutomaticNewSymbolNamesTriggerKind?: Promise<boolean | undefined>;
-
-	provideNewSymbolNames(
-		model: model.ITextModel,
-		range: IRange,
-		triggerKind: NewSymbolNameTriggerKind,
-		token: CancellationToken,
-	): ProviderResult<NewSymbolName[]>;
+	provideNewSymbolNames(model: model.ITextModel, range: IRange, triggerKind: NewSymbolNameTriggerKind, token: CancellationToken): ProviderResult<NewSymbolName[]>;
 }
 
 export interface Command {
 	id: string;
-
 	title: string;
-
 	tooltip?: string;
-
 	arguments?: any[];
 }
 
@@ -2244,18 +1852,16 @@ export interface Command {
  * @internal
  */
 export namespace Command {
+
 	/**
 	 * @internal
 	 */
 	export function is(obj: any): obj is Command {
-		if (!obj || typeof obj !== "object") {
+		if (!obj || typeof obj !== 'object') {
 			return false;
 		}
-
-		return (
-			typeof (<Command>obj).id === "string" &&
-			typeof (<Command>obj).title === "string"
-		);
+		return typeof (<Command>obj).id === 'string' &&
+			typeof (<Command>obj).title === 'string';
 	}
 }
 
@@ -2264,13 +1870,9 @@ export namespace Command {
  */
 export interface CommentThreadTemplate {
 	controllerHandle: number;
-
 	label: string;
-
 	acceptInputCommand?: Command;
-
 	additionalCommands?: Command[];
-
 	deleteCommand?: Command;
 }
 
@@ -2279,13 +1881,11 @@ export interface CommentThreadTemplate {
  */
 export interface CommentInfo<T = IRange> {
 	extensionId?: string;
-
 	threads: CommentThread<T>[];
-
 	pendingCommentThreads?: PendingCommentThread[];
-
 	commentingRanges: CommentingRanges;
 }
+
 
 /**
  * @internal
@@ -2305,7 +1905,7 @@ export enum CommentThreadCollapsibleState {
 	/**
 	 * Determines an item is expanded
 	 */
-	Expanded = 1,
+	Expanded = 1
 }
 
 /**
@@ -2313,7 +1913,7 @@ export enum CommentThreadCollapsibleState {
  */
 export enum CommentThreadState {
 	Unresolved = 0,
-	Resolved = 1,
+	Resolved = 1
 }
 
 /**
@@ -2321,7 +1921,7 @@ export enum CommentThreadState {
  */
 export enum CommentThreadApplicability {
 	Current = 0,
-	Outdated = 1,
+	Outdated = 1
 }
 
 /**
@@ -2329,11 +1929,8 @@ export enum CommentThreadApplicability {
  */
 export interface CommentWidget {
 	commentThread: CommentThread;
-
 	comment?: Comment;
-
 	input: string;
-
 	onDidChangeInput: Event<string>;
 }
 
@@ -2342,13 +1939,11 @@ export interface CommentWidget {
  */
 export interface CommentInput {
 	value: string;
-
 	uri: URI;
 }
 
 export interface CommentThreadRevealOptions {
 	preserveFocus: boolean;
-
 	focusReply: boolean;
 }
 
@@ -2357,57 +1952,29 @@ export interface CommentThreadRevealOptions {
  */
 export interface CommentThread<T = IRange> {
 	isDocumentCommentThread(): this is CommentThread<IRange>;
-
 	commentThreadHandle: number;
-
 	controllerHandle: number;
-
 	extensionId?: string;
-
 	threadId: string;
-
 	resource: string | null;
-
 	range: T | undefined;
-
 	label: string | undefined;
-
 	contextValue: string | undefined;
-
 	comments: ReadonlyArray<Comment> | undefined;
-
 	onDidChangeComments: Event<readonly Comment[] | undefined>;
-
 	collapsibleState?: CommentThreadCollapsibleState;
-
 	initialCollapsibleState?: CommentThreadCollapsibleState;
-
-	onDidChangeInitialCollapsibleState: Event<
-		CommentThreadCollapsibleState | undefined
-	>;
-
+	onDidChangeInitialCollapsibleState: Event<CommentThreadCollapsibleState | undefined>;
 	state?: CommentThreadState;
-
 	applicability?: CommentThreadApplicability;
-
 	canReply: boolean;
-
 	input?: CommentInput;
-
 	onDidChangeInput: Event<CommentInput | undefined>;
-
 	onDidChangeLabel: Event<string | undefined>;
-
-	onDidChangeCollapsibleState: Event<
-		CommentThreadCollapsibleState | undefined
-	>;
-
+	onDidChangeCollapsibleState: Event<CommentThreadCollapsibleState | undefined>;
 	onDidChangeState: Event<CommentThreadState | undefined>;
-
 	onDidChangeCanReply: Event<boolean>;
-
 	isDisposed: boolean;
-
 	isTemplate: boolean;
 }
 
@@ -2424,16 +1991,14 @@ export interface AddedCommentThread<T = IRange> extends CommentThread<T> {
 
 export interface CommentingRanges {
 	readonly resource: URI;
-
 	ranges: IRange[];
-
 	fileComments: boolean;
 }
 
 export interface CommentAuthorInformation {
 	name: string;
-
 	iconPath?: UriComponents;
+
 }
 
 /**
@@ -2441,15 +2006,10 @@ export interface CommentAuthorInformation {
  */
 export interface CommentReaction {
 	readonly label?: string;
-
 	readonly iconPath?: UriComponents;
-
 	readonly count?: number;
-
 	readonly hasReacted?: boolean;
-
 	readonly canEdit?: boolean;
-
 	readonly reactors?: readonly string[];
 }
 
@@ -2473,7 +2033,7 @@ export interface CommentOptions {
  */
 export enum CommentMode {
 	Editing = 0,
-	Preview = 1,
+	Preview = 1
 }
 
 /**
@@ -2481,7 +2041,7 @@ export enum CommentMode {
  */
 export enum CommentState {
 	Published = 0,
-	Draft = 1,
+	Draft = 1
 }
 
 /**
@@ -2489,39 +2049,26 @@ export enum CommentState {
  */
 export interface Comment {
 	readonly uniqueIdInThread: number;
-
 	readonly body: string | IMarkdownString;
-
 	readonly userName: string;
-
 	readonly userIconPath?: UriComponents;
-
 	readonly contextValue?: string;
-
 	readonly commentReactions?: CommentReaction[];
-
 	readonly label?: string;
-
 	readonly mode?: CommentMode;
-
 	readonly timestamp?: string;
 }
 
 export interface PendingCommentThread {
 	range: IRange | undefined;
-
 	uri: URI;
-
 	uniqueOwner: string;
-
 	isReply: boolean;
-
 	comment: PendingComment;
 }
 
 export interface PendingComment {
 	body: string;
-
 	cursor: IPosition;
 }
 
@@ -2552,32 +2099,21 @@ export interface CommentThreadChangedEvent<T> {
 
 export interface CodeLens {
 	range: IRange;
-
 	id?: string;
-
 	command?: Command;
 }
 
 export interface CodeLensList {
 	lenses: CodeLens[];
-
 	dispose(): void;
 }
 
 export interface CodeLensProvider {
 	onDidChange?: Event<this>;
-
-	provideCodeLenses(
-		model: model.ITextModel,
-		token: CancellationToken,
-	): ProviderResult<CodeLensList>;
-
-	resolveCodeLens?(
-		model: model.ITextModel,
-		codeLens: CodeLens,
-		token: CancellationToken,
-	): ProviderResult<CodeLens>;
+	provideCodeLenses(model: model.ITextModel, token: CancellationToken): ProviderResult<CodeLensList>;
+	resolveCodeLens?(model: model.ITextModel, codeLens: CodeLens, token: CancellationToken): ProviderResult<CodeLens>;
 }
+
 
 export enum InlayHintKind {
 	Type = 1,
@@ -2586,102 +2122,65 @@ export enum InlayHintKind {
 
 export interface InlayHintLabelPart {
 	label: string;
-
 	tooltip?: string | IMarkdownString;
 	// collapsible?: boolean;
-
 	command?: Command;
-
 	location?: Location;
 }
 
 export interface InlayHint {
 	label: string | InlayHintLabelPart[];
-
 	tooltip?: string | IMarkdownString;
-
 	textEdits?: TextEdit[];
-
 	position: IPosition;
-
 	kind?: InlayHintKind;
-
 	paddingLeft?: boolean;
-
 	paddingRight?: boolean;
 }
 
 export interface InlayHintList {
 	hints: InlayHint[];
-
 	dispose(): void;
 }
 
 export interface InlayHintsProvider {
 	displayName?: string;
-
 	onDidChangeInlayHints?: Event<void>;
-
-	provideInlayHints(
-		model: model.ITextModel,
-		range: Range,
-		token: CancellationToken,
-	): ProviderResult<InlayHintList>;
-
-	resolveInlayHint?(
-		hint: InlayHint,
-		token: CancellationToken,
-	): ProviderResult<InlayHint>;
+	provideInlayHints(model: model.ITextModel, range: Range, token: CancellationToken): ProviderResult<InlayHintList>;
+	resolveInlayHint?(hint: InlayHint, token: CancellationToken): ProviderResult<InlayHint>;
 }
 
 export interface SemanticTokensLegend {
 	readonly tokenTypes: string[];
-
 	readonly tokenModifiers: string[];
 }
 
 export interface SemanticTokens {
 	readonly resultId?: string;
-
 	readonly data: Uint32Array;
 }
 
 export interface SemanticTokensEdit {
 	readonly start: number;
-
 	readonly deleteCount: number;
-
 	readonly data?: Uint32Array;
 }
 
 export interface SemanticTokensEdits {
 	readonly resultId?: string;
-
 	readonly edits: SemanticTokensEdit[];
 }
 
 export interface DocumentSemanticTokensProvider {
 	onDidChange?: Event<void>;
-
 	getLegend(): SemanticTokensLegend;
-
-	provideDocumentSemanticTokens(
-		model: model.ITextModel,
-		lastResultId: string | null,
-		token: CancellationToken,
-	): ProviderResult<SemanticTokens | SemanticTokensEdits>;
-
+	provideDocumentSemanticTokens(model: model.ITextModel, lastResultId: string | null, token: CancellationToken): ProviderResult<SemanticTokens | SemanticTokensEdits>;
 	releaseDocumentSemanticTokens(resultId: string | undefined): void;
 }
 
 export interface DocumentRangeSemanticTokensProvider {
 	getLegend(): SemanticTokensLegend;
-
-	provideDocumentRangeSemanticTokens(
-		model: model.ITextModel,
-		range: Range,
-		token: CancellationToken,
-	): ProviderResult<SemanticTokens>;
+	provideDocumentRangeSemanticTokens(model: model.ITextModel, range: Range, token: CancellationToken): ProviderResult<SemanticTokens>;
 }
 
 /**
@@ -2689,7 +2188,6 @@ export interface DocumentRangeSemanticTokensProvider {
  */
 export interface ITokenizationSupportChangedEvent {
 	changedLanguages: string[];
-
 	changedColorMap: boolean;
 }
 
@@ -2703,18 +2201,11 @@ export interface ILazyTokenizationSupport<TSupport> {
 /**
  * @internal
  */
-export class LazyTokenizationSupport<TSupport = ITokenizationSupport>
-	implements IDisposable, ILazyTokenizationSupport<TSupport>
-{
-	private _tokenizationSupport: Promise<
-		(TSupport & IDisposable) | null
-	> | null = null;
+export class LazyTokenizationSupport<TSupport = ITokenizationSupport> implements IDisposable, ILazyTokenizationSupport<TSupport> {
+	private _tokenizationSupport: Promise<TSupport & IDisposable | null> | null = null;
 
-	constructor(
-		private readonly createSupport: () => Promise<
-			(TSupport & IDisposable) | null
-		>,
-	) {}
+	constructor(private readonly createSupport: () => Promise<TSupport & IDisposable | null>) {
+	}
 
 	dispose(): void {
 		if (this._tokenizationSupport) {
@@ -2730,7 +2221,6 @@ export class LazyTokenizationSupport<TSupport = ITokenizationSupport>
 		if (!this._tokenizationSupport) {
 			this._tokenizationSupport = this.createSupport();
 		}
-
 		return this._tokenizationSupport;
 	}
 }
@@ -2739,6 +2229,7 @@ export class LazyTokenizationSupport<TSupport = ITokenizationSupport>
  * @internal
  */
 export interface ITokenizationRegistry<TSupport> {
+
 	/**
 	 * An event triggered when:
 	 *  - a tokenization support is registered, unregistered or changed.
@@ -2760,10 +2251,7 @@ export interface ITokenizationRegistry<TSupport> {
 	/**
 	 * Register a tokenization support factory.
 	 */
-	registerFactory(
-		languageId: string,
-		factory: ILazyTokenizationSupport<TSupport>,
-	): IDisposable;
+	registerFactory(languageId: string, factory: ILazyTokenizationSupport<TSupport>): IDisposable;
 
 	/**
 	 * Get or create the tokenization support for a language.
@@ -2795,14 +2283,12 @@ export interface ITokenizationRegistry<TSupport> {
 /**
  * @internal
  */
-export const TokenizationRegistry: ITokenizationRegistry<ITokenizationSupport> =
-	new TokenizationRegistryImpl();
+export const TokenizationRegistry: ITokenizationRegistry<ITokenizationSupport> = new TokenizationRegistryImpl();
 
 /**
  * @internal
  */
-export const TreeSitterTokenizationRegistry: ITokenizationRegistry<ITreeSitterTokenizationSupport> =
-	new TokenizationRegistryImpl();
+export const TreeSitterTokenizationRegistry: ITokenizationRegistry<ITreeSitterTokenizationSupport> = new TokenizationRegistryImpl();
 
 /**
  * @internal
@@ -2817,24 +2303,17 @@ export enum ExternalUriOpenerPriority {
 /**
  * @internal
  */
-export type DropYieldTo =
-	| { readonly kind: HierarchicalKind }
-	| { readonly mimeType: string };
+export type DropYieldTo = { readonly kind: HierarchicalKind } | { readonly mimeType: string };
 
 /**
  * @internal
  */
 export interface DocumentDropEdit {
 	readonly title: string;
-
 	readonly kind: HierarchicalKind | undefined;
-
 	readonly handledMimeType?: string;
-
 	readonly yieldTo?: readonly DropYieldTo[];
-
 	insertText: string | { readonly snippet: string };
-
 	additionalEdit?: WorkspaceEdit;
 }
 
@@ -2843,7 +2322,6 @@ export interface DocumentDropEdit {
  */
 export interface DocumentDropEditsSession {
 	edits: readonly DocumentDropEdit[];
-
 	dispose(): void;
 }
 
@@ -2852,29 +2330,16 @@ export interface DocumentDropEditsSession {
  */
 export interface DocumentDropEditProvider {
 	readonly id?: string;
-
 	readonly dropMimeTypes?: readonly string[];
-
 	readonly providedDropEditKinds?: readonly HierarchicalKind[];
 
-	provideDocumentDropEdits(
-		model: model.ITextModel,
-		position: IPosition,
-		dataTransfer: IReadonlyVSDataTransfer,
-		token: CancellationToken,
-	): ProviderResult<DocumentDropEditsSession>;
-
-	resolveDocumentDropEdit?(
-		edit: DocumentDropEdit,
-		token: CancellationToken,
-	): Promise<DocumentDropEdit>;
+	provideDocumentDropEdits(model: model.ITextModel, position: IPosition, dataTransfer: IReadonlyVSDataTransfer, token: CancellationToken): ProviderResult<DocumentDropEditsSession>;
+	resolveDocumentDropEdit?(edit: DocumentDropEdit, token: CancellationToken): Promise<DocumentDropEdit>;
 }
 
 export interface DocumentContextItem {
 	readonly uri: URI;
-
 	readonly version: number;
-
 	readonly ranges: IRange[];
 }
 
@@ -2891,8 +2356,7 @@ export interface MappedEditsContext {
  * @internal
  */
 export interface ConversationRequest {
-	readonly type: "request";
-
+	readonly type: 'request';
 	readonly message: string;
 }
 
@@ -2900,10 +2364,8 @@ export interface ConversationRequest {
  * @internal
  */
 export interface ConversationResponse {
-	readonly type: "response";
-
+	readonly type: 'response';
 	readonly message: string;
-
 	readonly references?: DocumentContextItem[];
 }
 
@@ -2927,21 +2389,16 @@ export interface MappedEditsProvider {
 		document: model.ITextModel,
 		codeBlocks: string[],
 		context: MappedEditsContext,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<WorkspaceEdit | null>;
 }
 
 export interface IInlineEdit {
 	text: string;
-
 	range: IRange;
-
 	accepted?: Command;
-
 	rejected?: Command;
-
 	shown?: Command;
-
 	commands?: Command[];
 }
 
@@ -2955,11 +2412,6 @@ export enum InlineEditTriggerKind {
 }
 
 export interface InlineEditProvider<T extends IInlineEdit = IInlineEdit> {
-	provideInlineEdit(
-		model: model.ITextModel,
-		context: IInlineEditContext,
-		token: CancellationToken,
-	): ProviderResult<T>;
-
+	provideInlineEdit(model: model.ITextModel, context: IInlineEditContext, token: CancellationToken): ProviderResult<T>;
 	freeInlineEdit(edit: T): void;
 }

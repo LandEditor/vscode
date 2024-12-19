@@ -2,51 +2,15 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { createDecorator } from "../../../platform/instantiation/common/instantiation.js";
-import {
-	LanguageFeatureRegistry,
-	NotebookInfoResolver,
-} from "../languageFeatureRegistry.js";
-import {
-	CodeActionProvider,
-	CodeLensProvider,
-	CompletionItemProvider,
-	DeclarationProvider,
-	DefinitionProvider,
-	DocumentColorProvider,
-	DocumentDropEditProvider,
-	DocumentFormattingEditProvider,
-	DocumentHighlightProvider,
-	DocumentPasteEditProvider,
-	DocumentRangeFormattingEditProvider,
-	DocumentRangeSemanticTokensProvider,
-	DocumentSemanticTokensProvider,
-	DocumentSymbolProvider,
-	EvaluatableExpressionProvider,
-	FoldingRangeProvider,
-	HoverProvider,
-	ImplementationProvider,
-	InlayHintsProvider,
-	InlineCompletionsProvider,
-	InlineEditProvider,
-	InlineValuesProvider,
-	LinkedEditingRangeProvider,
-	LinkProvider,
-	MappedEditsProvider,
-	MultiDocumentHighlightProvider,
-	NewSymbolNamesProvider,
-	OnTypeFormattingEditProvider,
-	ReferenceProvider,
-	RenameProvider,
-	SelectionRangeProvider,
-	SignatureHelpProvider,
-	TypeDefinitionProvider,
-} from "../languages.js";
 
-export const ILanguageFeaturesService =
-	createDecorator<ILanguageFeaturesService>("ILanguageFeaturesService");
+import { LanguageFeatureRegistry, NotebookInfoResolver } from '../languageFeatureRegistry.js';
+import { CodeActionProvider, CodeLensProvider, CompletionItemProvider, DeclarationProvider, DefinitionProvider, DocumentColorProvider, DocumentFormattingEditProvider, DocumentHighlightProvider, DocumentDropEditProvider, DocumentPasteEditProvider, DocumentRangeFormattingEditProvider, DocumentRangeSemanticTokensProvider, DocumentSemanticTokensProvider, DocumentSymbolProvider, EvaluatableExpressionProvider, FoldingRangeProvider, HoverProvider, ImplementationProvider, InlayHintsProvider, InlineCompletionsProvider, InlineValuesProvider, LinkedEditingRangeProvider, LinkProvider, MappedEditsProvider, MultiDocumentHighlightProvider, NewSymbolNamesProvider, OnTypeFormattingEditProvider, ReferenceProvider, RenameProvider, SelectionRangeProvider, SignatureHelpProvider, TypeDefinitionProvider, InlineEditProvider } from '../languages.js';
+import { createDecorator } from '../../../platform/instantiation/common/instantiation.js';
+
+export const ILanguageFeaturesService = createDecorator<ILanguageFeaturesService>('ILanguageFeaturesService');
 
 export interface ILanguageFeaturesService {
+
 	readonly _serviceBrand: undefined;
 
 	readonly referenceProvider: LanguageFeatureRegistry<ReferenceProvider>;
@@ -114,6 +78,8 @@ export interface ILanguageFeaturesService {
 	readonly documentDropEditProvider: LanguageFeatureRegistry<DocumentDropEditProvider>;
 
 	readonly mappedEditsProvider: LanguageFeatureRegistry<MappedEditsProvider>;
+
 	// --
+
 	setNotebookTypeResolver(resolver: NotebookInfoResolver | undefined): void;
 }

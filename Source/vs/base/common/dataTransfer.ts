@@ -2,62 +2,55 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { distinct } from "./arrays.js";
-import { Iterable } from "./iterator.js";
-import { URI } from "./uri.js";
-import { generateUuid } from "./uuid.js";
+
+import { distinct } from './arrays.js';
+import { Iterable } from './iterator.js';
+import { URI } from './uri.js';
+import { generateUuid } from './uuid.js';
 
 export interface IDataTransferFile {
 	readonly id: string;
-
 	readonly name: string;
-
 	readonly uri?: URI;
-
 	data(): Promise<Uint8Array>;
 }
+
 export interface IDataTransferItem {
 	asString(): Thenable<string>;
-
 	asFile(): IDataTransferFile | undefined;
-
 	value: any;
 }
-export function createStringDataTransferItem(
-	stringOrPromise: string | Promise<string>,
-): IDataTransferItem {
+
+export function createStringDataTransferItem(stringOrPromise: string | Promise<string>): IDataTransferItem {
 	return {
 		asString: async () => stringOrPromise,
 		asFile: () => undefined,
-		value:
-			typeof stringOrPromise === "string" ? stringOrPromise : undefined,
+		value: typeof stringOrPromise === 'string' ? stringOrPromise : undefined,
 	};
 }
-export function createFileDataTransferItem(
-	fileName: string,
-	uri: URI | undefined,
-	data: () => Promise<Uint8Array>,
-): IDataTransferItem {
-	const file = { id: generateUuid(), name: fileName, uri, data };
 
+export function createFileDataTransferItem(fileName: string, uri: URI | undefined, data: () => Promise<Uint8Array>): IDataTransferItem {
+	const file = { id: generateUuid(), name: fileName, uri, data };
 	return {
-		asString: async () => "",
+		asString: async () => '',
 		asFile: () => file,
 		value: undefined,
 	};
 }
-export interface IReadonlyVSDataTransfer
-	extends Iterable<readonly [string, IDataTransferItem]> {
+
+export interface IReadonlyVSDataTransfer extends Iterable<readonly [string, IDataTransferItem]> {
 	/**
 	 * Get the total number of entries in this data transfer.
 	 */
 	get size(): number;
+
 	/**
 	 * Check if this data transfer contains data for `mimeType`.
 	 *
 	 * This uses exact matching and does not support wildcards.
 	 */
 	has(mimeType: string): boolean;
+
 	/**
 	 * Check if this data transfer contains data matching `pattern`.
 	 *
@@ -66,6 +59,7 @@ export interface IReadonlyVSDataTransfer
 	 * Use the special `files` mime type to match any file in the data transfer.
 	 */
 	matches(pattern: string): boolean;
+
 	/**
 	 * Retrieve the first entry for `mimeType`.
 	 *
@@ -73,16 +67,16 @@ export interface IReadonlyVSDataTransfer
 	 */
 	get(mimeType: string): IDataTransferItem | undefined;
 }
+
 export class VSDataTransfer implements IReadonlyVSDataTransfer {
+
 	private readonly _entries = new Map<string, IDataTransferItem[]>();
 
 	public get size(): number {
 		let size = 0;
-
 		for (const _ of this._entries) {
 			size++;
 		}
-
 		return size;
 	}
 
@@ -92,9 +86,8 @@ export class VSDataTransfer implements IReadonlyVSDataTransfer {
 
 	public matches(pattern: string): boolean {
 		const mimes = [...this._entries.keys()];
-
 		if (Iterable.some(this, ([_, item]) => item.asFile())) {
-			mimes.push("files");
+			mimes.push('files');
 		}
 
 		return matchesMimeType_normalized(normalizeMimeType(pattern), mimes);
@@ -103,6 +96,7 @@ export class VSDataTransfer implements IReadonlyVSDataTransfer {
 	public get(mimeType: string): IDataTransferItem | undefined {
 		return this._entries.get(this.toKey(mimeType))?.[0];
 	}
+
 	/**
 	 * Add a new entry to this data transfer.
 	 *
@@ -110,13 +104,13 @@ export class VSDataTransfer implements IReadonlyVSDataTransfer {
 	 */
 	public append(mimeType: string, value: IDataTransferItem): void {
 		const existing = this._entries.get(mimeType);
-
 		if (existing) {
 			existing.push(value);
 		} else {
 			this._entries.set(this.toKey(mimeType), [value]);
 		}
 	}
+
 	/**
 	 * Set the entry for a given mime type.
 	 *
@@ -125,20 +119,20 @@ export class VSDataTransfer implements IReadonlyVSDataTransfer {
 	public replace(mimeType: string, value: IDataTransferItem): void {
 		this._entries.set(this.toKey(mimeType), [value]);
 	}
+
 	/**
 	 * Remove all entries for `mimeType`.
 	 */
 	public delete(mimeType: string) {
 		this._entries.delete(this.toKey(mimeType));
 	}
+
 	/**
 	 * Iterate over all `[mime, item]` pairs in this data transfer.
 	 *
 	 * There may be multiple entries for each mime type.
 	 */
-	public *[Symbol.iterator](): IterableIterator<
-		readonly [string, IDataTransferItem]
-	> {
+	public *[Symbol.iterator](): IterableIterator<readonly [string, IDataTransferItem]> {
 		for (const [mine, items] of this._entries) {
 			for (const item of items) {
 				yield [mine, item];
@@ -150,54 +144,52 @@ export class VSDataTransfer implements IReadonlyVSDataTransfer {
 		return normalizeMimeType(mimeType);
 	}
 }
+
 function normalizeMimeType(mimeType: string): string {
 	return mimeType.toLowerCase();
 }
-export function matchesMimeType(
-	pattern: string,
-	mimeTypes: readonly string[],
-): boolean {
+
+export function matchesMimeType(pattern: string, mimeTypes: readonly string[]): boolean {
 	return matchesMimeType_normalized(
 		normalizeMimeType(pattern),
-		mimeTypes.map(normalizeMimeType),
-	);
+		mimeTypes.map(normalizeMimeType));
 }
-function matchesMimeType_normalized(
-	normalizedPattern: string,
-	normalizedMimeTypes: readonly string[],
-): boolean {
+
+function matchesMimeType_normalized(normalizedPattern: string, normalizedMimeTypes: readonly string[]): boolean {
 	// Anything wildcard
-	if (normalizedPattern === "*/*") {
+	if (normalizedPattern === '*/*') {
 		return normalizedMimeTypes.length > 0;
 	}
+
 	// Exact match
 	if (normalizedMimeTypes.includes(normalizedPattern)) {
 		return true;
 	}
+
 	// Wildcard, such as `image/*`
 	const wildcard = normalizedPattern.match(/^([a-z]+)\/([a-z]+|\*)$/i);
-
 	if (!wildcard) {
 		return false;
 	}
 
 	const [_, type, subtype] = wildcard;
-
-	if (subtype === "*") {
-		return normalizedMimeTypes.some((mime) => mime.startsWith(type + "/"));
+	if (subtype === '*') {
+		return normalizedMimeTypes.some(mime => mime.startsWith(type + '/'));
 	}
 
 	return false;
 }
+
+
 export const UriList = Object.freeze({
 	// http://amundsen.com/hypermedia/urilist/
 	create: (entries: ReadonlyArray<string | URI>): string => {
-		return distinct(entries.map((x) => x.toString())).join("\r\n");
+		return distinct(entries.map(x => x.toString())).join('\r\n');
 	},
 	split: (str: string): string[] => {
-		return str.split("\r\n");
+		return str.split('\r\n');
 	},
 	parse: (str: string): string[] => {
-		return UriList.split(str).filter((value) => !value.startsWith("#"));
-	},
+		return UriList.split(str).filter(value => !value.startsWith('#'));
+	}
 });

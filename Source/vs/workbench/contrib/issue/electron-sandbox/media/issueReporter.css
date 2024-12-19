@@ -35,15 +35,15 @@
 }
 
 .issue-reporter-body .block-settingsSearchResults-details {
-	padding-bottom: 0.5rem;
+	padding-bottom: .5rem;
 }
 
 .issue-reporter-body .block-settingsSearchResults-details > div {
-	padding: 0.5rem 0.75rem;
+	padding: .5rem .75rem;
 }
 
 .issue-reporter-body .section {
-	margin-bottom: 0.5em;
+	margin-bottom: .5em;
 }
 
 /**
@@ -53,7 +53,7 @@
 .issue-reporter-body textarea {
 	display: block;
 	width: 100%;
-	padding: 0.375rem 0.75rem;
+	padding: .375rem .75rem;
 	font-size: 1rem;
 	line-height: 1.5;
 	color: #495057;
@@ -101,7 +101,7 @@
 }
 
 .issue-reporter-body html {
-	color: #cccccc;
+	color: #CCCCCC;
 	height: 100%;
 }
 
@@ -117,8 +117,7 @@
 }
 
 .issue-reporter-body .mac:lang(zh-Hans) {
-	font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
-		"Hiragino Sans GB", sans-serif;
+	font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", sans-serif;
 }
 
 .issue-reporter-body .mac:lang(zh-Hant) {
@@ -126,13 +125,11 @@
 }
 
 .issue-reporter-body .mac:lang(ja) {
-	font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic Pro",
-		sans-serif;
+	font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic Pro", sans-serif;
 }
 
 .issue-reporter-body .mac:lang(ko) {
-	font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
-		"Nanum Gothic", "AppleGothic", sans-serif;
+	font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Nanum Gothic", "AppleGothic", sans-serif;
 }
 
 .issue-reporter-body .windows {
@@ -148,8 +145,7 @@
 }
 
 .issue-reporter-body .windows:lang(ja) {
-	font-family: "Segoe WPC", "Segoe UI", "Yu Gothic UI", "Meiryo UI",
-		sans-serif;
+	font-family: "Segoe WPC", "Segoe UI", "Yu Gothic UI", "Meiryo UI", sans-serif;
 }
 
 .issue-reporter-body .windows:lang(ko) {
@@ -162,24 +158,19 @@
 }
 
 .issue-reporter-body .linux:lang(zh-Hans) {
-	font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans SC",
-		"Source Han Sans CN", "Source Han Sans", sans-serif;
+	font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans SC", "Source Han Sans CN", "Source Han Sans", sans-serif;
 }
 
 .issue-reporter-body .linux:lang(zh-Hant) {
-	font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans TC",
-		"Source Han Sans TW", "Source Han Sans", sans-serif;
+	font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans TC", "Source Han Sans TW", "Source Han Sans", sans-serif;
 }
 
 .issue-reporter-body .linux:lang(ja) {
-	font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans J",
-		"Source Han Sans JP", "Source Han Sans", sans-serif;
+	font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans J", "Source Han Sans JP", "Source Han Sans", sans-serif;
 }
 
 .issue-reporter-body .linux:lang(ko) {
-	font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans K",
-		"Source Han Sans JR", "Source Han Sans", "UnDotum", "FBaekmuk Gulim",
-		sans-serif;
+	font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans K", "Source Han Sans JR", "Source Han Sans", "UnDotum", "FBaekmuk Gulim", sans-serif;
 }
 
 body.issue-reporter-body {
@@ -265,6 +256,7 @@ body.issue-reporter-body {
 	margin-top: 10px;
 }
 
+
 .issue-reporter-body #issue-reporter .validation-error {
 	font-size: 12px;
 	padding: 10px;
@@ -274,6 +266,7 @@ body.issue-reporter-body {
 .issue-reporter-body #issue-reporter .system-info {
 	margin-bottom: 10px;
 }
+
 
 .issue-reporter-body input[type="checkbox"] {
 	width: auto;
@@ -294,7 +287,7 @@ body.issue-reporter-body {
 
 .issue-reporter-body .instructions {
 	font-size: 12px;
-	margin-top: 0.5em;
+	margin-top: .5em;
 }
 
 .issue-reporter-body a,
@@ -305,7 +298,7 @@ body.issue-reporter-body {
 
 .issue-reporter-body .workbenchCommand:disabled {
 	color: #868e96;
-	cursor: default;
+	cursor: default
 }
 
 .issue-reporter-body .block-extensions .block-info {
@@ -322,7 +315,7 @@ body.issue-reporter-body {
 }
 
 .issue-reporter-body a {
-	color: #cccccc;
+	color: #CCCCCC;
 	text-decoration: none;
 }
 
@@ -432,7 +425,7 @@ body.issue-reporter-body {
 
 .issue-reporter-body .issues-container {
 	margin-left: 1.5em;
-	margin-top: 0.5em;
+	margin-top: .5em;
 	max-height: 92px;
 	overflow-y: auto;
 }
@@ -459,9 +452,9 @@ body.issue-reporter-body {
 	width: 77px;
 	padding: 3px 6px;
 	margin-right: 5px;
-	color: #cccccc;
+	color: #CCCCCC;
 	background-color: #3c3c3c;
-	border-radius: 0.25rem;
+	border-radius: .25rem;
 }
 
 .issue-reporter-body .issues-container > .issue .label {

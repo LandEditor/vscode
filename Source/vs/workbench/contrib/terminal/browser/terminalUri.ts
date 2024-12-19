@@ -2,64 +2,50 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Schemas } from "../../../../base/common/network.js";
-import { URI } from "../../../../base/common/uri.js";
-import { ITerminalInstance, TerminalDataTransfers } from "./terminal.js";
+
+import { Schemas } from '../../../../base/common/network.js';
+import { URI } from '../../../../base/common/uri.js';
+import { ITerminalInstance, TerminalDataTransfers } from './terminal.js';
 
 export function parseTerminalUri(resource: URI): ITerminalIdentifier {
-	const [, workspaceId, instanceId] = resource.path.split("/");
-
+	const [, workspaceId, instanceId] = resource.path.split('/');
 	if (!workspaceId || !Number.parseInt(instanceId)) {
-		throw new Error(
-			`Could not parse terminal uri for resource ${resource}`,
-		);
+		throw new Error(`Could not parse terminal uri for resource ${resource}`);
 	}
-
 	return { workspaceId, instanceId: Number.parseInt(instanceId) };
 }
-export function getTerminalUri(
-	workspaceId: string,
-	instanceId: number,
-	title?: string,
-): URI {
+
+export function getTerminalUri(workspaceId: string, instanceId: number, title?: string): URI {
 	return URI.from({
 		scheme: Schemas.vscodeTerminal,
 		path: `/${workspaceId}/${instanceId}`,
 		fragment: title || undefined,
 	});
 }
+
 export interface ITerminalIdentifier {
 	workspaceId: string;
-
 	instanceId: number | undefined;
 }
-export interface IPartialDragEvent {
-	dataTransfer: Pick<DataTransfer, "getData"> | null;
-}
-export function getTerminalResourcesFromDragEvent(
-	event: IPartialDragEvent,
-): URI[] | undefined {
-	const resources = event.dataTransfer?.getData(
-		TerminalDataTransfers.Terminals,
-	);
 
+export interface IPartialDragEvent {
+	dataTransfer: Pick<DataTransfer, 'getData'> | null;
+}
+
+export function getTerminalResourcesFromDragEvent(event: IPartialDragEvent): URI[] | undefined {
+	const resources = event.dataTransfer?.getData(TerminalDataTransfers.Terminals);
 	if (resources) {
 		const json = JSON.parse(resources);
-
 		const result = [];
-
 		for (const entry of json) {
 			result.push(URI.parse(entry));
 		}
-
 		return result.length === 0 ? undefined : result;
 	}
-
 	return undefined;
 }
-export function getInstanceFromResource<
-	T extends Pick<ITerminalInstance, "resource">,
->(instances: T[], resource: URI | undefined): T | undefined {
+
+export function getInstanceFromResource<T extends Pick<ITerminalInstance, 'resource'>>(instances: T[], resource: URI | undefined): T | undefined {
 	if (resource) {
 		for (const instance of instances) {
 			// Note that the URI's workspace and instance id might not originally be from this window
@@ -69,6 +55,5 @@ export function getInstanceFromResource<
 			}
 		}
 	}
-
 	return undefined;
 }

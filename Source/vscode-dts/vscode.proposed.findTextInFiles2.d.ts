@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	// https://github.com/microsoft/vscode/issues/59924
 
 	export interface FindTextInFilesOptions2 {
@@ -138,10 +139,6 @@ declare module "vscode" {
 		 * @param token A token that can be used to signal cancellation to the underlying search engine.
 		 * @return A thenable that resolves when the search is complete.
 		 */
-		export function findTextInFiles2(
-			query: TextSearchQuery2,
-			options?: FindTextInFilesOptions2,
-			token?: CancellationToken,
-		): FindTextInFilesResponse;
+		export function findTextInFiles2(query: TextSearchQuery2, options?: FindTextInFilesOptions2, token?: CancellationToken): FindTextInFilesResponse;
 	}
 }
