@@ -21,19 +21,24 @@ export interface PreviewSettings {
 
 	readonly webviewResourceRoot: string;
 }
-export function getData<T = {}>(key: string): T {
-	const element = document.getElementById("vscode-markdown-preview-data");
 
+export function getRawData(key: string): string {
+	const element = document.getElementById('vscode-markdown-preview-data');
 	if (element) {
 		const data = element.getAttribute(key);
 
 		if (data) {
-			return JSON.parse(data);
+			return data;
 		}
 	}
 
 	throw new Error(`Could not load data for ${key}`);
 }
+
+export function getData<T = {}>(key: string): T {
+	return JSON.parse(getRawData(key));
+}
+
 export class SettingsManager {
 	private _settings: PreviewSettings = getData("data-settings");
 

@@ -8,12 +8,13 @@ import { IAction } from '../../../../../../base/common/actions.js';
 import { Color } from '../../../../../../base/common/color.js';
 import { structuralEquals } from '../../../../../../base/common/equals.js';
 import { Disposable } from '../../../../../../base/common/lifecycle.js';
-import { IObservable, autorun, constObservable, derived, derivedOpts, observableFromEvent, observableValue } from '../../../../../../base/common/observable.js';
+import { IObservable, autorun, constObservable, derived, derivedObservableWithCache, derivedOpts, observableFromEvent, observableValue } from '../../../../../../base/common/observable.js';
 import { MenuId, MenuItemAction } from '../../../../../../platform/actions/common/actions.js';
 import { ICommandService } from '../../../../../../platform/commands/common/commands.js';
 import { IInstantiationService } from '../../../../../../platform/instantiation/common/instantiation.js';
 import { diffInserted, diffRemoved } from '../../../../../../platform/theme/common/colorRegistry.js';
 import { darken, lighten, registerColor } from '../../../../../../platform/theme/common/colorUtils.js';
+import { IThemeService } from '../../../../../../platform/theme/common/themeService.js';
 import { ICodeEditor } from '../../../../../browser/editorBrowser.js';
 import { observableCodeEditor } from '../../../../../browser/observableCodeEditor.js';
 import { Point } from '../../../../../browser/point.js';
@@ -27,52 +28,52 @@ import { Range } from '../../../../../common/core/range.js';
 import { Command } from '../../../../../common/languages.js';
 import { ITextModel } from '../../../../../common/model.js';
 import { StickyScrollController } from '../../../../stickyScroll/browser/stickyScrollController.js';
+import { InlineCompletionContextKeys } from '../../controller/inlineCompletionContextKeys.js';
 import { CustomizedMenuWorkbenchToolBar } from '../../hintsWidget/inlineCompletionsHintsWidget.js';
 import { PathBuilder, StatusBarViewItem, getOffsetForPos, mapOutFalsy, maxContentWidthInRange, n } from './utils.js';
 import { InlineEditWithChanges } from './viewAndDiffProducer.js';
-
+import { localize } from '../../../../../../nls.js';
 
 export const originalBackgroundColor = registerColor(
 	'inlineEdit.originalBackground',
 	Color.transparent,
-	'',
+	localize('inlineEdit.originalBackground', 'Background color for the original text in inline edits.'),
 	true
 );
 export const modifiedBackgroundColor = registerColor(
 	'inlineEdit.modifiedBackground',
 	Color.transparent,
-	'',
+	localize('inlineEdit.modifiedBackground', 'Background color for the modified text in inline edits.'),
 	true
 );
 
 export const originalChangedLineBackgroundColor = registerColor(
 	'inlineEdit.originalChangedLineBackground',
 	Color.transparent,
-	'',
+	localize('inlineEdit.originalChangedLineBackground', 'Background color for the changed lines in the original text of inline edits.'),
 	true
 );
 
 export const originalChangedTextOverlayColor = registerColor(
 	'inlineEdit.originalChangedTextBackground',
 	diffRemoved,
-	'',
+	localize('inlineEdit.originalChangedTextBackground', 'Overlay color for the changed text in the original text of inline edits.'),
 	true
 );
 
 export const modifiedChangedLineBackgroundColor = registerColor(
 	'inlineEdit.modifiedChangedLineBackground',
 	Color.transparent,
-	'',
+	localize('inlineEdit.modifiedChangedLineBackground', 'Background color for the changed lines in the modified text of inline edits.'),
 	true
 );
 
 export const modifiedChangedTextOverlayColor = registerColor(
 	'inlineEdit.modifiedChangedTextBackground',
 	diffInserted,
-	'',
+	localize('inlineEdit.modifiedChangedTextBackground', 'Overlay color for the changed text in the modified text of inline edits.'),
 	true
 );
-
 export const originalBorder = registerColor(
 	'inlineEdit.originalBorder',
 	{
@@ -81,7 +82,7 @@ export const originalBorder = registerColor(
 		hcDark: editorLineHighlightBorder,
 		hcLight: editorLineHighlightBorder
 	},
-	''
+	localize('inlineEdit.originalBorder', 'Border color for the original text in inline edits.')
 );
 
 export const modifiedBorder = registerColor(
@@ -92,7 +93,7 @@ export const modifiedBorder = registerColor(
 		hcDark: editorLineHighlightBorder,
 		hcLight: editorLineHighlightBorder
 	},
-	''
+	localize('inlineEdit.modifiedBorder', 'Border color for the modified text in inline edits.')
 );
 
 export class InlineEditsSideBySideDiff extends Disposable {
@@ -108,7 +109,8 @@ export class InlineEditsSideBySideDiff extends Disposable {
 			originalDisplayRange: LineRange;
 		} | undefined>,
 		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@ICommandService private readonly _commandService: ICommandService
+		@ICommandService private readonly _commandService: ICommandService,
+		@IThemeService private readonly _themeService: IThemeService,
 	) {
 		super();
 
@@ -178,12 +180,14 @@ export class InlineEditsSideBySideDiff extends Disposable {
 	private readonly _editorContainerTopLeft = observableValue<IObservable<Point | undefined> | undefined>(this, undefined);
 
 	private readonly _editorContainer = n.div({
-		class: 'editorContainer',
+		class: ['editorContainer', this._editorObs.getOption(EditorOption.inlineSuggest).map(v => !v.edits.experimental.useGutterIndicator && 'showHover')],
 		style: { position: 'absolute' },
 	}, [
 		n.div({ class: 'preview', style: {}, ref: this.previewRef }),
 		n.div({ class: 'toolbar', style: {}, ref: this.toolbarRef }),
 	]).keepUpdated(this._store);
+
+	public readonly isHovered = this._editorContainer.getIsHovered(this._store);
 
 	protected readonly _toolbar = this._register(this._instantiationService.createInstance(CustomizedMenuWorkbenchToolBar, this.toolbarRef.element, MenuId.InlineEditsActions, {
 		menuOptions: { renderShortTitle: true },
@@ -247,6 +251,7 @@ export class InlineEditsSideBySideDiff extends Disposable {
 				bracketPairsHorizontal: false,
 				highlightActiveIndentation: false,
 			},
+			rulers: [],
 			padding: { top: 0, bottom: 0 },
 			folding: false,
 			selectOnLineNumbers: false,
@@ -265,8 +270,15 @@ export class InlineEditsSideBySideDiff extends Disposable {
 			},
 			readOnly: true,
 			wordWrap: 'off',
+			wordWrapOverride1: 'off',
+			wordWrapOverride2: 'off',
 		},
-		{ contributions: [], },
+		{
+			contextKeyValues: {
+				[InlineCompletionContextKeys.inInlineEditsPreviewEditor.key]: true,
+			},
+			contributions: [],
+		},
 		this._editor
 	));
 
@@ -334,6 +346,22 @@ export class InlineEditsSideBySideDiff extends Disposable {
 	private readonly _originalVerticalStartPosition = this._editorObs.observePosition(this._originalStartPosition, this._store).map(p => p?.y);
 	private readonly _originalVerticalEndPosition = this._editorObs.observePosition(this._originalEndPosition, this._store).map(p => p?.y);
 
+	private readonly _originalDisplayRange = this._uiState.map(s => s?.originalDisplayRange);
+	private readonly _editorMaxContentWidthInRange = derived(this, reader => {
+		const originalDisplayRange = this._originalDisplayRange.read(reader);
+		if (!originalDisplayRange) {
+			return constObservable(0);
+		}
+		this._editorObs.versionId.read(reader);
+
+		// Take the max value that we observed.
+		// Reset when either the edit changes or the editor text version.
+		return derivedObservableWithCache<number>(this, (reader, lastValue) => {
+			const maxWidth = maxContentWidthInRange(this._editorObs, originalDisplayRange, reader);
+			return Math.max(maxWidth, lastValue ?? 0);
+		});
+	}).map((v, r) => v.read(r));
+
 	/**
 	 * ![test](./layout.dio.svg)
 	*/
@@ -351,7 +379,7 @@ export class InlineEditsSideBySideDiff extends Disposable {
 
 		const horizontalScrollOffset = this._editorObs.scrollLeft.read(reader);
 
-		const editorContentMaxWidthInRange = maxContentWidthInRange(this._editorObs, state.originalDisplayRange, reader);
+		const editorContentMaxWidthInRange = this._editorMaxContentWidthInRange.read(reader);
 		const editorLayout = this._editorObs.layoutInfo.read(reader);
 		const previewContentWidth = this._previewEditorWidth.read(reader);
 		const editorContentAreaWidth = editorLayout.contentWidth - editorLayout.verticalScrollbarWidth;
@@ -388,7 +416,6 @@ export class InlineEditsSideBySideDiff extends Disposable {
 		} else {
 			desiredPreviewEditorScrollLeft = horizontalScrollOffset - previewEditorLeftInTextArea;
 			left = editorLayout.contentLeft;
-
 		}
 
 		const selectionTop = this._originalVerticalStartPosition.read(reader) ?? this._editor.getTopForLineNumber(range.startLineNumber) - this._editorObs.scrollTop.read(reader);
@@ -411,7 +438,7 @@ export class InlineEditsSideBySideDiff extends Disposable {
 		const codeEditDist = codeEditDistRange.clip(dist);
 		const editHeight = this._editor.getOption(EditorOption.lineHeight) * inlineEdit.modifiedLineRange.length;
 
-		const previewEditorWidth = remainingWidthRightOfEditor + editorLayout.width - editorLayout.contentLeft - codeEditDist;
+		const previewEditorWidth = Math.min(previewContentWidth, remainingWidthRightOfEditor + editorLayout.width - editorLayout.contentLeft - codeEditDist);
 
 		const edit1 = new Point(left + codeEditDist, selectionTop);
 		const edit2 = new Point(left + codeEditDist, selectionTop + editHeight);
@@ -471,19 +498,33 @@ export class InlineEditsSideBySideDiff extends Disposable {
 		return extendedModifiedPathBuilder.build();
 	});
 
+	private readonly _originalBackgroundColor = observableFromEvent(this, this._themeService.onDidColorThemeChange, () => {
+		return this._themeService.getColorTheme().getColor(originalBackgroundColor) ?? Color.transparent;
+	});
+
 	private readonly _backgroundSvg = n.svg({
 		transform: 'translate(-0.5 -0.5)',
 		style: { overflow: 'visible', pointerEvents: 'none', position: 'absolute' },
 	}, [
 		n.svgElem('path', {
 			class: 'rightOfModifiedBackgroundCoverUp',
-			d: this._previewEditorLayoutInfo.map(layoutInfo => layoutInfo && new PathBuilder()
-				.moveTo(layoutInfo.code1)
-				.lineTo(layoutInfo.code1.deltaX(1000))
-				.lineTo(layoutInfo.code2.deltaX(1000))
-				.lineTo(layoutInfo.code2)
-				.build()
-			),
+			d: derived(reader => {
+				const layoutInfo = this._previewEditorLayoutInfo.read(reader);
+				if (!layoutInfo) {
+					return undefined;
+				}
+				const originalBackgroundColor = this._originalBackgroundColor.read(reader);
+				if (originalBackgroundColor.isTransparent()) {
+					return undefined;
+				}
+
+				return new PathBuilder()
+					.moveTo(layoutInfo.code1)
+					.lineTo(layoutInfo.code1.deltaX(1000))
+					.lineTo(layoutInfo.code2.deltaX(1000))
+					.lineTo(layoutInfo.code2)
+					.build();
+			}),
 			style: {
 				fill: 'var(--vscode-editor-background, transparent)',
 			}
@@ -600,7 +641,7 @@ export class InlineEditsSideBySideDiff extends Disposable {
 		class: 'inline-edits-view',
 		style: {
 			overflow: 'visible',
-			zIndex: '100',
+			zIndex: '20',
 			display: this._display,
 		},
 	}, [

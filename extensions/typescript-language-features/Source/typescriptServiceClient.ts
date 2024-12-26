@@ -3,9 +3,36 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { homedir } from "os";
-import * as path from "path";
-import * as vscode from "vscode";
+import { homedir } from 'os';
+import * as path from 'path';
+import * as vscode from 'vscode';
+import { ServiceConfigurationProvider, SyntaxServerConfiguration, TsServerLogLevel, TypeScriptServiceConfiguration, areServiceConfigurationsEqual } from './configuration/configuration';
+import * as fileSchemes from './configuration/fileSchemes';
+import { Schemes } from './configuration/schemes';
+import { IExperimentationTelemetryReporter } from './experimentTelemetryReporter';
+import { DiagnosticKind, DiagnosticsManager } from './languageFeatures/diagnostics';
+import { Logger } from './logging/logger';
+import { TelemetryReporter, VSCodeTelemetryReporter } from './logging/telemetry';
+import Tracer from './logging/tracer';
+import { ProjectType, inferredProjectCompilerOptions } from './tsconfig';
+import { API } from './tsServer/api';
+import BufferSyncSupport from './tsServer/bufferSyncSupport';
+import { OngoingRequestCancellerFactory } from './tsServer/cancellation';
+import { ILogDirectoryProvider } from './tsServer/logDirectoryProvider';
+import { NodeVersionManager } from './tsServer/nodeManager';
+import { TypeScriptPluginPathsProvider } from './tsServer/pluginPathsProvider';
+import { PluginManager } from './tsServer/plugins';
+import * as Proto from './tsServer/protocol/protocol';
+import { EventName } from './tsServer/protocol/protocol.const';
+import { ITypeScriptServer, TsServerLog, TsServerProcessFactory, TypeScriptServerExitEvent } from './tsServer/server';
+import { TypeScriptServerError } from './tsServer/serverError';
+import { TypeScriptServerSpawner } from './tsServer/spawner';
+import { TypeScriptVersionManager } from './tsServer/versionManager';
+import { ITypeScriptVersionProvider, TypeScriptVersion } from './tsServer/versionProvider';
+import { ClientCapabilities, ClientCapability, ExecConfig, ITypeScriptServiceClient, ServerResponse, TypeScriptRequests } from './typescriptService';
+import { Disposable, DisposableStore, disposeAll } from './utils/dispose';
+import { hash } from './utils/hash';
+import { isWeb, isWebAndHasSharedArrayBuffers } from './utils/platform';
 
 import {
 	areServiceConfigurationsEqual,
@@ -495,8 +522,7 @@ export default class TypeScriptServiceClient
 
 	public restartTsServer(fromUserAction = false): void {
 		if (this.serverState.type === ServerState.Type.Running) {
-			this.info("Killing TS Server");
-
+			this.logger.info('Killing TS Server');
 			this.isRestarting = true;
 
 			this.serverState.server.kill();
@@ -589,18 +615,6 @@ export default class TypeScriptServiceClient
 		return this._onReady!.promise.then(f);
 	}
 
-	private info(message: string, ...data: any[]): void {
-		this.logger.info(message, ...data);
-	}
-
-	private error(message: string, ...data: any[]): void {
-		this.logger.error(message, ...data);
-	}
-
-	private logTelemetry(eventName: string, properties?: TelemetryProperties) {
-		this.telemetryReporter.logTelemetry(eventName, properties);
-	}
-
 	public ensureServiceStarted() {
 		if (this.serverState.type !== ServerState.Type.Running) {
 			this.startService();
@@ -610,17 +624,15 @@ export default class TypeScriptServiceClient
 	private token: number = 0;
 
 	private startService(resendModels: boolean = false): ServerState.State {
-		this.info(`Starting TS Server`);
+		this.logger.info(`Starting TS Server`);
 
 		if (this.isDisposed) {
-			this.info(`Not starting server: disposed`);
-
+			this.logger.info(`Not starting server: disposed`);
 			return ServerState.None;
 		}
 
 		if (this.hasServerFatallyCrashedTooManyTimes) {
-			this.info(`Not starting server: too many crashes`);
-
+			this.logger.info(`Not starting server: too many crashes`);
 			return ServerState.None;
 		}
 
@@ -639,14 +651,11 @@ export default class TypeScriptServiceClient
 			version = this._versionManager.currentVersion;
 		}
 
-		this.info(`Using tsserver from: ${version.path}`);
-
+		this.logger.info(`Using tsserver from: ${version.path}`);
 		const nodePath = this._nodeVersionManager.currentVersion;
 
 		if (nodePath) {
-			this.info(
-				`Using Node installation from ${nodePath} to run TS Server`,
-			);
+			this.logger.info(`Using Node installation from ${nodePath} to run TS Server`);
 		}
 
 		this.resetWatchers();
@@ -699,7 +708,7 @@ export default class TypeScriptServiceClient
 				"typeScriptVersionSource": { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
 			}
 		*/
-		this.logTelemetry("tsserver.spawned", {
+		this.telemetryReporter.logTelemetry('tsserver.spawned', {
 			...typeScriptServerEnvCommonProperties,
 			localTypeScriptVersion: this.versionProvider.localVersion
 				? this.versionProvider.localVersion.displayName
@@ -723,13 +732,9 @@ export default class TypeScriptServiceClient
 			}
 
 			this.serverState = new ServerState.Errored(err, handle.tsServerLog);
-
-			this.error("TSServer errored with error.", err);
-
-			if (handle.tsServerLog?.type === "file") {
-				this.error(
-					`TSServer log file: ${handle.tsServerLog.uri.fsPath}`,
-				);
+			this.logger.error('TSServer errored with error.', err);
+			if (handle.tsServerLog?.type === 'file') {
+				this.logger.error(`TSServer log file: ${handle.tsServerLog.uri.fsPath}`);
 			}
 
 			/* __GDPR__
@@ -741,8 +746,8 @@ export default class TypeScriptServiceClient
 					]
 				}
 			*/
-			this.logTelemetry("tsserver.error", {
-				...typeScriptServerEnvCommonProperties,
+			this.telemetryReporter.logTelemetry('tsserver.error', {
+				...typeScriptServerEnvCommonProperties
 			});
 
 			this.serviceExited(false, apiVersion);
@@ -750,8 +755,7 @@ export default class TypeScriptServiceClient
 
 		handle.onExit((data: TypeScriptServerExitEvent) => {
 			const { code, signal } = data;
-
-			this.error(`TSServer exited. Code: ${code}. Signal: ${signal}`);
+			this.logger.error(`TSServer exited. Code: ${code}. Signal: ${signal}`);
 
 			// In practice, the exit code is an integer with no ties to any identity,
 			// so it can be classified as SystemMetaData, rather than CallstackOrException.
@@ -766,7 +770,7 @@ export default class TypeScriptServiceClient
 					"signal" : { "classification": "SystemMetaData", "purpose": "PerformanceAndHealth" }
 				}
 			*/
-			this.logTelemetry("tsserver.exitWithCode", {
+			this.telemetryReporter.logTelemetry('tsserver.exitWithCode', {
 				...typeScriptServerEnvCommonProperties,
 				code: code ?? undefined,
 				signal: signal ?? undefined,
@@ -777,10 +781,8 @@ export default class TypeScriptServiceClient
 				return;
 			}
 
-			if (handle.tsServerLog?.type === "file") {
-				this.info(
-					`TSServer log file: ${handle.tsServerLog.uri.fsPath}`,
-				);
+			if (handle.tsServerLog?.type === 'file') {
+				this.logger.info(`TSServer log file: ${handle.tsServerLog.uri.fsPath}`);
 			}
 
 			this.serviceExited(!this.isRestarting, apiVersion);
@@ -1022,7 +1024,7 @@ export default class TypeScriptServiceClient
 							]
 						}
 					*/
-					this.logTelemetry("serviceExited");
+					this.telemetryReporter.logTelemetry('serviceExited');
 				} else if (diff < 60 * 1000 * 5 /* 5 Minutes */) {
 					this.lastStart = Date.now();
 
@@ -1440,23 +1442,14 @@ export default class TypeScriptServiceClient
 				"command" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
 			}
 		*/
-		this.logTelemetry("fatalError", {
-			...(error instanceof TypeScriptServerError
-				? error.telemetry
-				: { command }),
-		});
-
-		console.error(
-			`A non-recoverable error occurred while executing tsserver command: ${command}`,
-		);
-
+		this.telemetryReporter.logTelemetry('fatalError', { ...(error instanceof TypeScriptServerError ? error.telemetry : { command }) });
+		console.error(`A non-recoverable error occurred while executing tsserver command: ${command}`);
 		if (error instanceof TypeScriptServerError && error.serverErrorText) {
 			console.error(error.serverErrorText);
 		}
 
 		if (this.serverState.type === ServerState.Type.Running) {
-			this.info("Killing TS Server");
-
+			this.logger.info('Killing TS Server');
 			const logfile = this.serverState.server.tsServerLog;
 
 			this.serverState.server.kill();
@@ -1862,7 +1855,7 @@ export default class TypeScriptServiceClient
 			}
 		*/
 		// __GDPR__COMMENT__: Other events are defined by TypeScript.
-		this.logTelemetry(telemetryData.telemetryEventName, properties);
+		this.telemetryReporter.logTelemetry(telemetryData.telemetryEventName, properties);
 	}
 
 	private configurePlugin(pluginName: string, configuration: {}): any {

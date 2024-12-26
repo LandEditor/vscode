@@ -3,27 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	Command,
-	ConfigurationChangeEvent,
-	DecorationOptions,
-	EventEmitter,
-	l10n,
-	MarkdownString,
-	Position,
-	Range,
-	StatusBarAlignment,
-	StatusBarItem,
-	TextEditor,
-	TextEditorChange,
-	TextEditorChangeKind,
-	TextEditorDecorationType,
-	TextEditorDiffInformation,
-	ThemeColor,
-	Uri,
-	window,
-	workspace,
-} from "vscode";
+import { DecorationOptions, l10n, Position, Range, TextEditor, TextEditorChange, TextEditorDecorationType, TextEditorChangeKind, ThemeColor, Uri, window, workspace, EventEmitter, ConfigurationChangeEvent, StatusBarItem, StatusBarAlignment, Command, MarkdownString } from 'vscode';
+import { Model } from './model';
+import { dispose, fromNow, IDisposable } from './util';
+import { Repository } from './repository';
+import { throttle } from './decorators';
+import { BlameInformation } from './git';
+import { fromGitUri, isGitUri } from './uri';
+import { emojify, ensureEmojis } from './emoji';
+import { getWorkingTreeAndIndexDiffInformation, getWorkingTreeDiffInformation } from './staging';
 
 import { throttle } from "./decorators";
 import { emojify, ensureEmojis } from "./emoji";
@@ -228,10 +216,10 @@ class GitBlameInformationCache {
 }
 
 export class GitBlameController {
-	private readonly _onDidChangeBlameInformation =
-		new EventEmitter<TextEditor>();
-	public readonly onDidChangeBlameInformation =
-		this._onDidChangeBlameInformation.event;
+	private readonly _subjectMaxLength = 50;
+
+	private readonly _onDidChangeBlameInformation = new EventEmitter<TextEditor>();
+	public readonly onDidChangeBlameInformation = this._onDidChangeBlameInformation.event;
 
 	readonly textEditorBlameInformation = new Map<
 		TextEditor,
@@ -277,24 +265,19 @@ export class GitBlameController {
 		this._updateTextEditorBlameInformation(window.activeTextEditor);
 	}
 
-	formatBlameInformationMessage(
-		template: string,
-		blameInformation: BlameInformation,
-	): string {
+	formatBlameInformationMessage(template: string, blameInformation: BlameInformation): string {
+		const subject = blameInformation.subject && blameInformation.subject.length > this._subjectMaxLength
+			? `${blameInformation.subject.substring(0, this._subjectMaxLength)}\u2026`
+			: blameInformation.subject;
+
 		const templateTokens = {
 			hash: blameInformation.hash,
 			hashShort: blameInformation.hash.substring(0, 8),
-			subject: emojify(blameInformation.subject ?? ""),
-			authorName: blameInformation.authorName ?? "",
-			authorEmail: blameInformation.authorEmail ?? "",
-			authorDate: new Date(
-				blameInformation.authorDate ?? new Date(),
-			).toLocaleString(),
-			authorDateAgo: fromNow(
-				blameInformation.authorDate ?? new Date(),
-				true,
-				true,
-			),
+			subject: emojify(subject ?? ''),
+			authorName: blameInformation.authorName ?? '',
+			authorEmail: blameInformation.authorEmail ?? '',
+			authorDate: new Date(blameInformation.authorDate ?? new Date()).toLocaleString(),
+			authorDateAgo: fromNow(blameInformation.authorDate ?? new Date(), true, true)
 		} satisfies BlameInformationTemplateTokens;
 
 		return template.replace(/\$\{(.+?)\}/g, (_, token) => {
@@ -437,18 +420,6 @@ export class GitBlameController {
 		return blameInformation;
 	}
 
-	private _findDiffInformation(
-		textEditor: TextEditor,
-		ref: string,
-	): TextEditorDiffInformation | undefined {
-		return textEditor.diffInformation?.find(
-			(diff) =>
-				diff.original &&
-				isGitUri(diff.original) &&
-				fromGitUri(diff.original).ref === ref,
-		);
-	}
-
 	@throttle
 	private async _updateTextEditorBlameInformation(
 		textEditor: TextEditor | undefined,
@@ -498,8 +469,7 @@ export class GitBlameController {
 				workingTreeAndIndexChanges = undefined;
 			} else if (ref === "") {
 				// Resource on the right-hand side of the diff editor when viewing a resource from the index.
-				const diffInformationWorkingTreeAndIndex =
-					this._findDiffInformation(textEditor, "HEAD");
+				const diffInformationWorkingTreeAndIndex = getWorkingTreeAndIndexDiffInformation(textEditor);
 
 				// Working tree + index diff information is present and it is stale
 				if (
@@ -517,9 +487,7 @@ export class GitBlameController {
 			}
 		} else {
 			// Working tree diff information. Diff Editor (Working Tree) -> Text Editor
-			const diffInformationWorkingTree =
-				this._findDiffInformation(textEditor, "~") ??
-				this._findDiffInformation(textEditor, "");
+			const diffInformationWorkingTree = getWorkingTreeDiffInformation(textEditor);
 
 			// Working tree diff information is not present or it is stale
 			if (
@@ -530,8 +498,7 @@ export class GitBlameController {
 			}
 
 			// Working tree + index diff information
-			const diffInformationWorkingTreeAndIndex =
-				this._findDiffInformation(textEditor, "HEAD");
+			const diffInformationWorkingTreeAndIndex = getWorkingTreeAndIndexDiffInformation(textEditor);
 
 			// Working tree + index diff information is present and it is stale
 			if (

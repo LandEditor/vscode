@@ -257,7 +257,9 @@ export class GitFileSystemProvider implements FileSystemProvider {
 				path,
 			);
 		} catch (err) {
-			return new Uint8Array(0);
+			// File does not exist in git. This could be
+			// because the file is untracked or ignored
+			throw FileSystemError.FileNotFound();
 		}
 	}
 
