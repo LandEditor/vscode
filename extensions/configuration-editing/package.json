@@ -147,7 +147,7 @@
 		"tunnel": "0.0.6"
 	},
 	"devDependencies": {
-		"@types/node": "22.10.1"
+		"@types/node": "22.10.5"
 	},
 	"icon": "images/icon.png",
 	"capabilities": {

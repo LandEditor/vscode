@@ -37,6 +37,6 @@
 	},
 	"dependencies": {},
 	"devDependencies": {
-		"@playform/build": "0.2.0"
+		"@playform/build": "0.2.1"
 	}
 }

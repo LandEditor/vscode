@@ -4,7 +4,7 @@
 	"scripts": {},
 	"dependencies": {},
 	"devDependencies": {
-		"esbuild": "0.23.0"
+		"esbuild": "0.24.2"
 	},
 	"overrides": {
 		"node-gyp-build": "4.8.1"

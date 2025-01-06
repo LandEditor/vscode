@@ -132,7 +132,7 @@
 		"detect-indent": "7.0.1"
 	},
 	"devDependencies": {
-		"@jupyterlab/nbformat": "4.3.2",
+		"@jupyterlab/nbformat": "4.3.4",
 		"@types/markdown-it": "14.1.2"
 	},
 	"icon": "media/icon.png",

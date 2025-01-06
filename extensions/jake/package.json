@@ -49,7 +49,7 @@
 	],
 	"dependencies": {},
 	"devDependencies": {
-		"@types/node": "22.10.1"
+		"@types/node": "22.10.5"
 	},
 	"icon": "images/cowboy_hat.png",
 	"capabilities": {

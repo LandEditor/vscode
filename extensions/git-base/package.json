@@ -88,7 +88,7 @@
 	],
 	"dependencies": {},
 	"devDependencies": {
-		"@types/node": "20.x"
+		"@types/node": "22.x"
 	},
 	"icon": "resources/icons/git.png",
 	"capabilities": {

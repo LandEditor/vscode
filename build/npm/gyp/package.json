@@ -3,6 +3,6 @@
 	"scripts": {},
 	"dependencies": {},
 	"devDependencies": {
-		"node-gyp": "10.1.0"
+		"node-gyp": "11.0.0"
 	}
 }
