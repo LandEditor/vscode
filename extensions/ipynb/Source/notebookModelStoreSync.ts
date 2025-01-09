@@ -279,6 +279,13 @@ function onDidChangeNotebookCells(e: NotebookDocumentChangeEventEx) {
 
 			metadataUpdated = true;
 			pendingCellUpdates.delete(e.cell);
+		} else if (!e.executionSummary?.executionOrder && !e.executionSummary?.success && !e.executionSummary?.timing
+			&& !e.metadata && !e.outputs && currentMetadata.execution_count && !pendingCellUpdates.has(e.cell)) {
+			// This is a result of the cell without outupts but has execution count being cleared
+			// Create two cells, one that produces output and one that doesn't. Run both and then clear the output or all cells.
+			// This condition will be satisfied for first cell without outputs.
+			metadata.execution_count = null;
+			metadataUpdated = true;
 		}
 
 		if (

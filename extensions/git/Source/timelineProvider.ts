@@ -21,12 +21,16 @@ import {
 	workspace,
 } from "vscode";
 
-import { CommandCenter } from "./commands";
-import { debounce } from "./decorators";
-import { emojify, ensureEmojis } from "./emoji";
-import { Model } from "./model";
-import { OperationKind, OperationResult } from "./operation";
-import { Repository, Resource } from "./repository";
+import { CancellationToken, ConfigurationChangeEvent, Disposable, env, Event, EventEmitter, MarkdownString, ThemeIcon, Timeline, TimelineChangeEvent, TimelineItem, TimelineOptions, TimelineProvider, Uri, workspace, l10n, Command } from 'vscode';
+import { Model } from './model';
+import { Repository, Resource } from './repository';
+import { debounce } from './decorators';
+import { emojify, ensureEmojis } from './emoji';
+import { CommandCenter } from './commands';
+import { OperationKind, OperationResult } from './operation';
+import { getCommitShortHash } from './util';
+import { CommitShortStat } from './git';
+import { getRemoteSourceControlHistoryItemCommands } from './remoteSource';
 
 export class GitTimelineItem extends TimelineItem {
 	static is(item: TimelineItem): item is GitTimelineItem {
@@ -73,27 +77,55 @@ export class GitTimelineItem extends TimelineItem {
 		return this.shortenRef(this.previousRef);
 	}
 
-	setItemDetails(
-		author: string,
-		email: string | undefined,
-		date: string,
-		message: string,
-	): void {
-		this.tooltip = new MarkdownString("", true);
+	setItemDetails(uri: Uri, hash: string | undefined, author: string, email: string | undefined, date: string, message: string, shortStat?: CommitShortStat, remoteSourceCommands: Command[] = []): void {
+		this.tooltip = new MarkdownString('', true);
+		this.tooltip.isTrusted = true;
+		this.tooltip.supportHtml = true;
 
 		if (email) {
-			const emailTitle = l10n.t("Email");
-
-			this.tooltip.appendMarkdown(
-				`$(account) [**${author}**](mailto:${email} "${emailTitle} ${author}")\n\n`,
-			);
+			const emailTitle = l10n.t('Email');
+			this.tooltip.appendMarkdown(`$(account) [**${author}**](mailto:${email} "${emailTitle} ${author}")`);
 		} else {
-			this.tooltip.appendMarkdown(`$(account) **${author}**\n\n`);
+			this.tooltip.appendMarkdown(`$(account) **${author}**`);
 		}
 
-		this.tooltip.appendMarkdown(`$(history) ${date}\n\n`);
+		this.tooltip.appendMarkdown(`, $(history) ${date}\n\n`);
+		this.tooltip.appendMarkdown(`${message}\n\n`);
 
-		this.tooltip.appendMarkdown(message);
+		if (shortStat) {
+			this.tooltip.appendMarkdown(`---\n\n`);
+
+			if (shortStat.insertions) {
+				this.tooltip.appendMarkdown(`<span style="color:var(--vscode-scmGraph-historyItemHoverAdditionsForeground);">${shortStat.insertions === 1 ?
+					l10n.t('{0} insertion{1}', shortStat.insertions, '(+)') :
+					l10n.t('{0} insertions{1}', shortStat.insertions, '(+)')}</span>`);
+			}
+
+			if (shortStat.deletions) {
+				this.tooltip.appendMarkdown(`,&nbsp;<span style="color:var(--vscode-scmGraph-historyItemHoverDeletionsForeground);">${shortStat.deletions === 1 ?
+					l10n.t('{0} deletion{1}', shortStat.deletions, '(-)') :
+					l10n.t('{0} deletions{1}', shortStat.deletions, '(-)')}</span>`);
+			}
+
+			this.tooltip.appendMarkdown(`\n\n`);
+		}
+
+		if (hash) {
+			this.tooltip.appendMarkdown(`---\n\n`);
+
+			this.tooltip.appendMarkdown(`[\`$(git-commit) ${getCommitShortHash(uri, hash)} \`](command:git.viewCommit?${encodeURIComponent(JSON.stringify([uri, hash]))} "${l10n.t('View Commit')}")`);
+			this.tooltip.appendMarkdown('&nbsp;');
+			this.tooltip.appendMarkdown(`[$(copy)](command:git.copyContentToClipboard?${encodeURIComponent(JSON.stringify(hash))} "${l10n.t('Copy Commit Hash')}")`);
+
+			// Remote commands
+			if (remoteSourceCommands.length > 0) {
+				this.tooltip.appendMarkdown('&nbsp;&nbsp;|&nbsp;&nbsp;');
+
+				const remoteCommandsMarkdown = remoteSourceCommands
+					.map(command => `[${command.title}](command:${command.command}?${encodeURIComponent(JSON.stringify([...command.arguments ?? [], hash]))} "${command.tooltip}")`);
+				this.tooltip.appendMarkdown(remoteCommandsMarkdown.join('&nbsp;'));
+			}
+		}
 	}
 
 	private shortenRef(ref: string): string {
@@ -219,6 +251,7 @@ export class GitTimelineProvider implements TimelineProvider {
 			maxEntries: limit,
 			hash: options.cursor,
 			follow: true,
+			shortStats: true,
 			// sortByAuthorDate: true
 		});
 
@@ -253,6 +286,11 @@ export class GitTimelineProvider implements TimelineProvider {
 
 		const openComparison = l10n.t("Open Comparison");
 
+		const defaultRemote = repo.getDefaultRemote();
+		const remoteSourceCommands: Command[] = defaultRemote?.fetchUrl
+			? await getRemoteSourceControlHistoryItemCommands(defaultRemote.fetchUrl)
+			: [];
+
 		const items = commits.map<GitTimelineItem>((c, i) => {
 			const date = dateType === "authored" ? c.authorDate : c.commitDate;
 
@@ -273,12 +311,7 @@ export class GitTimelineProvider implements TimelineProvider {
 				item.description = c.authorName;
 			}
 
-			item.setItemDetails(
-				c.authorName!,
-				c.authorEmail,
-				dateFormatter.format(date),
-				message,
-			);
+			item.setItemDetails(uri, c.hash, c.authorName!, c.authorEmail, dateFormatter.format(date), message, c.shortStat, remoteSourceCommands);
 
 			const cmd = this.commands.resolveTimelineOpenDiffCommand(item, uri);
 
@@ -312,21 +345,9 @@ export class GitTimelineProvider implements TimelineProvider {
 					"git:file:index",
 				);
 				// TODO@eamodio: Replace with a better icon -- reflecting its status maybe?
-				item.iconPath = new ThemeIcon("git-commit");
-
-				item.description = "";
-
-				item.setItemDetails(
-					you,
-					undefined,
-					dateFormatter.format(date),
-					Resource.getStatusText(index.type),
-				);
-
-				const cmd = this.commands.resolveTimelineOpenDiffCommand(
-					item,
-					uri,
-				);
+				item.iconPath = new ThemeIcon('git-commit');
+				item.description = '';
+				item.setItemDetails(uri, undefined, you, undefined, dateFormatter.format(date), Resource.getStatusText(index.type));
 
 				if (cmd) {
 					item.command = {
@@ -347,30 +368,10 @@ export class GitTimelineProvider implements TimelineProvider {
 				if (working) {
 					const date = new Date();
 
-					const item = new GitTimelineItem(
-						"",
-						index ? "~" : "HEAD",
-						l10n.t("Uncommitted Changes"),
-						date.getTime(),
-						"working",
-						"git:file:working",
-					);
-
-					item.iconPath = new ThemeIcon("circle-outline");
-
-					item.description = "";
-
-					item.setItemDetails(
-						you,
-						undefined,
-						dateFormatter.format(date),
-						Resource.getStatusText(working.type),
-					);
-
-					const cmd = this.commands.resolveTimelineOpenDiffCommand(
-						item,
-						uri,
-					);
+					const item = new GitTimelineItem('', index ? '~' : 'HEAD', l10n.t('Uncommitted Changes'), date.getTime(), 'working', 'git:file:working');
+					item.iconPath = new ThemeIcon('circle-outline');
+					item.description = '';
+					item.setItemDetails(uri, undefined, you, undefined, dateFormatter.format(date), Resource.getStatusText(working.type));
 
 					if (cmd) {
 						item.command = {

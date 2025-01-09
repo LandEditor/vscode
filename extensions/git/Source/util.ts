@@ -3,17 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createReadStream, promises as fs } from "fs";
-import { dirname, relative, sep } from "path";
-import { Readable } from "stream";
-import byline from "byline";
-import {
-	Disposable,
-	Event,
-	EventEmitter,
-	l10n,
-	SourceControlHistoryItemRef,
-} from "vscode";
+import { Event, Disposable, EventEmitter, SourceControlHistoryItemRef, l10n, workspace, Uri } from 'vscode';
+import { dirname, sep, relative } from 'path';
+import { Readable } from 'stream';
+import { promises as fs, createReadStream } from 'fs';
+import byline from 'byline';
 
 export const isMacintosh = process.platform === "darwin";
 
@@ -955,4 +949,10 @@ export function fromNow(
 				: l10n.t("{0} yrs", value);
 		}
 	}
+}
+
+export function getCommitShortHash(scope: Uri, hash: string): string {
+	const config = workspace.getConfiguration('git', scope);
+	const shortHashLength = config.get<number>('commitShortHashLength', 7);
+	return hash.substring(0, shortHashLength);
 }

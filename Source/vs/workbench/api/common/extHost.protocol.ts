@@ -1299,7 +1299,7 @@ export interface ICodeMapperTextEdit {
 export type ICodeMapperProgressDto = Dto<ICodeMapperTextEdit>;
 
 export interface MainThreadCodeMapperShape extends IDisposable {
-	$registerCodeMapperProvider(handle: number): void;
+	$registerCodeMapperProvider(handle: number, displayName: string): void;
 	$unregisterCodeMapperProvider(handle: number): void;
 	$handleProgress(requestId: string, data: ICodeMapperProgressDto): Promise<void>;
 }
@@ -1606,6 +1606,7 @@ export interface SCMHistoryItemDto {
 	readonly message: string;
 	readonly displayId?: string;
 	readonly author?: string;
+	readonly authorEmail?: string;
 	readonly timestamp?: number;
 	readonly statistics?: {
 		readonly files: number;

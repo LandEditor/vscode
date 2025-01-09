@@ -5,14 +5,12 @@
 import { Octokit } from "@octokit/rest";
 import { env, l10n, Uri, workspace } from "vscode";
 
-import { getOctokit } from "./auth";
-import { getBranchLink, getVscodeDevHost } from "./links";
-import {
-	RemoteSource,
-	RemoteSourceAction,
-	RemoteSourceProvider,
-} from "./typings/git-base";
-import { getRepositoryFromQuery, getRepositoryFromUrl } from "./util";
+import { Command, Uri, env, l10n, workspace } from 'vscode';
+import { RemoteSourceProvider, RemoteSource, RemoteSourceAction } from './typings/git-base';
+import { getOctokit } from './auth';
+import { Octokit } from '@octokit/rest';
+import { getRepositoryFromQuery, getRepositoryFromUrl } from './util';
+import { getBranchLink, getVscodeDevHost } from './links';
 
 function asRemoteSource(raw: any): RemoteSource {
 	const protocol = workspace
@@ -171,5 +169,19 @@ export class GithubRemoteSourceProvider implements RemoteSourceProvider {
 				},
 			},
 		];
+	}
+
+	async getRemoteSourceControlHistoryItemCommands(url: string): Promise<Command[]> {
+		const repository = getRepositoryFromUrl(url);
+		if (!repository) {
+			return [];
+		}
+
+		return [{
+			title: l10n.t('{0} Open on GitHub', '$(github)'),
+			tooltip: l10n.t('Open on GitHub'),
+			command: 'github.openOnGitHub',
+			arguments: [url]
+		}];
 	}
 }
