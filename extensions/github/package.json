@@ -154,7 +154,7 @@
 		"@octokit/graphql": "8.1.2",
 		"@octokit/graphql-schema": "15.25.0",
 		"@octokit/rest": "21.1.0",
-		"tunnel": "^0.0.6"
+		"tunnel": "0.0.6"
 	},
 	"devDependencies": {
 		"@types/node": "22.x"

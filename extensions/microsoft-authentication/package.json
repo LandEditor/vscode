@@ -105,14 +105,14 @@
 	},
 	"activationEvents": [],
 	"dependencies": {
-		"@codeeditorland/msal-node-extensions": "^1.5.0",
+		"@codeeditorland/msal-node-extensions": "1.5.0",
 		"keytar": "file:./packageMocks/keytar"
 	},
 	"devDependencies": {
 		"@types/node": "22.x",
-		"@types/node-fetch": "^2.6.12",
-		"@types/randombytes": "^2.0.3",
-		"@types/sha.js": "^2.4.4",
+		"@types/node-fetch": "2.6.12",
+		"@types/randombytes": "2.0.3",
+		"@types/sha.js": "2.4.4",
 		"@types/uuid": "10.0.0"
 	},
 	"icon": "media/icon.png",
