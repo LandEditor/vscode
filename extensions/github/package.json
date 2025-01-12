@@ -28,6 +28,11 @@
 				"command": "github.openOnVscodeDev",
 				"icon": "$(globe)",
 				"title": "Open in vscode.dev"
+			},
+			{
+				"command": "github.openOnGitHub2",
+				"icon": "$(github)",
+				"title": "Open on GitHub"
 			}
 		],
 		"configuration": [
@@ -75,6 +80,10 @@
 				{
 					"command": "github.publish",
 					"when": "git-base.gitEnabled && workspaceFolderCount != 0 && remoteName != 'codespaces'"
+				},
+				{
+					"command": "github.openOnGitHub2",
+					"when": "false"
 				},
 				{
 					"command": "github.copyVscodeDevLink",
@@ -132,6 +141,13 @@
 					"group": "0_vscode@0",
 					"when": "github.hasGitHubRepo && remoteName != 'codespaces'"
 				}
+			],
+			"scm/historyItem/context": [
+				{
+					"command": "github.openOnGitHub2",
+					"group": "0_view@2",
+					"when": "github.hasGitHubRepo"
+				}
 			]
 		},
 		"viewsWelcome": [
@@ -151,13 +167,13 @@
 		"*"
 	],
 	"dependencies": {
-		"@octokit/graphql": "8.1.2",
-		"@octokit/graphql-schema": "15.25.0",
-		"@octokit/rest": "21.1.0",
-		"tunnel": "0.0.6"
+		"@octokit/graphql": "5.0.5",
+		"@octokit/graphql-schema": "14.4.0",
+		"@octokit/rest": "19.0.4",
+		"tunnel": "^0.0.6"
 	},
 	"devDependencies": {
-		"@types/node": "22.x"
+		"@types/node": "20.x"
 	},
 	"extensionDependencies": [
 		"vscode.git-base"
@@ -171,9 +187,11 @@
 		"virtualWorkspaces": false
 	},
 	"enabledApiProposals": [
-		"contribShareMenu",
-		"contribEditSessions",
 		"canonicalUriProvider",
+		"contribEditSessions",
+		"contribShareMenu",
+		"contribSourceControlHistoryItemMenu",
+		"scmHistoryProvider",
 		"shareProvider"
 	]
 }

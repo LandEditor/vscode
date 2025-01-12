@@ -8,8 +8,6 @@
 	"contributes": {
 		"grammars": [
 			{
-
-				
 				"language": "rust",
 				"path": "./syntaxes/rust.tmLanguage.json",
 				"scopeName": "source.rust"

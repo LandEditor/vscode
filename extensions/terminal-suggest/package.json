@@ -13,6 +13,7 @@
 	"devDependencies": {},
 	"icon": "./src/media/icon.png",
 	"enabledApiProposals": [
-		"terminalCompletionProvider"
+		"terminalCompletionProvider",
+		"terminalShellEnv"
 	]
 }
