@@ -53,7 +53,7 @@
 	},
 	"devDependencies": {
 		"@types/markdown-it": "14.1.2",
-		"@types/node": "22.10.5"
+		"@types/node": "22.10.6"
 	},
 	"icon": "images/icon.png",
 	"capabilities": {
