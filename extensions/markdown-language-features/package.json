@@ -763,7 +763,7 @@
 		"@types/dompurify": "3.2.0",
 		"@types/lodash.throttle": "4.1.9",
 		"@types/markdown-it": "14.1.2",
-		"@types/picomatch": "3.0.1",
+		"@types/picomatch": "3.0.2",
 		"lodash.throttle": "4.1.1"
 	},
 	"icon": "icon.png",

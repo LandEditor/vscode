@@ -3419,7 +3419,7 @@
 	"dependencies": {
 		"@joaomoreno/unique-names-generator": "5.2.0",
 		"byline": "5.0.0",
-		"file-type": "19.6.0",
+		"file-type": "20.0.0",
 		"jschardet": "3.1.4",
 		"picomatch": "4.0.2",
 		"which": "5.0.0"
@@ -3427,7 +3427,7 @@
 	"devDependencies": {
 		"@types/byline": "4.2.36",
 		"@types/node": "22.x",
-		"@types/picomatch": "3.0.1",
+		"@types/picomatch": "3.0.2",
 		"@types/which": "3.0.4"
 	},
 	"extensionDependencies": [
